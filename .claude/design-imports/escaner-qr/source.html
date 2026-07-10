@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body { margin: 0; background: #E7E7E9; }
+    a { color: #F2622A; }
+    a:hover { color: #D6521D; }
+    @keyframes scanline {
+      0% { transform: translateY(-150px); opacity: 0; }
+      12% { opacity: 1; }
+      88% { opacity: 1; }
+      100% { transform: translateY(150px); opacity: 0; }
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.4); opacity: 0; }
+      60% { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes fadeUp {
+      0% { transform: translateY(8px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes badgePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes sheetUp {
+      0% { transform: translateY(100%); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px 16px;font-family:'Manrope',sans-serif;box-sizing:border-box;">
+  <div style="position:relative;width:390px;height:844px;border-radius:40px;overflow:hidden;background:#FFFFFF;box-shadow:0 40px 80px rgba(0,0,0,0.28), 0 0 0 10px #050505;display:flex;flex-direction:column;">
+
+    <!-- HEADER -->
+    <div style="display:grid;grid-template-columns:40px 1fr 40px;align-items:center;padding:30px 18px 4px 18px;flex-shrink:0;">
+      <div onClick="{{ resetAll }}" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#111" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="text-align:center;font-size:16px;font-weight:800;color:#111;">{{ headerTitle }}</div>
+      <div></div>
+    </div>
+
+    <!-- CAMERA CARD -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px 26px 0 26px;">
+      <div style="position:relative;width:100%;max-width:330px;padding:9px;box-sizing:border-box;">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:58px;border:2px solid #111;border-right:none;border-radius:46px 0 0 46px;pointer-events:none;"></div>
+      <div style="position:absolute;right:0;top:0;bottom:0;width:58px;border:2px solid #111;border-left:none;border-radius:0 46px 46px 0;pointer-events:none;"></div>
+      <div style="position:relative;width:100%;height:402px;border-radius:37px;overflow:hidden;background:radial-gradient(circle at 50% 32%, #292a2d 0%, #0b0b0c 68%);box-shadow:{{ cardShadow }};transition:box-shadow 0.2s ease;">
+
+        <div style="position:absolute;inset:0;background-image:repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 24px);pointer-events:none;"></div>
+
+        <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:28px;right:28px;top:50%;height:2px;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);animation:scanline 2.4s ease-in-out infinite;border-radius:2px;"></div>
+        </sc-if>
+
+        <sc-if value="{{ hasResult }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;bottom:16px;right:16px;width:48px;height:48px;border-radius:24px;background:{{ frameColor }};display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(0,0,0,0.35);animation:popIn 0.32s ease-out;z-index:3;">
+            <sc-if value="{{ isSuccess }}" hint-placeholder-val="{{ true }}">
+              <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </sc-if>
+            <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="white" stroke-width="2.6" stroke-linecap="round"/></svg>
+            </sc-if>
+          </div>
+        </sc-if>
+
+      </div>
+      </div>
+
+      <!-- CAPTION / RESULT TEXT -->
+      <div style="margin-top:20px;text-align:center;padding:0 12px;min-height:56px;">
+        <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+          <div style="color:#6B7280;font-size:14px;font-weight:600;line-height:1.45;">{{ subtitle }}</div>
+        </sc-if>
+        <sc-if value="{{ hasResult }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:fadeUp 0.28s ease-out;">
+            <div style="color:{{ frameColor }};font-size:18px;font-weight:800;">{{ resultTitle }}</div>
+            <div style="color:#6B7280;font-size:13.5px;font-weight:600;margin-top:3px;">{{ resultSub }}</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ doneAll }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="color:#111;font-size:17px;font-weight:800;">Palet completo</div>
+            <div style="color:#6B7280;font-size:13.5px;font-weight:600;margin-top:3px;">{{ total }} de {{ total }} cajas registradas</div>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ showActions }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:2px;">
+          <div onClick="{{ dismissResult }}" style="padding:12px 20px;border-radius:999px;background:#F1F1F2;color:#111;font-weight:700;font-size:13.5px;cursor:pointer;">{{ dismissLabel }}</div>
+          <div onClick="{{ primaryAction }}" style="padding:12px 22px;border-radius:999px;background:{{ primaryActionBg }};color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;">{{ primaryActionLabel }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isBoxes }}" hint-placeholder-val="{{ true }}">
+        <div style="margin-top:auto;margin-bottom:16px;display:flex;justify-content:center;width:100%;">
+          <div style="display:flex;align-items:center;gap:12px;background:#F7F7F8;border-radius:999px;padding:8px 24px 8px 8px;">
+            <div style="width:38px;height:38px;border-radius:19px;background:#111;display:flex;align-items:center;justify-content:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 8.5v7a2 2 0 0 1-1 1.73l-6 3.5a2 2 0 0 1-2 0l-6-3.5A2 2 0 0 1 5 15.5v-7a2 2 0 0 1 1-1.73l6-3.5a2 2 0 0 1 2 0l6 3.5a2 2 0 0 1 1 1.73z" stroke="white" stroke-width="1.7" stroke-linejoin="round"/><path d="M5.3 7.3L13 11.7l7.7-4.4M13 21.5V11.7" stroke="white" stroke-width="1.7" stroke-linejoin="round"/></svg>
+            </div>
+            <div style="font-size:19px;font-weight:800;color:#111;line-height:1.15;">{{ totalLabel }} <span style="color:#B0B0B4;">·</span> <span style="color:{{ accent }};">+{{ scannedLabel }}</span></div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div style="position:relative;flex-shrink:0;height:118px;">
+      <div style="position:absolute;left:26px;bottom:28px;display:flex;gap:12px;">
+        <div style="width:46px;height:46px;border-radius:23px;background:#F1F1F2;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="#111" stroke-width="1.8"/><circle cx="9" cy="10.5" r="1.6" fill="#111"/><path d="M4 17l4.5-4.5a1.5 1.5 0 0 1 2 0L15 17M14 15l1.5-1.5a1.5 1.5 0 0 1 2 0L20 16" stroke="#111" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <div onClick="{{ toggleTorch }}" style="{{ torchButtonStyle }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 2h6l-1 8h4l-9 12 2-9H7l2-11z" fill="{{ torchIconColor }}"/></svg>
+        </div>
+        <div onClick="{{ toggleManual }}" style="width:46px;height:46px;border-radius:23px;background:#F1F1F2;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2.5" stroke="#111" stroke-width="1.8"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h6" stroke="#111" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+
+      <div onClick="{{ simulateScan }}" style="position:absolute;right:26px;bottom:24px;width:64px;height:64px;border-radius:32px;background:#111;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,0.22);" style-hover="background:#26262a;" style-active="transform:scale(0.95);">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 8V5a1 1 0 0 1 1-1h3M20 8V5a1 1 0 0 0-1-1h-3M4 16v3a1 1 0 0 0 1 1h3M20 16v3a1 1 0 0 1-1 1h-3" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><rect x="8.5" y="8.5" width="7" height="7" rx="1.3" fill="white"/></svg>
+      </div>
+    </div>
+
+    <!-- MANUAL ENTRY SHEET -->
+    <sc-if value="{{ manualOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ toggleManual }}" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);z-index:9;"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:28px 28px 0 0;padding:14px 22px 28px 22px;z-index:10;animation:sheetUp 0.26s ease-out;">
+        <div style="width:40px;height:5px;border-radius:3px;background:#E2E2E4;margin:0 auto 18px auto;"></div>
+        <div style="font-size:17px;font-weight:800;color:#111;margin-bottom:4px;">Introducir código manual</div>
+        <div style="font-size:13.5px;color:#8A8A8E;font-weight:600;margin-bottom:16px;">{{ manualHelp }}</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input value="{{ manualValue }}" onChange="{{ setManualValue }}" placeholder="Ej. BRS93658509581" style="flex:1;padding:14px 18px;border-radius:999px;border:none;background:#F3F3F4;font-size:15px;font-weight:600;color:#111;outline:none;font-family:'Manrope',sans-serif;" />
+        </div>
+        <div onClick="{{ submitManual }}" style="margin-top:16px;padding:15px;border-radius:999px;background:#111;color:#fff;font-weight:700;font-size:15px;text-align:center;cursor:pointer;">Añadir</div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 480, &quot;height&quot;: 940}, &quot;initialMode&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;boxes&quot;, &quot;options&quot;: [&quot;boxes&quot;, &quot;locate&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Comportamiento&quot;}, &quot;totalBoxes&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 58, &quot;min&quot;: 1, &quot;max&quot;: 300, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Comportamiento&quot;}, &quot;autoContinue&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Comportamiento&quot;}, &quot;accentColor&quot;: {&quot;editor&quot;: &quot;color&quot;, &quot;default&quot;: &quot;#F2622A&quot;, &quot;options&quot;: [&quot;#F2622A&quot;, &quot;#EA580C&quot;, &quot;#DC2626&quot;, &quot;#111111&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Estilo&quot;}}">
+class Component extends DCLogic {
+  state = {
+    mode: this.props.initialMode === 'locate' ? 'locate' : 'boxes',
+    scanned: 0,
+    total: this.props.totalBoxes ?? 58,
+    result: null,
+    resultTitle: '',
+    resultSub: '',
+    manualOpen: false,
+    manualValue: '',
+    torch: false,
+  };
+
+  timer = null;
+
+  componentWillUnmount() {
+    if (this.timer) clearTimeout(this.timer);
+  }
+
+  clearTimer() {
+    if (this.timer) { clearTimeout(this.timer); this.timer = null; }
+  }
+
+  selectBoxesMode = () => {
+    this.clearTimer();
+    this.setState({ mode: 'boxes', result: null });
+  };
+
+  selectLocateMode = () => {
+    this.clearTimer();
+    this.setState({ mode: 'locate', result: null });
+  };
+
+  resetAll = () => {
+    this.clearTimer();
+    this.setState({ scanned: 0, result: null, manualOpen: false });
+  };
+
+  simulateScan = () => {
+    if (this.state.result || this.state.manualOpen) return;
+    const { mode, scanned, total } = this.state;
+
+    if (mode === 'boxes') {
+      if (scanned >= total) return;
+      const isError = Math.random() < 0.15;
+      if (isError) {
+        this.setState({ result: 'error', resultTitle: 'Código GS1-128 no reconocido', resultSub: 'Este formato no corresponde a una caja del palet' });
+      } else {
+        const nextCount = scanned + 1;
+        const weight = (Math.random() * 3 + 17.5).toFixed(2);
+        this.setState({
+          result: 'success',
+          scanned: nextCount,
+          resultTitle: 'Caja registrada',
+          resultSub: `Caja ${nextCount} de ${total} · ${weight} kg`,
+        });
+        const autoContinue = this.props.autoContinue ?? true;
+        if (autoContinue && nextCount < total) {
+          this.timer = setTimeout(() => this.setState({ result: null }), 1050);
+        }
+      }
+    } else {
+      const isError = Math.random() < 0.12;
+      if (isError) {
+        this.setState({ result: 'error', resultTitle: 'Código no reconocido', resultSub: 'No corresponde a ningún palet registrado' });
+      } else {
+        this.setState({ result: 'success', resultTitle: 'Palet #6459 localizado', resultSub: 'Cámara de congelación · Posición SU' });
+      }
+    }
+  };
+
+  dismissResult = () => {
+    this.clearTimer();
+    this.setState({ result: null });
+  };
+
+  primaryAction = () => {
+    this.clearTimer();
+    this.setState({ result: null });
+  };
+
+  toggleManual = () => this.setState((s) => ({ manualOpen: !s.manualOpen }));
+  toggleTorch = () => this.setState((s) => ({ torch: !s.torch }));
+  setManualValue = (e) => this.setState({ manualValue: e.target.value });
+
+  submitManual = () => {
+    if (!this.state.manualValue.trim()) return;
+    this.setState({ manualOpen: false, manualValue: '' });
+    this.simulateScan();
+  };
+
+  renderVals() {
+    const { mode, scanned, total, result, resultTitle, resultSub, manualOpen, manualValue, torch } = this.state;
+    const accent = this.props.accentColor || '#F2622A';
+    const success = '#16A34A';
+    const danger = '#E11D48';
+
+    const isBoxes = mode === 'boxes';
+    const isIdle = !result;
+    const hasResult = !!result;
+    const isSuccess = result === 'success';
+    const isError = result === 'error';
+    const frameColor = isSuccess ? success : isError ? danger : '#111111';
+    const doneAll = isBoxes && !result && scanned >= total;
+
+    const headerTitle = isBoxes ? 'Escanear cajas' : 'Localizar palet';
+    const scannedLabel = `${scanned}`;
+    const totalLabel = `${total}`;
+    const circ = 2 * Math.PI * 20;
+    const ringDash = `${Math.min(1, scanned / total) * circ} ${circ}`;
+    const subtitle = isBoxes
+      ? 'Coloca el código dentro del marco. Se añadirá automáticamente.'
+      : 'Coloca el QR del palet dentro del marco para abrir su ficha.';
+
+    const counterLabel = isBoxes ? `${scanned}/${total}` : 'Buscar';
+
+    const showActions = isError || (!isBoxes && isSuccess);
+    const dismissLabel = isError ? 'Cerrar' : 'Seguir escaneando';
+    const primaryActionLabel = isError ? 'Volver a intentar' : 'Abrir palet';
+    const primaryActionBg = isError ? '#111' : accent;
+
+    const torchButtonStyle = {
+      width: '46px', height: '46px', borderRadius: '23px',
+      background: torch ? accent : '#F1F1F2',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+    };
+    const torchIconColor = torch ? '#fff' : '#111';
+
+    const cardShadow = hasResult
+      ? `0 0 0 4px ${frameColor}, 0 18px 34px rgba(0,0,0,0.18)`
+      : '0 18px 34px rgba(0,0,0,0.18)';
+
+    const manualHelp = isBoxes
+      ? 'Introduce el código de la caja si no se puede escanear.'
+      : 'Introduce el identificador del palet manualmente.';
+
+    return {
+      accent, frameColor, cardShadow, isBoxes, isIdle, hasResult, isSuccess, isError, doneAll,
+      headerTitle, subtitle, counterLabel, scannedLabel, totalLabel, ringDash,
+      resultTitle, resultSub, showActions, dismissLabel,
+      primaryActionLabel, primaryActionBg,
+      torchButtonStyle, torchIconColor, manualHelp,
+      total, manualOpen, manualValue,
+      resetAll: this.resetAll, simulateScan: this.simulateScan, dismissResult: this.dismissResult,
+      primaryAction: this.primaryAction, toggleManual: this.toggleManual, toggleTorch: this.toggleTorch,
+      setManualValue: this.setManualValue, submitManual: this.submitManual,
+    };
+  }
+}
+</script>
+</body>
+</html>

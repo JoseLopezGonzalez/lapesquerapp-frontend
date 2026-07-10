@@ -1,10 +1,29 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import QRCode from 'react-qr-code';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
+import {
+  Box,
+  Check,
+  ChevronLeft,
+  Flashlight,
+  FlashlightOff,
+  Image as ImageIcon,
+  Keyboard,
+  ScanLine,
+  X,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MOBILE_HEIGHTS, MOBILE_TYPOGRAPHY } from '@/lib/design-tokens-mobile';
 import { useBarcodeScanner, type ScannerBackend, type ScannedCode } from '@/hooks/useBarcodeScanner';
 
 export type { ScannerBackend };
@@ -23,12 +42,17 @@ export interface QrScannerWidgetProps {
   onScan: (rawValue: string) => void;
   onClose: () => void;
   onError?: (message: string) => void;
+  /** Header title, centered — e.g. "Escanear cajas", "Localizar palet". */
+  title?: string;
+  /** Idle caption shown under the camera card while searching — e.g. "Apunta al QR del palet". */
   statusText?: string;
   successText?: string;
   formats?: string[];
   validate?: (rawValue: string) => QrValidateResult;
   boxCount?: number;
   sessionCount?: number;
+  /** Help text shown inside the manual-entry drawer, adapted per consumer context. */
+  manualEntryHelp?: string;
 }
 
 type ScanPhase =
@@ -311,108 +335,6 @@ function MultipleDetectionOverlay({
   );
 }
 
-function ResultOverlay({
-  rawValue,
-  status,
-  message,
-  onRetry,
-  onClose,
-}: {
-  rawValue: string;
-  status: 'success' | 'fail';
-  message: string;
-  onRetry: () => void;
-  onClose: () => void;
-}) {
-  const ok = status === 'success';
-
-  return (
-    <div
-      className="fixed inset-0 z-[120] flex flex-col items-center justify-center px-8"
-      style={{ animation: 'qr-result-in 0.25s ease-out' }}
-    >
-      <div
-        className="absolute inset-0"
-        style={{
-          background: ok
-            ? 'radial-gradient(circle at 50% 45%, rgba(34,197,94,0.28) 0%, rgba(34,197,94,0.10) 42%, transparent 68%)'
-            : 'radial-gradient(circle at 50% 45%, rgba(239,68,68,0.28) 0%, rgba(239,68,68,0.10) 42%, transparent 68%)',
-        }}
-      />
-
-      <div className="relative z-10 flex flex-col items-center gap-6">
-        <div
-          className="relative"
-          style={{ animation: 'qr-result-scale 0.38s cubic-bezier(0.34,1.56,0.64,1)' }}
-        >
-          <div
-            className={cn(
-              'overflow-hidden rounded-2xl bg-white p-3 shadow-2xl',
-              ok ? 'ring-4 ring-green-400/70' : 'ring-4 ring-red-400/70',
-            )}
-          >
-            <QRCode value={rawValue || ' '} size={148} />
-          </div>
-
-          <div
-            className={cn(
-              'absolute -right-3 -bottom-3 flex h-11 w-11 items-center justify-center rounded-full shadow-xl',
-              ok ? 'bg-green-500' : 'bg-red-500',
-            )}
-            style={{ animation: 'qr-badge-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) 0.2s both' }}
-          >
-            {ok ? (
-              <Check className="h-6 w-6 text-white" strokeWidth={3} />
-            ) : (
-              <X className="h-6 w-6 text-white" strokeWidth={3} />
-            )}
-          </div>
-        </div>
-
-        <p
-          className={cn(
-            'text-center text-lg font-semibold drop-shadow-sm',
-            ok ? 'text-green-400' : 'text-red-400',
-          )}
-          style={{ animation: 'qr-result-in 0.3s ease-out 0.15s both' }}
-        >
-          {message}
-        </p>
-
-        <div
-          className="flex gap-3"
-          style={{ animation: 'qr-result-in 0.3s ease-out 0.25s both' }}
-        >
-          {ok ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              className="border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
-            >
-              Cerrar escáner
-            </Button>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={onClose}
-                className="border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
-              >
-                Cerrar
-              </Button>
-              <Button size="lg" onClick={onRetry}>
-                Volver a intentar
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export function QrScannerWidget({
@@ -420,14 +342,20 @@ export function QrScannerWidget({
   onScan,
   onClose,
   onError,
+  title = 'Escanear código',
+  statusText = 'Coloca el código dentro del marco.',
   successText = 'Código leído correctamente',
   formats = ['qr_code', 'code_128'],
   validate,
   boxCount,
   sessionCount,
+  manualEntryHelp = 'Introduce el código manualmente si no se puede escanear.',
 }: QrScannerWidgetProps) {
   const [phase, setPhase] = useState<ScanPhase>({ type: 'searching' });
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualValue, setManualValue] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const phaseRef = useRef<ScanPhase>(phase);
   const autoResetRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -511,7 +439,7 @@ export function QrScannerWidget({
     [onError],
   );
 
-  const { videoRef, canvasRef, isReady } = useBarcodeScanner({
+  const { videoRef, canvasRef, isReady, torchSupported, torchOn, toggleTorch, decodeImage } = useBarcodeScanner({
     backend,
     formats,
     scanDelay: 100,
@@ -519,38 +447,39 @@ export function QrScannerWidget({
     onError: handleError,
   });
 
+  // Single entry point for turning a raw code string into a result phase —
+  // shared by the live trigger, tap-to-select (multiple codes), the manual
+  // entry drawer and the gallery upload flow, so validation/feedback never diverges.
+  const processCode = useCallback(
+    (rawValue: string) => {
+      const value = rawValue.trim();
+      if (!value) return;
+
+      clearTimeout(lostDetectionRef.current ?? undefined);
+      lostDetectionRef.current = null;
+
+      const result: QrValidateResult = validate ? validate(value) : { ok: true };
+      const newPhase: ScanPhase = result.ok
+        ? { type: 'result', rawValue: value, status: 'success', message: successText }
+        : { type: 'result', rawValue: value, status: 'fail', message: result.message };
+
+      playTone(result.ok ? 'success' : 'fail');
+      phaseRef.current = newPhase;
+      setPhase(newPhase);
+    },
+    [validate, successText],
+  );
+
   const handleConfirm = useCallback(() => {
     const current = phaseRef.current;
     if (current.type !== 'detected') return;
+    processCode(current.rawValue);
+  }, [processCode]);
 
-    clearTimeout(lostDetectionRef.current ?? undefined);
-    lostDetectionRef.current = null;
-
-    const { rawValue } = current;
-    const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
-    const newPhase: ScanPhase = result.ok
-      ? { type: 'result', rawValue, status: 'success', message: successText }
-      : { type: 'result', rawValue, status: 'fail', message: result.message };
-
-    playTone(result.ok ? 'success' : 'fail');
-    phaseRef.current = newPhase;
-    setPhase(newPhase);
-  }, [validate, successText]);
-
-  const handleConfirmCode = useCallback((code: ScannedCode) => {
-    clearTimeout(lostDetectionRef.current ?? undefined);
-    lostDetectionRef.current = null;
-
-    const { rawValue } = code;
-    const result: QrValidateResult = validate ? validate(rawValue) : { ok: true };
-    const newPhase: ScanPhase = result.ok
-      ? { type: 'result', rawValue, status: 'success', message: successText }
-      : { type: 'result', rawValue, status: 'fail', message: result.message };
-
-    playTone(result.ok ? 'success' : 'fail');
-    phaseRef.current = newPhase;
-    setPhase(newPhase);
-  }, [validate, successText]);
+  const handleConfirmCode = useCallback(
+    (code: ScannedCode) => processCode(code.rawValue),
+    [processCode],
+  );
 
   const handleRetry = useCallback(() => {
     clearTimeout(autoResetRef.current ?? undefined);
@@ -568,115 +497,251 @@ export function QrScannerWidget({
     onCloseRef.current();
   }, []);
 
+  const handleManualSubmit = useCallback(() => {
+    const value = manualValue.trim();
+    if (!value) return;
+    setManualOpen(false);
+    setManualValue('');
+    processCode(value);
+  }, [manualValue, processCode]);
+
+  const handleFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file) return;
+
+      const codes = await decodeImage(file);
+      if (codes.length > 0) {
+        processCode(codes[0].rawValue);
+      } else {
+        const newPhase: ScanPhase = {
+          type: 'result',
+          rawValue: '',
+          status: 'fail',
+          message: 'No se detectó ningún código en la imagen.',
+        };
+        playTone('fail');
+        phaseRef.current = newPhase;
+        setPhase(newPhase);
+      }
+    },
+    [decodeImage, processCode],
+  );
+
+  const isResult = phase.type === 'result';
+  const isSuccess = isResult && phase.type === 'result' && phase.status === 'success';
+  const isError = isResult && phase.type === 'result' && phase.status === 'fail';
+  const showActions = isError;
+  const triggerActive = phase.type === 'detected';
+
   return (
-    <div className="bg-background fixed inset-0 z-[100]">
-      {/* Full-screen camera view */}
-      <div ref={containerRef} className="relative h-full w-full">
-        <video
-          ref={videoRef}
-          playsInline
-          muted
-          className="h-full w-full object-cover"
-        />
-        <canvas ref={canvasRef} className="hidden" aria-hidden />
-
-        {!isReady && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-            <span className="text-sm text-white/70">Iniciando cámara…</span>
-          </div>
-        )}
-
-        <CornerGuides active={phase.type === 'detected'} />
-
-        {phase.type === 'searching' && <ScanBeam />}
-
-        {phase.type === 'detected' && (
-          <DetectionOverlay cornerPoints={phase.cornerPoints} containerRef={containerRef} />
-        )}
-
-        {phase.type === 'multiple' && (
-          <MultipleDetectionOverlay
-            codes={phase.codes}
-            containerRef={containerRef}
-            onSelect={handleConfirmCode}
-          />
-        )}
-
-        {phase.type === 'result' && (
-          <ResultOverlay
-            rawValue={phase.rawValue}
-            status={phase.status}
-            message={phase.message}
-            onRetry={handleRetry}
-            onClose={handleClose}
-          />
-        )}
-      </div>
-
-      {/* Floating close button — top-right, always visible except during result overlay */}
-      {phase.type !== 'result' && (
+    <div className="bg-background fixed inset-0 z-[100] flex flex-col">
+      {/* Header */}
+      <div className="grid shrink-0 grid-cols-[40px_1fr_40px] items-center gap-2 px-3 pt-[max(1.25rem,calc(env(safe-area-inset-top)+0.75rem))] pb-1">
         <button
           type="button"
           onClick={handleClose}
-          aria-label="Cerrar escáner"
-          className="fixed right-4 z-[110] flex h-11 w-11 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md transition-colors hover:bg-black/60 active:scale-95"
-          style={{ top: 'max(1rem, calc(env(safe-area-inset-top) + 0.5rem))' }}
+          aria-label="Volver"
+          className="text-foreground flex h-10 w-10 items-center justify-center rounded-full transition-colors active:bg-muted"
         >
-          <X className="h-5 w-5" />
+          <ChevronLeft className="h-5 w-5" />
         </button>
-      )}
+        <h2 className="text-foreground truncate text-center text-base font-medium">{title}</h2>
+        <div />
+      </div>
 
-      {/* Box counter pill — top-left, symmetric to close button */}
-      {phase.type !== 'result' && boxCount !== undefined && (
-        <div
-          className="fixed left-4 z-[110] flex h-11 items-center gap-1.5 rounded-full bg-black/40 px-4 text-sm text-white backdrop-blur-md"
-          style={{ top: 'max(1rem, calc(env(safe-area-inset-top) + 0.5rem))' }}
-        >
-          <span className="text-white/70">{boxCount}</span>
-          {sessionCount !== undefined && sessionCount > 0 && (
-            <>
-              <span className="text-white/30">·</span>
-              <span className="font-semibold text-green-400">+{sessionCount}</span>
-            </>
-          )}
-        </div>
-      )}
+      {/* Scrollable content: camera card + caption + pill */}
+      <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-6 pt-2">
+        <div className="relative w-full max-w-[330px] shrink-0">
+          {/* Decorative "lens" brackets — purely visual, mirrors the design mockup */}
+          <div className="border-foreground/70 pointer-events-none absolute inset-y-0 left-0 w-9 rounded-l-full border-2 border-r-0" />
+          <div className="border-foreground/70 pointer-events-none absolute inset-y-0 right-0 w-9 rounded-r-full border-2 border-l-0" />
 
-      {/* Hint pill — centered bottom, appears when multiple codes detected */}
-      {phase.type === 'multiple' && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-[110] flex justify-center"
-          style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}
-        >
-          <div className="flex h-12 items-center gap-2 rounded-full bg-black/50 px-6 text-sm text-white/80 backdrop-blur-md">
-            Toca el código que quieres leer
+          <div
+            ref={containerRef}
+            className={cn(
+              'relative mx-2 h-[380px] overflow-hidden rounded-[32px] bg-neutral-950 shadow-xl ring-4 transition-shadow duration-300',
+              isSuccess && 'ring-green-500',
+              isError && 'ring-red-500',
+              !isResult && 'ring-transparent',
+            )}
+          >
+            <video ref={videoRef} playsInline muted className="h-full w-full object-cover" />
+            <canvas ref={canvasRef} className="hidden" aria-hidden />
+
+            {!isReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                <span className="text-sm text-white/70">Iniciando cámara…</span>
+              </div>
+            )}
+
+            <CornerGuides active={phase.type === 'detected'} />
+
+            {phase.type === 'searching' && <ScanBeam />}
+
+            {phase.type === 'detected' && (
+              <DetectionOverlay cornerPoints={phase.cornerPoints} containerRef={containerRef} />
+            )}
+
+            {phase.type === 'multiple' && (
+              <MultipleDetectionOverlay
+                codes={phase.codes}
+                containerRef={containerRef}
+                onSelect={handleConfirmCode}
+              />
+            )}
+
+            {isResult && (
+              <div
+                className={cn(
+                  'absolute right-3 bottom-3 z-[3] flex h-11 w-11 items-center justify-center rounded-full shadow-lg',
+                  isSuccess ? 'bg-green-500' : 'bg-red-500',
+                )}
+              >
+                {isSuccess ? (
+                  <Check className="h-5 w-5 text-white" strokeWidth={3} />
+                ) : (
+                  <X className="h-5 w-5 text-white" strokeWidth={3} />
+                )}
+              </div>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Floating confirm button — centered bottom, appears when QR is detected */}
-      {phase.type === 'detected' && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-[110] flex justify-center"
-          style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom))' }}
-        >
+        {/* Caption */}
+        <div className="mt-5 min-h-[52px] w-full max-w-[280px] shrink-0 px-3 text-center">
+          {isResult ? (
+            <p className={cn('text-base font-medium', isSuccess ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
+              {phase.type === 'result' ? phase.message : ''}
+            </p>
+          ) : phase.type === 'multiple' ? (
+            <p className="text-muted-foreground text-sm font-medium">Toca el código que quieres leer</p>
+          ) : (
+            <p className="text-muted-foreground text-sm font-medium">{statusText}</p>
+          )}
+        </div>
+
+        {showActions && (
+          <div className="mt-1 flex shrink-0 justify-center gap-2.5">
+            <Button type="button" variant="secondary" size="sm" onClick={handleClose} className="rounded-full">
+              Cerrar
+            </Button>
+            <Button type="button" size="sm" onClick={handleRetry} className="rounded-full">
+              Volver a intentar
+            </Button>
+          </div>
+        )}
+
+        <div className="flex-1" />
+
+        {/* Box counter pill */}
+        {!isResult && boxCount !== undefined && (
+          <div className="mb-4 flex shrink-0 justify-center">
+            <div className="bg-muted flex items-center gap-3 rounded-full py-2 pr-5 pl-2">
+              <span className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-full">
+                <Box className="h-4 w-4" />
+              </span>
+              <span className="text-foreground text-base font-medium">
+                {boxCount}
+                {sessionCount !== undefined && sessionCount > 0 && (
+                  <>
+                    <span className="text-muted-foreground"> · </span>
+                    <span className="text-green-600 dark:text-green-400">+{sessionCount}</span>
+                  </>
+                )}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom bar */}
+      <div
+        className="flex shrink-0 items-center justify-between px-6 pt-2"
+        style={{ paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 1rem))' }}
+      >
+        <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={handleConfirm}
-            className="flex h-14 items-center gap-2.5 rounded-full px-10 text-base font-semibold text-white shadow-2xl transition-transform active:scale-95"
-            style={{
-              backgroundImage:
-                'linear-gradient(90deg, var(--primary) 0%, var(--primary) 30%, rgba(255,255,255,0.22) 50%, var(--primary) 70%, var(--primary) 100%)',
-              backgroundSize: '200% auto',
-              animation: 'qr-shimmer 1.6s linear infinite',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.1)',
-            }}
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Subir foto desde la galería"
+            className="bg-muted text-foreground flex h-[46px] w-[46px] items-center justify-center rounded-full transition-colors active:bg-muted/70"
           >
-            <Check className="h-5 w-5" strokeWidth={2.5} />
-            Leer código
+            <ImageIcon className="h-5 w-5" />
+          </button>
+
+          {torchSupported && (
+            <button
+              type="button"
+              onClick={toggleTorch}
+              aria-label={torchOn ? 'Apagar linterna' : 'Encender linterna'}
+              aria-pressed={torchOn}
+              className={cn(
+                'flex h-[46px] w-[46px] items-center justify-center rounded-full transition-colors',
+                torchOn ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground active:bg-muted/70',
+              )}
+            >
+              {torchOn ? <Flashlight className="h-[18px] w-[18px]" /> : <FlashlightOff className="h-[18px] w-[18px]" />}
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setManualOpen(true)}
+            aria-label="Introducir código manual"
+            className="bg-muted text-foreground flex h-[46px] w-[46px] items-center justify-center rounded-full transition-colors active:bg-muted/70"
+          >
+            <Keyboard className="h-5 w-5" />
           </button>
         </div>
-      )}
+
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={!triggerActive}
+          aria-label="Confirmar lectura"
+          className={cn(
+            'flex h-16 w-16 items-center justify-center rounded-full shadow-lg transition-transform active:scale-95 disabled:pointer-events-none',
+            triggerActive ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground/50',
+          )}
+        >
+          <ScanLine className="h-6 w-6" strokeWidth={2.3} />
+        </button>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* Manual entry drawer */}
+      <Drawer open={manualOpen} onOpenChange={setManualOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Introducir código manual</DrawerTitle>
+            <DrawerDescription>{manualEntryHelp}</DrawerDescription>
+          </DrawerHeader>
+          <div className="flex flex-col gap-3 px-4 pb-2">
+            <Input
+              value={manualValue}
+              onChange={(e) => setManualValue(e.target.value)}
+              placeholder="Ej. BRS93658509581"
+              autoFocus
+              className={cn(MOBILE_HEIGHTS.INPUT, MOBILE_TYPOGRAPHY.INPUT)}
+            />
+          </div>
+          <DrawerFooter>
+            <Button type="button" onClick={handleManualSubmit} disabled={!manualValue.trim()}>
+              Añadir
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

@@ -195,8 +195,10 @@ export default function EliminarTab({
           onScan={handleScannedCode}
           onClose={() => setScannerOpen(false)}
           onError={() => setScannerOpen(false)}
+          title="Eliminar caja"
           statusText="Apunta al código GS1-128 de la caja a eliminar"
           successText="Código leído"
+          manualEntryHelp="Introduce el código GS1-128 de la caja que quieres eliminar."
         />
       )}
     </div>

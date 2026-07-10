@@ -200,9 +200,11 @@ export default function Step2QRScan({
           onClose={() => setScannerBackend(null)}
           onError={handleScannerError}
           validate={validateGs1128}
+          title="Escanear cajas"
           statusText="Apunta al código de la caja"
           successText="Caja añadida"
           formats={['code_128', 'qr_code']}
+          manualEntryHelp="Introduce el código GS1-128 de la caja si no se puede escanear."
         />
       )}
 

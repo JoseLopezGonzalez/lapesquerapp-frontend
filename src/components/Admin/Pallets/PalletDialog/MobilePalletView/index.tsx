@@ -360,10 +360,12 @@ function MobilePalletViewInner({
           onClose={() => setScannerOpen(false)}
           onError={() => setScannerOpen(false)}
           validate={validateGs1128}
+          title="Escanear cajas"
           statusText="Apunta al código GS1-128 de la caja"
           successText="Caja registrada"
           boxCount={boxes.length}
           sessionCount={sessionCount}
+          manualEntryHelp="Introduce el código GS1-128 de la caja si no se puede escanear."
         />
       )}
 

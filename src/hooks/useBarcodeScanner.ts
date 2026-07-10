@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // ─── Public API ────────────────────────────────────────────────────────────────
 
@@ -43,6 +43,17 @@ const ZBAR_TYPE_MAP: Record<string, string> = {
   upce: 'UPC-E',
 };
 
+// ─── Torch (flashlight) types ──────────────────────────────────────────────────
+
+// `torch` is a real, widely-supported MediaTrackCapability on Android Chrome/Edge,
+// but the DOM lib's MediaTrackCapabilities/MediaTrackConstraintSet types don't include it yet.
+interface TorchCapabilities extends MediaTrackCapabilities {
+  torch?: boolean;
+}
+interface TorchConstraintSet extends MediaTrackConstraintSet {
+  torch?: boolean;
+}
+
 // ─── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useBarcodeScanner({
@@ -56,6 +67,7 @@ export function useBarcodeScanner({
   // Canvas is used only by the ZBar backend (needs ImageData, not a video element).
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const trackRef = useRef<MediaStreamTrack | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastScanRef = useRef<number>(0);
   // Guard against concurrent async detections (ZXing is async, ZBar is async too).
@@ -71,13 +83,21 @@ export function useBarcodeScanner({
   type DetectFn = (video: HTMLVideoElement, canvas: HTMLCanvasElement | null) => Promise<ScannedCode[]>;
   const detectFnRef = useRef<DetectFn | null>(null);
 
+  // Same decode backend, but fed a static bitmap instead of the live video —
+  // used by decodeImage() for the "upload from gallery" flow.
+  type DetectFromBitmapFn = (bitmap: ImageBitmap) => Promise<ScannedCode[]>;
+  const detectFromBitmapRef = useRef<DetectFromBitmapFn | null>(null);
+
   const [cameraReady, setCameraReady] = useState(false);
   const [detectorReady, setDetectorReady] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
 
   // ── 1. Initialize detector (loads WASM lazily on first mount) ─────────────
   useEffect(() => {
     let cancelled = false;
     detectFnRef.current = null;
+    detectFromBitmapRef.current = null;
     setDetectorReady(false);
 
     async function init() {
@@ -92,19 +112,34 @@ export function useBarcodeScanner({
             formats.map((f) => ZBAR_TYPE_MAP[f]).filter(Boolean),
           );
 
-          detectFnRef.current = async (_video, canvas) => {
-            if (!canvas) return [];
-            const ctx = canvas.getContext('2d');
-            if (!ctx) return [];
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const symbols = await scanImageData(imageData);
-            return symbols
+          const mapSymbols = (symbols: Awaited<ReturnType<typeof scanImageData>>): ScannedCode[] =>
+            symbols
               .filter((s) => allowedTypeNames.size === 0 || allowedTypeNames.has(s.typeName))
               .map((s) => ({
                 rawValue: s.decode(),
                 // s.points is the polygon returned by ZBar (one point per corner)
                 cornerPoints: s.points.map((p) => ({ x: p.x, y: p.y })),
               }));
+
+          detectFnRef.current = async (_video, canvas) => {
+            if (!canvas) return [];
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return [];
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const symbols = await scanImageData(imageData);
+            return mapSymbols(symbols);
+          };
+
+          detectFromBitmapRef.current = async (bitmap) => {
+            const offscreen = document.createElement('canvas');
+            offscreen.width = bitmap.width;
+            offscreen.height = bitmap.height;
+            const ctx = offscreen.getContext('2d');
+            if (!ctx) return [];
+            ctx.drawImage(bitmap, 0, 0);
+            const imageData = ctx.getImageData(0, 0, offscreen.width, offscreen.height);
+            const symbols = await scanImageData(imageData);
+            return mapSymbols(symbols);
           };
         } else {
           // BarcodeDetector ponyfill: ZXing C++ compiled to WASM, W3C API surface.
@@ -120,6 +155,14 @@ export function useBarcodeScanner({
             return barcodes.map((b) => ({
               rawValue: b.rawValue,
               // cornerPoints is a 4-tuple of Point2D objects matching our overlay contract
+              cornerPoints: b.cornerPoints.map((p) => ({ x: p.x, y: p.y })),
+            }));
+          };
+
+          detectFromBitmapRef.current = async (bitmap) => {
+            const barcodes = await detector.detect(bitmap);
+            return barcodes.map((b) => ({
+              rawValue: b.rawValue,
               cornerPoints: b.cornerPoints.map((p) => ({ x: p.x, y: p.y })),
             }));
           };
@@ -141,6 +184,8 @@ export function useBarcodeScanner({
   useEffect(() => {
     let cancelled = false;
     setCameraReady(false);
+    setTorchSupported(false);
+    setTorchOn(false);
 
     async function startCamera() {
       try {
@@ -160,6 +205,18 @@ export function useBarcodeScanner({
         }
 
         streamRef.current = stream;
+        const track = stream.getVideoTracks()[0] ?? null;
+        trackRef.current = track;
+
+        // Torch support varies by browser/device (typically Android Chrome/Edge only —
+        // iOS Safari does not expose it). Never assume it's there, always probe.
+        try {
+          const caps = track?.getCapabilities?.() as TorchCapabilities | undefined;
+          if (!cancelled) setTorchSupported(Boolean(caps?.torch));
+        } catch {
+          if (!cancelled) setTorchSupported(false);
+        }
+
         const video = videoRef.current;
         if (video) {
           video.srcObject = stream;
@@ -177,8 +234,39 @@ export function useBarcodeScanner({
       cancelled = true;
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
+      trackRef.current = null;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Torch control ───────────────────────────────────────────────────────
+  const toggleTorch = useCallback(async () => {
+    const track = trackRef.current;
+    if (!track || !torchSupported) return;
+    const next = !torchOn;
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next } as TorchConstraintSet] });
+      setTorchOn(next);
+    } catch {
+      // Torch toggle failed at runtime (device claimed support but rejected the constraint) —
+      // non-critical optional feature, fail silently and keep previous state.
+    }
+  }, [torchOn, torchSupported]);
+
+  // ── Decode a static image (gallery upload) using the same active backend ──
+  const decodeImage = useCallback(async (file: File): Promise<ScannedCode[]> => {
+    if (!detectFromBitmapRef.current) return [];
+    let bitmap: ImageBitmap;
+    try {
+      bitmap = await createImageBitmap(file);
+    } catch {
+      return [];
+    }
+    try {
+      return await detectFromBitmapRef.current(bitmap);
+    } finally {
+      bitmap.close();
+    }
+  }, []);
 
   // ── 3. Detection loop (RAF, throttled to scanDelay ms) ────────────────────
   useEffect(() => {
@@ -223,5 +311,9 @@ export function useBarcodeScanner({
     videoRef,
     canvasRef,
     isReady: cameraReady && detectorReady,
+    torchSupported,
+    torchOn,
+    toggleTorch,
+    decodeImage,
   };
 }

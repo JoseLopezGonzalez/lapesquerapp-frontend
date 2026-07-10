@@ -300,8 +300,10 @@ export function MobileStoreDetailView({
           onClose={() => setScannerOpen(false)}
           onError={handleScannerError}
           validate={validatePalletQr}
+          title="Localizar palet"
           statusText="Apunta al QR del palet"
           successText="Palet localizado"
+          manualEntryHelp="Introduce el identificador del palet manualmente."
         />
       )}
 
