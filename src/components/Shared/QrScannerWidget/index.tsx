@@ -553,15 +553,16 @@ export function QrScannerWidget({
 
       {/* Scrollable content: camera card + caption + pill */}
       <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-6 pt-2">
-        <div className="relative w-full max-w-[330px] shrink-0">
-          {/* Decorative "lens" brackets — purely visual, mirrors the design mockup */}
-          <div className="border-foreground/70 pointer-events-none absolute inset-y-0 left-0 w-9 rounded-l-full border-2 border-r-0" />
-          <div className="border-foreground/70 pointer-events-none absolute inset-y-0 right-0 w-9 rounded-r-full border-2 border-l-0" />
+        <div className="relative w-full max-w-[330px] shrink-0 p-[9px]">
+          {/* Decorative "lens" brackets — anchor to the un-padded wrapper edge so they
+              bleed 9px past the camera card on all sides, matching the mockup exactly. */}
+          <div className="border-foreground pointer-events-none absolute inset-y-0 left-0 w-[58px] rounded-tl-[46px] rounded-bl-[46px] border-2 border-r-0" />
+          <div className="border-foreground pointer-events-none absolute inset-y-0 right-0 w-[58px] rounded-tr-[46px] rounded-br-[46px] border-2 border-l-0" />
 
           <div
             ref={containerRef}
             className={cn(
-              'relative mx-2 h-[380px] overflow-hidden rounded-[32px] bg-neutral-950 shadow-xl ring-4 transition-shadow duration-300',
+              'relative h-[380px] w-full overflow-hidden rounded-[32px] bg-neutral-950 shadow-xl ring-4 transition-shadow duration-300',
               isSuccess && 'ring-green-500',
               isError && 'ring-red-500',
               !isResult && 'ring-transparent',
