@@ -19,7 +19,6 @@ import { createEntityGeneric } from '@/services/generic/createEntityService';
 import {
   fetchEntityDataGeneric,
   submitEntityFormGeneric,
-  fetchAutocompleteOptionsGeneric,
 } from '@/services/generic/editEntityService';
 import { addFiltersToParams } from '@/lib/entity/filtersHelper';
 import { addWithParams } from '@/lib/entity/entityRelationsHelper';
@@ -137,16 +136,23 @@ export const taxService = {
 
   /**
    * Obtiene opciones para autocompletado (formato {value, label})
+   *
+   * No usa fetchAutocompleteOptionsGeneric: ese helper etiqueta con `name`, pero el dato
+   * que identifica un impuesto para el usuario en pedidos/líneas es el tipo (rate), no el
+   * nombre — por eso se pide la lista completa y se construye la etiqueta a partir del rate.
+   *
    * @returns {Promise<Array<{value: any, label: string}>>} Opciones para Combobox
    *
    * @example
    * const options = await taxService.getOptions();
-   * // [{ value: 1, label: 'IVA 21%' }, { value: 2, label: 'IVA 10%' }]
+   * // [{ value: 1, label: '21%' }, { value: 2, label: '10%' }]
    */
   async getOptions() {
     const token = await getAuthToken();
     const url = `${API_URL_V2}${ENDPOINT}/options`;
-    return fetchAutocompleteOptionsGeneric(url, token);
+    const taxes = await fetchEntitiesGeneric(url, token);
+    const items = Array.isArray(taxes) ? taxes : (taxes?.data ?? []);
+    return items.map((tax) => ({ value: tax.id, label: `${tax.rate}%` }));
   },
 };
 

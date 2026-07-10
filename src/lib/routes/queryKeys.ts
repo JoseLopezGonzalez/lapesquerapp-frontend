@@ -313,13 +313,24 @@ export const orderListKeys = {
 export const orderKeys = {
   detailPrefix: (tenantId: string | null | undefined) =>
     ['orders', 'detail', tenantId ?? 'unknown'] as const,
+  // orderId se normaliza a string: useOrder recibe el id como prop (string si viene de la
+  // URL, p.ej. ?order=123) mientras que los sub-hooks (useOrderPlannedDetails,
+  // useOrderAuxiliaryLines, useOrderIncidents, useOrderPallets) lo derivan de order?.id
+  // (number, tal como lo devuelve la API). Sin normalizar, ['orders','detail',t,123] y
+  // ['orders','detail',t,'123'] son claves distintas para React Query y
+  // invalidateQueries no encuentra la query activa a refrescar tras crear/editar/eliminar.
   detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
-    ['orders', 'detail', tenantId ?? 'unknown', orderId] as const,
+    ['orders', 'detail', tenantId ?? 'unknown', orderId == null ? 'unknown' : String(orderId)] as const,
 };
 
 export const orderCostAnalysisKeys = {
   detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
-    ['orders', 'cost-analysis', tenantId ?? 'unknown', orderId] as const,
+    [
+      'orders',
+      'cost-analysis',
+      tenantId ?? 'unknown',
+      orderId == null ? 'unknown' : String(orderId),
+    ] as const,
 };
 
 export const orderAttachmentKeys = {
