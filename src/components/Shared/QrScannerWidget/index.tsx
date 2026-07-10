@@ -553,11 +553,11 @@ export function QrScannerWidget({
 
       {/* Scrollable content: camera card + caption + pill */}
       <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-6 pt-2">
-        <div className="relative w-full max-w-[330px] shrink-0 p-[9px]">
+        <div className="relative w-full max-w-[330px] shrink-0 p-4">
           {/* Decorative "lens" brackets — anchor to the un-padded wrapper edge so they
-              bleed 9px past the camera card on all sides, matching the mockup exactly. */}
-          <div className="border-foreground pointer-events-none absolute inset-y-0 left-0 w-[58px] rounded-tl-[46px] rounded-bl-[46px] border-2 border-r-0" />
-          <div className="border-foreground pointer-events-none absolute inset-y-0 right-0 w-[58px] rounded-tr-[46px] rounded-br-[46px] border-2 border-l-0" />
+              bleed past the camera card on all sides, same corner radius as the card itself. */}
+          <div className="border-foreground pointer-events-none absolute inset-y-0 left-0 w-[58px] rounded-tl-[32px] rounded-bl-[32px] border-2 border-r-0" />
+          <div className="border-foreground pointer-events-none absolute inset-y-0 right-0 w-[58px] rounded-tr-[32px] rounded-br-[32px] border-2 border-l-0" />
 
           <div
             ref={containerRef}
