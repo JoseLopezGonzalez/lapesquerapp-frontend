@@ -114,6 +114,7 @@ interface PalletViewProps {
   readOnly?: boolean;
   initialTab?: string | null;
   onHasPalletChangesChange?: (hasChanges: boolean) => void;
+  onReceptionIdChange?: (receptionId: string | number | null | undefined) => void;
 }
 
 export default function PalletView({
@@ -127,6 +128,7 @@ export default function PalletView({
   readOnly: readOnlyProp = false,
   initialTab = null,
   onHasPalletChangesChange,
+  onReceptionIdChange,
 }: PalletViewProps) {
   const {
     productsOptions,
@@ -221,6 +223,10 @@ export default function PalletView({
   useEffect(() => {
     onHasPalletChangesChange?.(hasPalletChanges && !isReadOnly);
   }, [hasPalletChanges, isReadOnly, onHasPalletChangesChange]);
+
+  useEffect(() => {
+    onReceptionIdChange?.(receptionId);
+  }, [receptionId, onReceptionIdChange]);
 
   const { onPrint } = usePrintElement({
     id: 'print-area-id',
@@ -345,8 +351,8 @@ export default function PalletView({
   const [bulkActionType, setBulkActionType] = useState<string | null>(null); // 'lot', 'weight', 'weightAdd' o 'product'
   const [bulkActionValue, setBulkActionValue] = useState('');
   const [weightOperation, setWeightOperation] = useState('add'); // 'add' o 'subtract'
-  const [oldProductId, setOldProductId] = useState('');
-  const [newProductId, setNewProductId] = useState('');
+  const [oldProductId, setOldProductId] = useState<number | string>('');
+  const [newProductId, setNewProductId] = useState<number | string>('');
 
   useEffect(() => {
     if (addBoxesTab === 'lector' && scannerInputRef.current) {
@@ -1990,7 +1996,7 @@ export default function PalletView({
                                       notFoundMessage="No se encontraron productos"
                                       value={oldProductId}
                                       onChange={(value) => {
-                                        setOldProductId(String(value));
+                                        setOldProductId(value);
                                       }}
                                       disabled={isReadOnly}
                                       loading={loading}
@@ -2005,7 +2011,7 @@ export default function PalletView({
                                       notFoundMessage="No se encontraron productos"
                                       value={newProductId}
                                       onChange={(value) => {
-                                        setNewProductId(String(value));
+                                        setNewProductId(value);
                                       }}
                                       disabled={isReadOnly}
                                       loading={productsLoading}

@@ -55,6 +55,7 @@ interface MobilePalletViewProps {
   initialTab?: string | null;
   onActiveScreenChange?: (screen: PalletScreen) => void;
   onHasPalletChangesChange?: (hasChanges: boolean) => void;
+  onReceptionIdChange?: (receptionId: string | number | null | undefined) => void;
 }
 
 function MobilePalletSkeleton() {
@@ -85,6 +86,7 @@ function MobilePalletViewInner({
   readOnly: readOnlyProp = false,
   onActiveScreenChange,
   onHasPalletChangesChange,
+  onReceptionIdChange,
   onRetry,
 }: MobilePalletViewProps & { onRetry: () => void }) {
   const { data: session } = useSession();
@@ -145,6 +147,10 @@ function MobilePalletViewInner({
   useEffect(() => {
     onHasPalletChangesChange?.(hasPalletChanges && !isReadOnly);
   }, [hasPalletChanges, isReadOnly, onHasPalletChangesChange]);
+
+  useEffect(() => {
+    onReceptionIdChange?.(receptionId);
+  }, [receptionId, onReceptionIdChange]);
 
   const handleSave = () => {
     if (isReadOnly) return;

@@ -17,7 +17,7 @@ import Link from 'next/link';
 import { ExternalLink, Package, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-import { usePallet, type PalletState } from '@/hooks/usePallet';
+import type { PalletState } from '@/hooks/usePallet';
 import PalletView from './PalletView';
 import MobilePalletView, { type PalletScreen } from './MobilePalletView';
 import {
@@ -62,11 +62,13 @@ export default function PalletDialog({
   const [mobileActiveScreen, setMobileActiveScreen] = useState<PalletScreen>('hub');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const [receptionId, setReceptionId] = useState<string | number | null | undefined>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setMobileActiveScreen('hub');
       setHasUnsavedChanges(false);
+      setReceptionId(null);
     }
   }, [isOpen]);
 
@@ -77,21 +79,18 @@ export default function PalletDialog({
         ? 'new'
         : null;
 
-  const { temporalPallet } = usePallet({
-    id: effectivePalletId,
-    onChange: () => {},
-    initialStoreId,
-    initialOrderId,
-    skipBackendSave: true,
-    initialPallet,
-  });
-
-  const receptionId = temporalPallet?.receptionId as string | number | null | undefined;
   const belongsToReception = receptionId !== null && receptionId !== undefined;
 
   const handleHasPalletChangesChange = useCallback((hasChanges: boolean) => {
     setHasUnsavedChanges(hasChanges);
   }, []);
+
+  const handleReceptionIdChange = useCallback(
+    (id: string | number | null | undefined) => {
+      setReceptionId(id ?? null);
+    },
+    []
+  );
 
   const handleOnClickClose = () => {
     if (hasUnsavedChanges) {
@@ -247,6 +246,7 @@ export default function PalletDialog({
                 initialTab={initialTab}
                 onActiveScreenChange={handleMobileActiveScreenChange}
                 onHasPalletChangesChange={handleHasPalletChangesChange}
+                onReceptionIdChange={handleReceptionIdChange}
               />
             ) : (
               <PalletView
@@ -260,6 +260,7 @@ export default function PalletDialog({
                 readOnly={readOnly}
                 initialTab={initialTab}
                 onHasPalletChangesChange={handleHasPalletChangesChange}
+                onReceptionIdChange={handleReceptionIdChange}
               />
             )}
           </div>

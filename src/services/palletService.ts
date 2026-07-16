@@ -43,6 +43,27 @@ export interface LinkPalletPayload {
   orderId: number | string;
 }
 
+// La petición del palet no tiene timeout propio en fetchWithTenant; en redes móviles
+// inestables una petición colgada deja el editor cargando indefinidamente sin feedback.
+// Este timeout convierte ese cuelgue en un error explícito con opción de reintentar.
+const PALLET_FETCH_TIMEOUT_MS = 20000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, timeoutMessage: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(timeoutMessage)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
 function buildPdfDownloadName(baseName: string): string {
   const now = new Date();
   const formattedDate = now.toLocaleDateString().replace(/\//g, '-');
@@ -95,14 +116,18 @@ export interface PalletTimelineResponse {
 
 export async function getPallet(palletId: number | string): Promise<unknown> {
   const token = await getAuthToken();
-  const response = await fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      'User-Agent': getUserAgent(),
-    },
-  });
+  const response = await withTimeout(
+    fetchWithTenant(`${API_URL_V2}pallets/${palletId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        'User-Agent': getUserAgent(),
+      },
+    }),
+    PALLET_FETCH_TIMEOUT_MS,
+    'La conexión está tardando demasiado. Comprueba tu red e inténtalo de nuevo.'
+  );
   if (!response.ok) {
     const errorData: { message?: string } = await response.json();
     throw new Error(getErrorMessage(errorData) || 'Error al obtener el palet');

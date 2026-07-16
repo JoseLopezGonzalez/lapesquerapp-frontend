@@ -156,95 +156,99 @@ export default function AddElementToPosition({ open }: { open: boolean }) {
     <Dialog open={open} onOpenChange={handleOnClose}>
       <DialogContent
         size="lg"
-        className="flex max-h-[90vh] flex-col max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:overflow-y-auto max-sm:rounded-none"
+        className="flex max-h-[90vh] flex-col overflow-hidden max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none"
       >
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle>Seleccionar pallets para posición {position}</DialogTitle>
           <DialogDescription>
             Seleccione uno o varios pallets de la lista para ubicarlos en esta posición.
           </DialogDescription>
         </DialogHeader>
 
-        {occupyingPallets.length > 0 && (
-          <div className="bg-muted/50 rounded-md border p-3 text-sm">
-            <p className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-xs font-medium">
-              <MapPin className="h-3.5 w-3.5" />
-              Esta posición ya tiene {occupyingPallets.length}{' '}
-              {occupyingPallets.length === 1 ? 'pallet ubicado' : 'pallets ubicados'}
-            </p>
-            <ul className="flex flex-col gap-1">
-              {occupyingPallets.map((occupyingPallet) => (
-                <li key={occupyingPallet.id} className="text-muted-foreground line-clamp-1">
-                  <span className="text-foreground font-medium">Pallet #{occupyingPallet.id}</span>
-                  {Array.isArray(occupyingPallet.products) &&
-                    occupyingPallet.products.length > 0 && (
-                      <>
-                        {' — '}
-                        {occupyingPallet.products.map((product) => product.name).join(', ')}
-                      </>
-                    )}
-                  {Array.isArray(occupyingPallet.lotNumbers) &&
-                    occupyingPallet.lotNumbers.length > 0 && (
-                      <> · Lotes: {occupyingPallet.lotNumbers.join(', ')}</>
-                    )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          {occupyingPallets.length > 0 && (
+            <div className="bg-muted/50 shrink-0 rounded-md border p-3 text-sm">
+              <p className="text-muted-foreground mb-1.5 flex items-center gap-1.5 text-xs font-medium">
+                <MapPin className="h-3.5 w-3.5" />
+                Esta posición ya tiene {occupyingPallets.length}{' '}
+                {occupyingPallets.length === 1 ? 'pallet ubicado' : 'pallets ubicados'}
+              </p>
+              <ul className="flex flex-col gap-1">
+                {occupyingPallets.map((occupyingPallet) => (
+                  <li key={occupyingPallet.id} className="text-muted-foreground line-clamp-1">
+                    <span className="text-foreground font-medium">
+                      Pallet #{occupyingPallet.id}
+                    </span>
+                    {Array.isArray(occupyingPallet.products) &&
+                      occupyingPallet.products.length > 0 && (
+                        <>
+                          {' — '}
+                          {occupyingPallet.products.map((product) => product.name).join(', ')}
+                        </>
+                      )}
+                    {Array.isArray(occupyingPallet.lotNumbers) &&
+                      occupyingPallet.lotNumbers.length > 0 && (
+                        <> · Lotes: {occupyingPallet.lotNumbers.join(', ')}</>
+                      )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-        <Tabs
-          defaultValue="unlocated"
-          className="w-full"
-          onValueChange={(value: string) => {
-            setActiveTab(value);
-            setSelectedPalletIds([]);
-          }}
-        >
-          <TabsList className="mb-4 grid w-full flex-1 grid-cols-2">
-            <TabsTrigger value="unlocated">Pallets sin ubicar</TabsTrigger>
-            <TabsTrigger value="all">Todos los pallets</TabsTrigger>
-          </TabsList>
+          <Tabs
+            defaultValue="unlocated"
+            className="flex min-h-0 flex-1 flex-col"
+            onValueChange={(value: string) => {
+              setActiveTab(value);
+              setSelectedPalletIds([]);
+            }}
+          >
+            <TabsList className="mb-4 grid w-full shrink-0 grid-cols-2">
+              <TabsTrigger value="unlocated">Pallets sin ubicar</TabsTrigger>
+              <TabsTrigger value="all">Todos los pallets</TabsTrigger>
+            </TabsList>
 
-          <div className="relative my-2">
-            <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-            <Input
-              placeholder="Buscar por ID, producto o lote..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-1 right-1 h-7 w-7"
-                onClick={() => setSearchQuery('')}
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Limpiar búsqueda</span>
-              </Button>
-            )}
-          </div>
+            <div className="relative my-2 shrink-0">
+              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+              <Input
+                placeholder="Buscar por ID, producto o lote..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-1 right-1 h-7 w-7"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">Limpiar búsqueda</span>
+                </Button>
+              )}
+            </div>
 
-          <TabsContent value="unlocated" className="m-0">
-            <PalletList
-              pallets={filteredPallets}
-              selectedPalletIds={selectedPalletIds}
-              togglePalletSelection={togglePalletSelection}
-            />
-          </TabsContent>
+            <TabsContent value="unlocated" className="m-0 flex min-h-0 flex-1 flex-col">
+              <PalletList
+                pallets={filteredPallets}
+                selectedPalletIds={selectedPalletIds}
+                togglePalletSelection={togglePalletSelection}
+              />
+            </TabsContent>
 
-          <TabsContent value="all" className="m-0">
-            <PalletList
-              pallets={filteredPallets}
-              selectedPalletIds={selectedPalletIds}
-              togglePalletSelection={togglePalletSelection}
-            />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="all" className="m-0 flex min-h-0 flex-1 flex-col">
+              <PalletList
+                pallets={filteredPallets}
+                selectedPalletIds={selectedPalletIds}
+                togglePalletSelection={togglePalletSelection}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
 
-        <DialogFooter className="mt-4">
+        <DialogFooter className="mt-4 shrink-0">
           <div className="text-muted-foreground mr-auto flex items-center text-sm">
             {selectedPalletIds.length > 0 && (
               <>
@@ -283,7 +287,7 @@ function PalletList({
   togglePalletSelection: (id: string | number) => void;
 }) {
   return (
-    <ScrollArea className="h-[50vh] py-3 pr-4">
+    <ScrollArea className="min-h-0 flex-1 py-3 pr-4">
       <div className="flex flex-col gap-3 py-1">
         {pallets.length > 0 ? (
           pallets.map((pallet) => {
