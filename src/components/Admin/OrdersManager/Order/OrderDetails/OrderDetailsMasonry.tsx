@@ -1,18 +1,9 @@
 'use client';
 
 import React from 'react';
-import {
-  Car,
-  Factory,
-  FileText,
-  MapPinned,
-  MessageSquareText,
-  Package,
-  TrendingUp,
-  type LucideIcon,
-} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { useOrderContext } from '@/context/OrderContext';
 import ProspectLocationMap from '@/components/Comercial/CRM/ProspectLocationMap';
 import {
@@ -26,9 +17,13 @@ import type { OrderDetailsData } from './index';
 
 /**
  * Rediseño experimental de la pestaña "Información" — layout masonry (CSS columns)
- * + filas compactas clave/valor, en vez de la grid fija de 2/3 columnas y los
- * bloques stat-tile del componente original. Tab momentánea de comparación
- * (GAP pendiente): no sustituye a OrderDetails/index.tsx.
+ * + filas compactas clave/valor, en vez de la grid fija de 2/3 columnas del
+ * componente original. Tab momentánea de comparación (GAP pendiente): no
+ * sustituye a OrderDetails/index.tsx.
+ *
+ * Cabeceras de card alineadas al patrón nativo ya usado en OrderAuxiliaryLines/
+ * OrderProduction: CardTitle (sub-escala text-lg, ver design-context.md §
+ * Typography) + descripción muted debajo, sin iconos ni separadores forzados.
  */
 
 const getNullableCurrency = (value: number | null | undefined) =>
@@ -39,22 +34,24 @@ const getNullableCurrencyPerKg = (value: number | null | undefined) =>
   value == null ? '—' : `${formatDecimal(value)} €/kg`;
 
 interface MasonryCardProps {
-  icon: LucideIcon;
   title: string;
-  badge?: React.ReactNode;
+  description?: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
 
-function MasonryCard({ icon: Icon, title, badge, children, className }: MasonryCardProps) {
+function MasonryCard({ title, description, action, children, className }: MasonryCardProps) {
   return (
-    <Card className={`mb-4 break-inside-avoid gap-3 ${className ?? ''}`}>
-      <CardHeader className="flex-row items-center justify-between border-b">
-        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-          <Icon className="text-muted-foreground size-4" strokeWidth={1.75} />
-          {title}
-        </CardTitle>
-        {badge}
+    <Card className={cn('mb-4 break-inside-avoid', className)}>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          {/* text-lg: sub-escala intencional para CardTitle de tarjeta dentro de un tab,
+              un escalón por debajo de text-xl (título de página/sección). Ver design-context.md § Typography */}
+          <CardTitle className="text-lg font-medium">{title}</CardTitle>
+          {description && <p className="text-muted-foreground mt-1 text-sm">{description}</p>}
+        </div>
+        {action}
       </CardHeader>
       <CardContent className="divide-border/60 divide-y">{children}</CardContent>
     </Card>
@@ -89,7 +86,7 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
   return (
     <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
       {/* Comercial */}
-      <MasonryCard icon={FileText} title="Comercial">
+      <MasonryCard title="Comercial" description="Vendedor, pago, incoterm y maquilador">
         <InfoRow label="Vendedor" value={order.salesperson?.name ?? '—'} />
         <InfoRow label="Repartidor" value={order.fieldOperator?.name ?? 'Sin repartidor'} />
         <InfoRow label="Forma de pago" value={order.paymentTerm?.name ?? '—'} />
@@ -103,10 +100,10 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
       {/* Rentabilidad — dato restringido por rol */}
       {canViewCostData && (
         <MasonryCard
-          icon={TrendingUp}
           title="Rentabilidad"
-          badge={
-            <Badge variant="outline" className="text-muted-foreground text-[10px]">
+          description="Coste y margen calculados del pedido"
+          action={
+            <Badge variant="outline" className="text-muted-foreground">
               Solo tu rol
             </Badge>
           }
@@ -126,7 +123,7 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
       )}
 
       {/* Resumen del pedido */}
-      <MasonryCard icon={Package} title="Resumen">
+      <MasonryCard title="Resumen" description="Peso, envasado e importe totales">
         <InfoRow
           label="Total productos"
           value={order.totalNetWeight ? formatDecimalWeight(order.totalNetWeight) : '—'}
@@ -156,7 +153,7 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
 
       {/* Detalle del maquilador */}
       {order.externalProcessor && (
-        <MasonryCard icon={Factory} title="Detalle del maquilador">
+        <MasonryCard title="Detalle del maquilador" description="Datos fiscales y de contacto">
           <InfoRow label="Nombre" value={order.externalProcessor.name ?? '—'} />
           {order.externalProcessor.vatNumber && (
             <InfoRow label="CIF" value={order.externalProcessor.vatNumber} />
@@ -194,12 +191,14 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
       )}
 
       {/* Dirección y transporte */}
-      <MasonryCard icon={MapPinned} title="Dirección de entrega">
-        <p className="text-sm font-medium whitespace-pre-line">{order.shippingAddress ?? '—'}</p>
+      <MasonryCard title="Dirección de entrega" description="Destino y transporte asignado">
+        <p className="py-2 text-sm font-medium whitespace-pre-line first:pt-0">
+          {order.shippingAddress ?? '—'}
+        </p>
         <InfoRow label="Transporte" value={order.transport?.name ?? '—'} />
         {((order.transport?.emails?.length ?? 0) > 0 ||
           (order.transport?.ccEmails?.length ?? 0) > 0) && (
-          <ul className="flex list-none flex-col gap-1 py-2">
+          <ul className="flex list-none flex-col gap-1 py-2 last:pb-0">
             {(order.transport?.emails ?? []).map((email) => (
               <li key={email} className="text-xs font-medium">
                 <a href={`mailto:${email}`} className="hover:underline">
@@ -223,16 +222,16 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
 
       {/* Observaciones de transporte */}
       {order.transportationNotes && (
-        <MasonryCard icon={MessageSquareText} title="Observaciones">
-          <p className="text-muted-foreground py-2 text-sm whitespace-pre-line">
+        <MasonryCard title="Observaciones">
+          <p className="text-muted-foreground py-2 text-sm whitespace-pre-line first:pt-0 last:pb-0">
             {order.transportationNotes}
           </p>
         </MasonryCard>
       )}
 
       {/* Matrículas */}
-      <MasonryCard icon={Car} title="Matrículas">
-        <div className="grid grid-cols-2 gap-2 py-2">
+      <MasonryCard title="Matrículas" description="Cabeza tractora y remolque">
+        <div className="grid grid-cols-2 gap-2 py-2 first:pt-0 last:pb-0">
           <div className="flex h-[32px] w-full items-center overflow-hidden rounded border border-black bg-blue-700 shadow-md dark:border-white">
             <div className="flex h-full items-center justify-center px-1 text-white">
               <div className="flex flex-col items-center gap-0.5 text-xs leading-none">

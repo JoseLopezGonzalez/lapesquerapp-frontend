@@ -49,6 +49,8 @@ export interface OrderSectionConfig {
   mobileTier?: 1 | 2;
   /** Sublabel mostrado en la grid móvil cuando la sección no tiene un dato dinámico calculado */
   mobileDefaultSublabel?: string;
+  /** Tab visible directamente en la barra desktop. Si es false/undefined, vive dentro del dropdown "Más" */
+  desktopPrimary?: boolean;
 }
 
 export const SECTIONS_CONFIG: OrderSectionConfig[] = [
@@ -58,6 +60,7 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     component: OrderDetails,
     icon: Info,
     mobileDefaultSublabel: 'Datos generales',
+    desktopPrimary: true,
   },
   {
     id: 'products',
@@ -74,6 +77,7 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     lazy: true,
     icon: ListCollapse,
     mobileTier: 1,
+    desktopPrimary: true,
   },
   {
     id: 'auxiliary',
@@ -90,6 +94,7 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     lazy: true,
     icon: ChartColumn,
     mobileDefaultSublabel: 'Rentabilidad del pedido',
+    desktopPrimary: true,
   },
   {
     id: 'production',
@@ -98,6 +103,7 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     lazy: true,
     icon: Factory,
     mobileTier: 1,
+    desktopPrimary: true,
   },
   {
     id: 'pallets',
@@ -106,6 +112,7 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     lazy: true,
     icon: Package,
     mobileTier: 1,
+    desktopPrimary: true,
   },
   {
     id: 'labels',

@@ -4,7 +4,13 @@ import { Fragment, lazy, Suspense, useCallback, useEffect, useRef, useState } fr
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { LayoutGrid } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ChevronDown, LayoutGrid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SECTIONS_CONFIG } from '../config/sectionsConfig';
 
@@ -52,6 +58,9 @@ export default function OrderTabsDesktop({
 }: OrderTabsDesktopProps) {
   // Secciones bloqueadas para comercial cuando el pedido está en curso
   const allowedSections = SECTIONS_CONFIG.filter((section) => !blockedTabIds.includes(section.id));
+  const primarySections = allowedSections.filter((section) => section.desktopPrimary);
+  const overflowSections = allowedSections.filter((section) => !section.desktopPrimary);
+  const isOverflowActive = overflowSections.some((section) => section.id === activeTab);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -102,7 +111,7 @@ export default function OrderTabsDesktop({
             />
             <div ref={scrollRef} className="flex justify-start overflow-x-auto">
               <TabsList className="w-fit flex-nowrap">
-                {allowedSections.map((section) => (
+                {primarySections.map((section) => (
                   <Fragment key={section.id}>
                     <TabsTrigger value={section.id}>
                       {TAB_LABELS[section.id] ?? section.title}
@@ -118,6 +127,37 @@ export default function OrderTabsDesktop({
                     )}
                   </Fragment>
                 ))}
+                {overflowSections.length > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className={cn(
+                          'text-foreground/60 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring dark:text-muted-foreground dark:hover:text-foreground relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap transition-all focus-visible:ring-[3px] focus-visible:outline-1',
+                          isOverflowActive &&
+                            'bg-background text-foreground dark:border-input dark:bg-input/30 shadow-sm'
+                        )}
+                      >
+                        Más
+                        <ChevronDown className="size-3.5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {overflowSections.map((section) => (
+                        <DropdownMenuItem
+                          key={section.id}
+                          onSelect={() => onTabChange(section.id)}
+                          className={cn(
+                            activeTab === section.id && 'bg-accent text-accent-foreground'
+                          )}
+                        >
+                          <section.icon className="size-4" />
+                          {TAB_LABELS[section.id] ?? section.title}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </TabsList>
             </div>
           </div>
