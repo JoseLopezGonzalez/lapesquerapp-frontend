@@ -22,7 +22,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-interface ExternalProcessor {
+export interface ExternalProcessor {
   id?: number | string;
   name?: string;
   vatNumber?: string;
@@ -37,20 +37,20 @@ interface ExternalProcessor {
   [key: string]: unknown;
 }
 
-interface OrderIncoterm {
+export interface OrderIncoterm {
   code?: string;
   description?: string;
   [key: string]: unknown;
 }
 
-interface OrderTransport {
+export interface OrderTransport {
   name?: string;
   emails?: string[];
   ccEmails?: string[];
   [key: string]: unknown;
 }
 
-interface Order {
+export interface OrderDetailsData {
   salesperson?: { name?: string } | null;
   fieldOperator?: { name?: string } | null;
   paymentTerm?: { name?: string } | null;
@@ -90,7 +90,7 @@ interface OrderDetailsProps {
 }
 
 const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
-  const { order } = useOrderContext() as { order: Order };
+  const { order } = useOrderContext() as { order: OrderDetailsData };
   const { isMobile, mounted } = useIsMobileSafe();
 
   if (!mounted) return null;

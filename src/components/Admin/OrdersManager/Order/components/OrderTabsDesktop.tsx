@@ -1,10 +1,21 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { LayoutGrid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SECTIONS_CONFIG } from '../config/sectionsConfig';
+
+const OrderDetailsMasonry = lazy(() => import('../OrderDetails/OrderDetailsMasonry'));
+
+/**
+ * Tab temporal de comparación de diseño para "Información" (masonry, GAP pendiente).
+ * No forma parte de SECTIONS_CONFIG a propósito: es solo para revisión desktop y
+ * no debe aparecer en la grid/overflow mobile.
+ */
+const DETAILS_BETA_TAB_ID = 'details-beta';
 
 const TAB_LABELS: Record<string, string> = {
   details: 'Información',
@@ -92,9 +103,20 @@ export default function OrderTabsDesktop({
             <div ref={scrollRef} className="flex justify-start overflow-x-auto">
               <TabsList className="w-fit flex-nowrap">
                 {allowedSections.map((section) => (
-                  <TabsTrigger key={section.id} value={section.id}>
-                    {TAB_LABELS[section.id] ?? section.title}
-                  </TabsTrigger>
+                  <Fragment key={section.id}>
+                    <TabsTrigger value={section.id}>
+                      {TAB_LABELS[section.id] ?? section.title}
+                    </TabsTrigger>
+                    {section.id === 'details' && (
+                      <TabsTrigger value={DETAILS_BETA_TAB_ID} className="gap-1.5">
+                        <LayoutGrid className="size-3.5" />
+                        Información
+                        <Badge variant="outline" className="h-4 px-1 text-[10px]">
+                          Beta
+                        </Badge>
+                      </TabsTrigger>
+                    )}
+                  </Fragment>
                 ))}
               </TabsList>
             </div>
@@ -128,15 +150,27 @@ export default function OrderTabsDesktop({
                   : { canViewCostData };
 
               return (
-                <TabsContent key={section.id} value={section.id} className={tabClass}>
-                  {isLazy ? (
-                    <Suspense fallback={<Skeleton className="h-64 w-full rounded-lg" />}>
+                <Fragment key={section.id}>
+                  <TabsContent value={section.id} className={tabClass}>
+                    {isLazy ? (
+                      <Suspense fallback={<Skeleton className="h-64 w-full rounded-lg" />}>
+                        <Component {...componentProps} />
+                      </Suspense>
+                    ) : (
                       <Component {...componentProps} />
-                    </Suspense>
-                  ) : (
-                    <Component {...componentProps} />
+                    )}
+                  </TabsContent>
+                  {section.id === 'details' && (
+                    <TabsContent
+                      value={DETAILS_BETA_TAB_ID}
+                      className="flex h-full w-full flex-col gap-4 overflow-y-auto"
+                    >
+                      <Suspense fallback={<Skeleton className="h-64 w-full rounded-lg" />}>
+                        <OrderDetailsMasonry canViewCostData={canViewCostData} />
+                      </Suspense>
+                    </TabsContent>
                   )}
-                </TabsContent>
+                </Fragment>
               );
             })}
           </div>
