@@ -95,20 +95,16 @@ const getNullableCurrencyPerKg = (value: number | null | undefined) =>
 interface MasonryCardProps {
   title: string;
   description?: string;
-  action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
 
-function MasonryCard({ title, description, action, children, className }: MasonryCardProps) {
+function MasonryCard({ title, description, children, className }: MasonryCardProps) {
   return (
     <Card className={cn('mb-4 break-inside-avoid', className)}>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>{title}</CardTitle>
-          {description && <p className="text-muted-foreground mt-1 text-sm">{description}</p>}
-        </div>
-        {action}
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        {description && <p className="text-muted-foreground mt-1 text-sm">{description}</p>}
       </CardHeader>
       <CardContent className="divide-border/60 divide-y">{children}</CardContent>
     </Card>
@@ -419,31 +415,48 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
     );
   }
 
+  const hasAuxiliarySubtotal = !!order.auxiliarySubtotal;
+  const hasAuxiliaryTotal = !!order.auxiliaryTotal;
+  const hasTransportContacts =
+    (order.transport?.emails?.length ?? 0) > 0 || (order.transport?.ccEmails?.length ?? 0) > 0;
+  const hasTransportData = !!order.transport?.name || hasTransportContacts;
+
   return (
     <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
+      {/* Mapa */}
+      <Card className="mb-4 break-inside-avoid overflow-hidden py-0">
+        <CardContent className="grid p-0">
+          <div className="map-container">
+            <ProspectLocationMap
+              address={order?.shippingAddress ?? ''}
+              companyName={(order?.customer as { name?: string } | undefined)?.name}
+              minHeightClassName="min-h-[270px]"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Comercial */}
       <MasonryCard title="Comercial" description="Vendedor, pago, incoterm y maquilador">
         <InfoRow label="Vendedor" value={order.salesperson?.name ?? '—'} />
-        <InfoRow label="Repartidor" value={order.fieldOperator?.name ?? 'Sin repartidor'} />
+        {order.fieldOperator && (
+          <InfoRow label="Repartidor" value={order.fieldOperator.name ?? '—'} />
+        )}
         <InfoRow label="Forma de pago" value={order.paymentTerm?.name ?? '—'} />
-        <InfoRow
-          label="Incoterm"
-          value={order.incoterm ? `${order.incoterm.code} - ${order.incoterm.description}` : '—'}
-        />
-        <InfoRow label="Maquilador" value={order.externalProcessor?.name ?? 'Sin maquilador'} />
+        {order.incoterm && (
+          <InfoRow
+            label="Incoterm"
+            value={`${order.incoterm.code} - ${order.incoterm.description}`}
+          />
+        )}
+        {order.externalProcessor && (
+          <InfoRow label="Maquilador" value={order.externalProcessor.name ?? '—'} />
+        )}
       </MasonryCard>
 
       {/* Rentabilidad — dato restringido por rol */}
       {canViewCostData && (
-        <MasonryCard
-          title="Rentabilidad"
-          description="Coste y margen calculados del pedido"
-          action={
-            <Badge variant="outline" className="text-muted-foreground">
-              Solo tu rol
-            </Badge>
-          }
-        >
+        <MasonryCard title="Rentabilidad" description="Coste y margen calculados del pedido">
           <InfoRow
             label="Coste total"
             value={getNullableCurrency(order.totalCost)}
@@ -477,14 +490,18 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
           value={getNullableCurrency(order.totalAmount)}
           sub={getNullableCurrencyPerKg(order.revenuePerKg)}
         />
-        <InfoRow
-          label="Otros artículos (subtotal)"
-          value={getNullableCurrency(order.auxiliarySubtotal)}
-        />
-        <InfoRow
-          label="Otros artículos (total)"
-          value={getNullableCurrency(order.auxiliaryTotal)}
-        />
+        {hasAuxiliarySubtotal && (
+          <InfoRow
+            label="Otros artículos (subtotal)"
+            value={getNullableCurrency(order.auxiliarySubtotal)}
+          />
+        )}
+        {hasAuxiliaryTotal && (
+          <InfoRow
+            label="Otros artículos (total)"
+            value={getNullableCurrency(order.auxiliaryTotal)}
+          />
+        )}
       </MasonryCard>
 
       {/* Detalle del maquilador */}
@@ -527,20 +544,22 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
       )}
 
       {/* Dirección de entrega */}
-      <MasonryCard title="Dirección de entrega" description="Destino de la mercancía">
-        <p className="py-2 text-sm font-medium whitespace-pre-line first:pt-0 last:pb-0">
-          {order.shippingAddress ?? '—'}
-        </p>
-      </MasonryCard>
+      {order.shippingAddress && (
+        <MasonryCard title="Dirección de entrega" description="Destino de la mercancía">
+          <p className="py-2 text-sm font-medium whitespace-pre-line first:pt-0 last:pb-0">
+            {order.shippingAddress}
+          </p>
+        </MasonryCard>
+      )}
 
       {/* Transporte */}
-      <MasonryCard title="Transporte" description="Transportista y contacto asignado">
-        <InfoRow label="Transportista" value={order.transport?.name ?? '—'} />
-        {((order.transport?.emails?.length ?? 0) > 0 ||
-          (order.transport?.ccEmails?.length ?? 0) > 0) && (
-          <div className="py-2 last:pb-0">
-            <div className="text-muted-foreground text-sm">Contacto</div>
-            <ul className="mt-1 flex list-none flex-col gap-1">
+      {hasTransportData && (
+        <MasonryCard title="Transporte" description="Transportista y contacto asignado">
+          <p className="py-2 text-sm font-medium first:pt-0 last:pb-0">
+            {order.transport?.name ?? '—'}
+          </p>
+          {hasTransportContacts && (
+            <ul className="flex list-none flex-col gap-1 py-2 last:pb-0">
               {(order.transport?.emails ?? []).map((email) => (
                 <li key={email} className="text-xs font-medium">
                   <a href={`mailto:${email}`} className="hover:underline">
@@ -559,9 +578,9 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-      </MasonryCard>
+          )}
+        </MasonryCard>
+      )}
 
       {/* Observaciones de transporte */}
       {order.transportationNotes && (
@@ -606,19 +625,6 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
           </div>
         </div>
       </MasonryCard>
-
-      {/* Mapa */}
-      <Card className="mb-4 break-inside-avoid overflow-hidden py-0">
-        <CardContent className="grid p-0">
-          <div className="map-container">
-            <ProspectLocationMap
-              address={order?.shippingAddress ?? ''}
-              companyName={(order?.customer as { name?: string } | undefined)?.name}
-              minHeightClassName="min-h-[270px]"
-            />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
