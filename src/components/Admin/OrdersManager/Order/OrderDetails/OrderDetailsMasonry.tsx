@@ -2,22 +2,17 @@
 
 import React from 'react';
 import {
-  Banknote,
   Car,
   Factory,
+  FileText,
   MapPinned,
   MessageSquareText,
   Package,
-  ScrollText,
-  Ship,
   TrendingUp,
-  Truck,
-  UserRound,
   type LucideIcon,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useOrderContext } from '@/context/OrderContext';
 import ProspectLocationMap from '@/components/Comercial/CRM/ProspectLocationMap';
 import {
@@ -31,8 +26,9 @@ import type { OrderDetailsData } from './index';
 
 /**
  * Rediseño experimental de la pestaña "Información" — layout masonry (CSS columns)
- * en vez de la grid fija de 2/3 columnas del componente original. Tab momentánea
- * de comparación (GAP pendiente): no sustituye a OrderDetails/index.tsx.
+ * + filas compactas clave/valor, en vez de la grid fija de 2/3 columnas y los
+ * bloques stat-tile del componente original. Tab momentánea de comparación
+ * (GAP pendiente): no sustituye a OrderDetails/index.tsx.
  */
 
 const getNullableCurrency = (value: number | null | undefined) =>
@@ -48,65 +44,37 @@ interface MasonryCardProps {
   badge?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
-  contentClassName?: string;
 }
 
-function MasonryCard({
-  icon: Icon,
-  title,
-  badge,
-  children,
-  className,
-  contentClassName,
-}: MasonryCardProps) {
+function MasonryCard({ icon: Icon, title, badge, children, className }: MasonryCardProps) {
   return (
-    <Card className={`mb-4 break-inside-avoid ${className ?? ''}`}>
-      <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle className="flex items-center gap-2 text-lg font-medium">
-          <div className="bg-muted flex size-8 shrink-0 items-center justify-center rounded-lg">
-            <Icon className="text-muted-foreground size-4" />
-          </div>
+    <Card className={`mb-4 break-inside-avoid gap-3 ${className ?? ''}`}>
+      <CardHeader className="flex-row items-center justify-between border-b">
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <Icon className="text-muted-foreground size-4" strokeWidth={1.75} />
           {title}
         </CardTitle>
         {badge}
       </CardHeader>
-      <CardContent className={`grid gap-3 ${contentClassName ?? ''}`}>{children}</CardContent>
+      <CardContent className="divide-border/60 divide-y">{children}</CardContent>
     </Card>
   );
 }
 
 interface InfoRowProps {
-  icon: LucideIcon;
-  label: string;
-  value: React.ReactNode;
-  hint?: React.ReactNode;
-}
-
-function InfoRow({ icon: Icon, label, value, hint }: InfoRowProps) {
-  return (
-    <div className="flex items-start gap-3">
-      <Icon className="text-muted-foreground mt-0.5 size-4 shrink-0" />
-      <div className="min-w-0 flex-1">
-        <div className="text-muted-foreground text-xs">{label}</div>
-        <div className="truncate text-sm font-medium">{value}</div>
-        {hint && <div className="text-muted-foreground mt-0.5 text-xs">{hint}</div>}
-      </div>
-    </div>
-  );
-}
-
-interface StatTileProps {
   label: string;
   value: React.ReactNode;
   sub?: React.ReactNode;
 }
 
-function StatTile({ label, value, sub }: StatTileProps) {
+function InfoRow({ label, value, sub }: InfoRowProps) {
   return (
-    <div className="bg-muted/40 rounded-lg border p-3">
-      <div className="text-muted-foreground text-xs">{label}</div>
-      <div className="mt-1 text-base font-semibold tabular-nums">{value}</div>
-      {sub && <div className="text-muted-foreground mt-0.5 text-xs">{sub}</div>}
+    <div className="flex items-baseline justify-between gap-3 py-2 first:pt-0 last:pb-0">
+      <span className="text-muted-foreground shrink-0 text-sm">{label}</span>
+      <span className="flex min-w-0 items-baseline gap-2 text-right">
+        <span className="truncate text-sm font-semibold">{value}</span>
+        {sub && <span className="text-muted-foreground shrink-0 text-xs">{sub}</span>}
+      </span>
     </div>
   );
 }
@@ -120,88 +88,17 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
 
   return (
     <div className="columns-1 gap-4 sm:columns-2 xl:columns-3">
-      {/* Vendedor y repartidor */}
-      <MasonryCard icon={UserRound} title="Vendedor y reparto">
-        <InfoRow icon={UserRound} label="Vendedor" value={order.salesperson?.name ?? '—'} />
-        <Separator />
+      {/* Comercial */}
+      <MasonryCard icon={FileText} title="Comercial">
+        <InfoRow label="Vendedor" value={order.salesperson?.name ?? '—'} />
+        <InfoRow label="Repartidor" value={order.fieldOperator?.name ?? 'Sin repartidor'} />
+        <InfoRow label="Forma de pago" value={order.paymentTerm?.name ?? '—'} />
         <InfoRow
-          icon={Truck}
-          label="Repartidor"
-          value={order.fieldOperator?.name ?? 'Sin repartidor'}
-        />
-      </MasonryCard>
-
-      {/* Condiciones comerciales */}
-      <MasonryCard icon={Banknote} title="Condiciones comerciales">
-        <InfoRow icon={Banknote} label="Forma de pago" value={order.paymentTerm?.name ?? '—'} />
-        <Separator />
-        <InfoRow
-          icon={Ship}
           label="Incoterm"
-          value={
-            order.incoterm ? (
-              <span className="flex items-center gap-2">
-                <Badge variant="outline">{order.incoterm.code}</Badge>
-                <span className="text-muted-foreground truncate text-xs font-normal">
-                  {order.incoterm.description}
-                </span>
-              </span>
-            ) : (
-              '—'
-            )
-          }
+          value={order.incoterm ? `${order.incoterm.code} - ${order.incoterm.description}` : '—'}
         />
+        <InfoRow label="Maquilador" value={order.externalProcessor?.name ?? 'Sin maquilador'} />
       </MasonryCard>
-
-      {/* Maquilador */}
-      {order.externalProcessor && (
-        <MasonryCard icon={Factory} title="Maquilador">
-          <InfoRow
-            icon={Factory}
-            label="Nombre"
-            value={order.externalProcessor.name}
-            hint={order.externalProcessor.vatNumber}
-          />
-          {order.externalProcessor.sanitaryRegistrationNumber && (
-            <InfoRow
-              icon={ScrollText}
-              label="Registro sanitario"
-              value={order.externalProcessor.sanitaryRegistrationNumber}
-            />
-          )}
-          {order.externalProcessor.contactPerson && (
-            <InfoRow
-              icon={UserRound}
-              label="Contacto"
-              value={order.externalProcessor.contactPerson}
-              hint={order.externalProcessor.phone}
-            />
-          )}
-          <Separator />
-          <InfoRow
-            icon={MapPinned}
-            label="Destino en sus docs"
-            value={
-              order.maquiladorDestination ?? (
-                <span className="text-muted-foreground text-xs font-normal italic">
-                  No configurado
-                </span>
-              )
-            }
-          />
-          <InfoRow
-            icon={MapPinned}
-            label="Lugar de carga"
-            value={
-              order.loadingAddress ?? (
-                <span className="text-muted-foreground text-xs font-normal italic">
-                  No configurado
-                </span>
-              )
-            }
-          />
-        </MasonryCard>
-      )}
 
       {/* Rentabilidad — dato restringido por rol */}
       {canViewCostData && (
@@ -209,65 +106,100 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
           icon={TrendingUp}
           title="Rentabilidad"
           badge={
-            <Badge variant="outline" className="text-muted-foreground">
+            <Badge variant="outline" className="text-muted-foreground text-[10px]">
               Solo tu rol
             </Badge>
           }
-          contentClassName="grid-cols-2"
         >
-          <StatTile
+          <InfoRow
             label="Coste total"
             value={getNullableCurrency(order.totalCost)}
-            sub={
-              order.totalCost == null
-                ? 'Sin coste calculable'
-                : getNullableCurrencyPerKg(order.costPerKg)
-            }
+            sub={order.totalCost == null ? 'Sin coste' : getNullableCurrencyPerKg(order.costPerKg)}
           />
-          <StatTile
+          <InfoRow
             label="Margen bruto"
             value={getNullableCurrency(order.grossMargin)}
             sub={getNullableCurrencyPerKg(order.marginPerKg)}
           />
-          <StatTile label="Margen %" value={getNullablePercentage(order.marginPercentage)} />
+          <InfoRow label="Margen %" value={getNullablePercentage(order.marginPercentage)} />
         </MasonryCard>
       )}
 
       {/* Resumen del pedido */}
-      <MasonryCard icon={Package} title="Resumen del pedido" contentClassName="grid-cols-2">
-        <StatTile
-          label="Total producto"
+      <MasonryCard icon={Package} title="Resumen">
+        <InfoRow
+          label="Total productos"
           value={order.totalNetWeight ? formatDecimalWeight(order.totalNetWeight) : '—'}
         />
-        <StatTile
-          label="Envasado"
-          value={order.totalBoxes ? `${formatInteger(order.totalBoxes)} cajas` : '—'}
-          sub={order.totalBoxes ? `${order.numberOfPallets} palets` : undefined}
+        <InfoRow
+          label="Unidades de envasado"
+          value={
+            order.totalBoxes
+              ? `${formatInteger(order.totalBoxes)} cajas (${order.numberOfPallets} palets)`
+              : '—'
+          }
         />
-        <StatTile
+        <InfoRow
           label="Importe"
           value={getNullableCurrency(order.totalAmount)}
           sub={getNullableCurrencyPerKg(order.revenuePerKg)}
         />
-        <StatTile
-          label="Otros artículos"
+        <InfoRow
+          label="Otros artículos (subtotal)"
+          value={getNullableCurrency(order.auxiliarySubtotal)}
+        />
+        <InfoRow
+          label="Otros artículos (total)"
           value={getNullableCurrency(order.auxiliaryTotal)}
-          sub={
-            order.auxiliarySubtotal != null
-              ? `Subtotal ${getNullableCurrency(order.auxiliarySubtotal)}`
-              : undefined
-          }
         />
       </MasonryCard>
+
+      {/* Detalle del maquilador */}
+      {order.externalProcessor && (
+        <MasonryCard icon={Factory} title="Detalle del maquilador">
+          <InfoRow label="Nombre" value={order.externalProcessor.name ?? '—'} />
+          {order.externalProcessor.vatNumber && (
+            <InfoRow label="CIF" value={order.externalProcessor.vatNumber} />
+          )}
+          {order.externalProcessor.sanitaryRegistrationNumber && (
+            <InfoRow
+              label="Registro sanitario"
+              value={order.externalProcessor.sanitaryRegistrationNumber}
+            />
+          )}
+          {order.externalProcessor.contactPerson && (
+            <InfoRow
+              label="Contacto"
+              value={order.externalProcessor.contactPerson}
+              sub={order.externalProcessor.phone}
+            />
+          )}
+          <InfoRow
+            label="Destino en sus docs"
+            value={
+              order.maquiladorDestination ?? (
+                <span className="text-muted-foreground font-normal italic">No configurado</span>
+              )
+            }
+          />
+          <InfoRow
+            label="Lugar de carga"
+            value={
+              order.loadingAddress ?? (
+                <span className="text-muted-foreground font-normal italic">No configurado</span>
+              )
+            }
+          />
+        </MasonryCard>
+      )}
 
       {/* Dirección y transporte */}
       <MasonryCard icon={MapPinned} title="Dirección de entrega">
         <p className="text-sm font-medium whitespace-pre-line">{order.shippingAddress ?? '—'}</p>
-        <Separator />
-        <InfoRow icon={Truck} label="Transporte" value={order.transport?.name ?? '—'} />
+        <InfoRow label="Transporte" value={order.transport?.name ?? '—'} />
         {((order.transport?.emails?.length ?? 0) > 0 ||
           (order.transport?.ccEmails?.length ?? 0) > 0) && (
-          <ul className="ml-7 flex list-none flex-col gap-1">
+          <ul className="flex list-none flex-col gap-1 py-2">
             {(order.transport?.emails ?? []).map((email) => (
               <li key={email} className="text-xs font-medium">
                 <a href={`mailto:${email}`} className="hover:underline">
@@ -292,7 +224,7 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
       {/* Observaciones de transporte */}
       {order.transportationNotes && (
         <MasonryCard icon={MessageSquareText} title="Observaciones">
-          <p className="text-muted-foreground text-sm whitespace-pre-line">
+          <p className="text-muted-foreground py-2 text-sm whitespace-pre-line">
             {order.transportationNotes}
           </p>
         </MasonryCard>
@@ -300,7 +232,7 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
 
       {/* Matrículas */}
       <MasonryCard icon={Car} title="Matrículas">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 py-2">
           <div className="flex h-[32px] w-full items-center overflow-hidden rounded border border-black bg-blue-700 shadow-md dark:border-white">
             <div className="flex h-full items-center justify-center px-1 text-white">
               <div className="flex flex-col items-center gap-0.5 text-xs leading-none">
@@ -334,7 +266,7 @@ const OrderDetailsMasonry = ({ canViewCostData = true }: OrderDetailsMasonryProp
       </MasonryCard>
 
       {/* Mapa */}
-      <Card className="mb-4 break-inside-avoid overflow-hidden">
+      <Card className="mb-4 break-inside-avoid overflow-hidden py-0">
         <CardContent className="grid p-0">
           <div className="map-container">
             <ProspectLocationMap

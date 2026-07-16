@@ -335,7 +335,7 @@ const initialFormGroups: FormGroup[] = [
         rules: { maxLength: { value: 500, message: 'Máximo 500 caracteres' } },
         props: {
           placeholder: 'Notas para contabilidad...',
-          className: 'min-h-[200px]',
+          className: 'min-h-[100px]',
           rows: 4,
         },
       },
