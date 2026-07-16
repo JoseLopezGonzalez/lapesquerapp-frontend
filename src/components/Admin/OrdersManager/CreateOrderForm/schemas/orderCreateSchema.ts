@@ -58,9 +58,6 @@ export const orderCreateSchema = z.object({
   ccEmails: z.array(z.string().email('Correo inválido')),
   plannedProducts: z.array(plannedProductSchema),
   auxiliaryLines: z.array(auxiliaryLineSchema),
-}).refine((data) => data.plannedProducts.length > 0 || data.auxiliaryLines.length > 0, {
-  message: 'Añade al menos un producto previsto o un artículo auxiliar',
-  path: ['plannedProducts'],
 });
 
 export type OrderCreateFormData = z.input<typeof orderCreateSchema>;

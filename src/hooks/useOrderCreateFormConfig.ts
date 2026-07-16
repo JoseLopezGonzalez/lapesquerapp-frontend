@@ -188,7 +188,6 @@ const initialFormGroups: FormGroup[] = [
         name: 'maquiladorDestination',
         label: 'Destino para docs del maquilador',
         component: 'Textarea',
-        colSpan: 'col-span-2',
         props: {
           placeholder: 'ej. Cliente Nº1, Olano Italia — aparecerá en CMR y letreros del maquilador',
           rows: 2,
@@ -199,7 +198,6 @@ const initialFormGroups: FormGroup[] = [
         name: 'loadingAddress',
         label: 'Lugar de carga',
         component: 'Textarea',
-        colSpan: 'col-span-2',
         props: {
           placeholder:
             'ej. Polígono Industrial, nave 4. Vigo (Pontevedra) — se auto-rellena con la dirección del maquilador',
@@ -282,7 +280,7 @@ const initialFormGroups: FormGroup[] = [
   },
   {
     group: 'Observaciones',
-    grid: 'grid-cols-1 gap-4',
+    grid: 'grid-cols-2 gap-4',
     fields: [
       {
         name: 'productionNotes',

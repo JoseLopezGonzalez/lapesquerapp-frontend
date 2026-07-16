@@ -391,7 +391,9 @@ const OrdersList = ({
                       onClick={() => onClickOrderCard(order.id)}
                       order={order}
                       disabled={disabled}
-                      isSelected={selectedOrderId === order.id}
+                      isSelected={
+                        selectedOrderId != null && String(selectedOrderId) === String(order.id)
+                      }
                     />
                   </div>
                 ))}

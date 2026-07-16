@@ -315,7 +315,7 @@ const initialFormGroups: FormGroup[] = [
   {
     group: 'Observaciones',
     description: 'Notas para producción y contabilidad.',
-    grid: 'grid-cols-1 gap-4',
+    grid: 'grid-cols-2 gap-4',
     fields: [
       {
         name: 'productionNotes',

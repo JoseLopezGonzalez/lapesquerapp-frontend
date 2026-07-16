@@ -284,7 +284,7 @@ function AttachmentCard({
   const isImage = attachment.collection === 'order_image';
 
   return (
-    <div className="group bg-card relative overflow-hidden rounded-lg border shadow-sm transition-shadow hover:shadow-md">
+    <div className="group bg-card relative overflow-hidden rounded-lg border">
       <div className="relative cursor-pointer" onClick={onPreviewClick}>
         {isImage ? (
           <ImageCardFace orderId={orderId} attachment={attachment} />

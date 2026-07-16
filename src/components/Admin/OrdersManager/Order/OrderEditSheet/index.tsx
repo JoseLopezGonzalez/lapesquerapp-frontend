@@ -120,6 +120,10 @@ const OrderEditSheet = ({
     mode: 'onChange',
   });
   const watchedFormValues = useWatch({ control });
+  const selectedExternalProcessorId = (watchedFormValues as Record<string, unknown> | undefined)
+    ?.externalProcessor;
+  const isMaquiladorField = (fieldName: string) =>
+    fieldName === 'maquiladorDestination' || fieldName === 'loadingAddress';
 
   // Resetear el formulario a los valores del pedido cuando se abre el Sheet
   useEffect(() => {
@@ -495,10 +499,7 @@ const OrderEditSheet = ({
     <Sheet open={open} onOpenChange={handleSheetOpenChange}>
       {!isControlled && (
         <SheetTrigger asChild>
-          <Button
-            variant={isMobile ? 'default' : 'outline'}
-            className={isMobile ? 'min-h-[44px] flex-1' : ''}
-          >
+          <Button variant="default" className={isMobile ? 'min-h-[44px] flex-1' : ''}>
             <Edit />
             Editar
           </Button>
@@ -649,34 +650,40 @@ const OrderEditSheet = ({
                       <AccordionContent className="pb-5">
                         <FieldSet className="w-full">
                           <FieldGroup className="grid w-full grid-cols-1 gap-4">
-                            {group.fields.map((field) => {
-                              const hasError = errors[field.name as keyof typeof errors];
-                              return (
-                                <div key={field.name} className="grid w-full min-w-0 gap-2">
-                                  <Label htmlFor={field.name} className="text-sm">
-                                    {field.label}
-                                  </Label>
-                                  <div
-                                    className={cn(
-                                      field.component === 'DatePicker' &&
-                                        'w-full [&_button]:size-8 [&_input]:h-11 [&_input]:text-sm',
-                                      field.component === 'emailList' &&
-                                        '[&_input]:text-sm [&>div>div]:min-h-11',
-                                      field.component === 'DatePicker' &&
-                                        hasError &&
-                                        'border-destructive rounded-md border'
+                            {group.fields
+                              .filter(
+                                (field) =>
+                                  !isMaquiladorField(field.name) ||
+                                  Boolean(selectedExternalProcessorId)
+                              )
+                              .map((field) => {
+                                const hasError = errors[field.name as keyof typeof errors];
+                                return (
+                                  <div key={field.name} className="grid w-full min-w-0 gap-2">
+                                    <Label htmlFor={field.name} className="text-sm">
+                                      {field.label}
+                                    </Label>
+                                    <div
+                                      className={cn(
+                                        field.component === 'DatePicker' &&
+                                          'w-full [&_button]:size-8 [&_input]:h-11 [&_input]:text-sm',
+                                        field.component === 'emailList' &&
+                                          '[&_input]:text-sm [&>div>div]:min-h-11',
+                                        field.component === 'DatePicker' &&
+                                          hasError &&
+                                          'border-destructive rounded-md border'
+                                      )}
+                                    >
+                                      {renderField(field, !!hasError)}
+                                    </div>
+                                    {hasError && (
+                                      <p className="pt-1 text-xs text-red-400">
+                                        * {hasError.message as string}
+                                      </p>
                                     )}
-                                  >
-                                    {renderField(field, !!hasError)}
                                   </div>
-                                  {hasError && (
-                                    <p className="pt-1 text-xs text-red-400">
-                                      * {hasError.message as string}
-                                    </p>
-                                  )}
-                                </div>
-                              );
-                            })}
+                                );
+                              })}
                           </FieldGroup>
                         </FieldSet>
                       </AccordionContent>
@@ -696,31 +703,36 @@ const OrderEditSheet = ({
                       <FieldGroup
                         className={`grid w-full py-4 ${group.grid || 'grid-cols-1 gap-4'}`}
                       >
-                        {group.fields.map((field) => {
-                          const hasError = errors[field.name as keyof typeof errors];
-                          return (
-                            <div
-                              key={field.name}
-                              className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
-                            >
-                              <Label htmlFor={field.name}>{field.label}</Label>
+                        {group.fields
+                          .filter(
+                            (field) =>
+                              !isMaquiladorField(field.name) || Boolean(selectedExternalProcessorId)
+                          )
+                          .map((field) => {
+                            const hasError = errors[field.name as keyof typeof errors];
+                            return (
                               <div
-                                className={cn(
-                                  field.component === 'DatePicker' &&
-                                    hasError &&
-                                    'border-destructive rounded-md border'
-                                )}
+                                key={field.name}
+                                className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
                               >
-                                {renderField(field, !!hasError)}
+                                <Label htmlFor={field.name}>{field.label}</Label>
+                                <div
+                                  className={cn(
+                                    field.component === 'DatePicker' &&
+                                      hasError &&
+                                      'border-destructive rounded-md border'
+                                  )}
+                                >
+                                  {renderField(field, !!hasError)}
+                                </div>
+                                {hasError && (
+                                  <p className="pt-1 text-xs text-red-400">
+                                    * {hasError.message as string}
+                                  </p>
+                                )}
                               </div>
-                              {hasError && (
-                                <p className="pt-1 text-xs text-red-400">
-                                  * {hasError.message as string}
-                                </p>
-                              )}
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
                       </FieldGroup>
                     </FieldSet>
                   ))}

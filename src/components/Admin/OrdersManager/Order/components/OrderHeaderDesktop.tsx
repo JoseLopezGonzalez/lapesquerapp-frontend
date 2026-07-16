@@ -71,9 +71,7 @@ export default function OrderHeaderDesktop({
           <p>
             <span className="text-base font-medium">{customer?.name ?? '—'}</span>
             <br />
-            <span className="text-muted-foreground text-sm">
-              Cliente Nº {customer?.id ?? '—'}
-            </span>
+            <span className="text-muted-foreground text-sm">Cliente Nº {customer?.id ?? '—'}</span>
             {order?.buyerReference ? (
               <>
                 <br />
@@ -91,7 +89,9 @@ export default function OrderHeaderDesktop({
         <div>
           <p className="text-muted-foreground text-sm">Temperatura</p>
           {readOnly ? (
-            <p className="text-sm font-medium">{(order.temperature as string | number | undefined) ?? '-'}</p>
+            <p className="text-sm font-medium">
+              {(order.temperature as string | number | undefined) ?? '-'}
+            </p>
           ) : (
             <OrderTemperatureDropdown
               temperature={order.temperature as number | string | undefined}
@@ -114,11 +114,11 @@ export default function OrderHeaderDesktop({
       <div className="hidden h-fit flex-row gap-2 pt-2 lg:flex">
         <div className="flex max-w-sm flex-col items-end justify-end gap-3">
           <div className="flex gap-2">
-            {!readOnly && <OrderEditSheet />}
             <Button variant="outline" onClick={onPrint}>
               <Printer />
               Imprimir
             </Button>
+            {!readOnly && <OrderEditSheet />}
           </div>
           <div className="flex flex-col items-end justify-center">
             <Image

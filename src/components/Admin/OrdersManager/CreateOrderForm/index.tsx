@@ -611,23 +611,33 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                 <h3 className="text-muted-foreground my-2 text-sm font-medium">{group.group}</h3>
                 <Separator className="my-2" />
                 <div className={`grid w-full ${group.grid || 'grid-cols-1 gap-4'}`}>
-                  {group.fields.map((field) => (
-                    <div
-                      key={field.name}
-                      className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
-                    >
-                      <Label htmlFor={field.name}>{field.label}</Label>
-                      {renderField(field)}
-                      {errors[field.name as keyof typeof errors] && (
-                        <p className="text-destructive text-sm">
-                          {
-                            (errors[field.name as keyof typeof errors] as { message?: string })
-                              ?.message
-                          }
-                        </p>
-                      )}
-                    </div>
-                  ))}
+                  {group.fields
+                    .filter((field) => {
+                      if (
+                        field.name === 'maquiladorDestination' ||
+                        field.name === 'loadingAddress'
+                      ) {
+                        return Boolean(selectedExternalProcessorId);
+                      }
+                      return true;
+                    })
+                    .map((field) => (
+                      <div
+                        key={field.name}
+                        className={`grid w-full min-w-0 gap-2 ${field.colSpan || ''}`}
+                      >
+                        <Label htmlFor={field.name}>{field.label}</Label>
+                        {renderField(field)}
+                        {errors[field.name as keyof typeof errors] && (
+                          <p className="text-destructive text-sm">
+                            {
+                              (errors[field.name as keyof typeof errors] as { message?: string })
+                                ?.message
+                            }
+                          </p>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </div>
             ))}
@@ -901,7 +911,7 @@ const CreateOrderForm = ({ onCreate, onClose, initialPrefill = null }: CreateOrd
                     : undefined
                 }
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="h-4 w-4" />
                 {isSubmitting ? 'Creando...' : 'Crear pedido'}
               </Button>
             </div>
