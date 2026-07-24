@@ -2,8 +2,8 @@
 
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
-> Last updated: 2026-07-02
-> Total entries: 32
+> Last updated: 2026-07-24
+> Total entries: 33
 
 ## How this file works
 
@@ -170,6 +170,31 @@ Every entry has:
 - **Found in:** 20 archivos del proyecto — `EntityClient/index.js`, `OrderExport/index.js`,
   `StoreCard/index.js`, varios cards de `Dashboard/`, etc. (`PiMicrosoftExcelLogo*`,
   `FaRegFilePdf`, `BsFileEarmarkPdf`, `RiFileExcel2Line`, `TbTruckLoading`, `PiChartLineUp`)
+
+### PL-028
+
+- **Date:** 2026-07-24
+- **Source:** Jose — fix de desbordamiento en OrderDetails/InfoRow y OrderAttachments/AttachmentViewer, confirmado como patrón a mantener
+- **Category:** CODEBASE_PATTERN
+- **Confidence:** HIGH
+- **Entry:** Patrón establecido para valores de texto de longitud variable (nombres, formas
+  de pago, nombres de archivo, direcciones…) dentro de una fila `flex`: `truncate` por sí
+  solo no basta si el elemento es hijo directo de un contenedor `flex` — por defecto los
+  flex items tienen `min-width: auto` y se niegan a encoger por debajo del ancho de su
+  contenido, desbordando la fila/card/dialog completo aunque tengan `truncate`. **Regla:**
+  cualquier `<span>`/`<p>` con `truncate` dentro de un `flex` DEBE llevar también `min-w-0`
+  (y normalmente `flex-1` si debe ocupar el espacio disponible). Además, mostrar el texto
+  completo al pasar el cursor: atributo nativo `title={valor}` para casos simples, o
+  `Tooltip`/`TooltipTrigger`/`TooltipContent` de shadcn envuelto en `TooltipProvider`
+  cuando se quiere un tooltip estilizado consistente con el resto de la UI. Documentado
+  como regla obligatoria en `.claude/rules/components.md` § "Truncado de texto + Tooltip".
+- **Found in:** `src/components/Admin/OrdersManager/Order/OrderDetails/index.tsx`
+  (`InfoRow` — el `<span>` de valor tenía `truncate` pero no `min-w-0`) y
+  `src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx` (toolbar de
+  `AttachmentViewer` — mismo bug en el `<p>` del nombre de archivo).
+- **Status:** Corregido en ambos archivos el 2026-07-24. Candidato a check en futuras
+  auditorías de UI (`ui-audit-agent`, `design-quality-auditor`): grep de `truncate` sin
+  `min-w-0` dentro de contenedores `flex`.
 
 ---
 

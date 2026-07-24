@@ -177,6 +177,57 @@ if (isLoading) {
 
 ---
 
+## Truncado de texto + Tooltip — patrón obligatorio
+
+Cualquier valor de longitud variable que pueda ser largo (nombres, formas de pago,
+nombres de archivo, direcciones, emails…) dentro de una fila `flex` DEBE truncarse con
+`min-w-0` además de `truncate`. `truncate` solo (sin `min-w-0`) no funciona en un hijo
+directo de un contenedor `flex`: por defecto los flex items tienen `min-width: auto` y
+se niegan a encoger por debajo del ancho de su contenido, desbordando la fila, la card
+o el dialog completo en vez de recortar el texto.
+
+```typescript
+// ❌ PROHIBIDO — truncate sin min-w-0 en un hijo flex no trunca nada
+<div className="flex items-center justify-between gap-3">
+  <p className="truncate text-sm font-medium">{fileName}</p>
+  <Button variant="ghost" size="icon-sm"><Download /></Button>
+</div>
+
+// ✅ CORRECTO — min-w-0 (+ flex-1 si debe ocupar el espacio disponible)
+<div className="flex items-center justify-between gap-3">
+  <p className="min-w-0 flex-1 truncate text-sm font-medium">{fileName}</p>
+  <Button variant="ghost" size="icon-sm"><Download /></Button>
+</div>
+```
+
+Además, si el texto se trunca, el usuario debe poder ver el valor completo al pasar el
+cursor por encima:
+
+```typescript
+// ✅ Caso simple — atributo title nativo (patrón usado en OrderAttachments)
+<p className="min-w-0 flex-1 truncate text-sm font-medium" title={fileName}>
+  {fileName}
+</p>
+
+// ✅ Tooltip estilizado shadcn — cuando se quiere consistencia visual con el resto de la UI
+// (patrón usado en InfoRow de OrderDetails)
+<TooltipProvider delayDuration={300}>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <span className="min-w-0 truncate text-sm font-semibold">{value}</span>
+    </TooltipTrigger>
+    <TooltipContent>{value}</TooltipContent>
+  </Tooltip>
+</TooltipProvider>
+```
+
+**Referencias reales:** `InfoRow` en
+`src/components/Admin/OrdersManager/Order/OrderDetails/index.tsx` y la toolbar de
+`AttachmentViewer` en `src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx`
+(ver `PL-028` en `project-learnings.md`).
+
+---
+
 ## Manejo de errores en componentes
 
 ```typescript

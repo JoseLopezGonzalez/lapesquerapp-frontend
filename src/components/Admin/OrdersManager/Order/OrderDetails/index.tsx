@@ -22,6 +22,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface ExternalProcessor {
   id?: number | string;
@@ -118,11 +119,24 @@ interface InfoRowProps {
 }
 
 function InfoRow({ label, value, sub }: InfoRowProps) {
+  const isTextValue = typeof value === 'string' || typeof value === 'number';
+
   return (
     <div className="flex items-baseline justify-between gap-3 py-2 first:pt-0 last:pb-0">
       <span className="text-muted-foreground shrink-0 text-sm">{label}</span>
       <span className="flex min-w-0 items-baseline gap-2 text-right">
-        <span className="truncate text-sm font-semibold">{value}</span>
+        {isTextValue ? (
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="min-w-0 truncate text-sm font-semibold">{value}</span>
+              </TooltipTrigger>
+              <TooltipContent>{value}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <span className="min-w-0 truncate text-sm font-semibold">{value}</span>
+        )}
         {sub && <span className="text-muted-foreground shrink-0 text-xs">{sub}</span>}
       </span>
     </div>

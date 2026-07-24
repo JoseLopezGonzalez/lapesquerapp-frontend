@@ -498,8 +498,8 @@ function AttachmentViewer({
         <DialogTitle className="sr-only">{attachment.originalName}</DialogTitle>
 
         {/* Toolbar */}
-        <div className="flex items-center justify-between border-b px-4 py-2">
-          <p className="truncate text-sm font-medium" title={attachment.originalName}>
+        <div className="flex items-center justify-between gap-3 border-b px-4 py-2">
+          <p className="min-w-0 flex-1 truncate text-sm font-medium" title={attachment.originalName}>
             {attachment.originalName}
           </p>
           <div className="flex shrink-0 items-center gap-1.5">
