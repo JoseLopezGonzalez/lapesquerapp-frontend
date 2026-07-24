@@ -60,6 +60,7 @@ interface OrderData {
   transportNotes?: string | null;
   emails?: string[];
   ccEmails?: string[];
+  invoiced?: boolean;
 }
 
 type RawOption = {
@@ -92,11 +93,17 @@ interface DefaultValues {
   transportNotes: string;
   emails: string[];
   ccEmails: string[];
+  invoiced: string;
 }
 
 const ORDER_TYPE_OPTIONS: FormFieldOption[] = [
   { value: 'standard', label: 'Pedido estándar' },
   { value: 'autoventa', label: 'Autoventa' },
+];
+
+const INVOICED_OPTIONS: FormFieldOption[] = [
+  { value: 'true', label: 'Facturado' },
+  { value: 'false', label: 'No facturado' },
 ];
 
 const initialDefaultValues: DefaultValues = {
@@ -122,13 +129,14 @@ const initialDefaultValues: DefaultValues = {
   transportNotes: '',
   emails: [],
   ccEmails: [],
+  invoiced: 'false',
 };
 
 const initialFormGroups: FormGroup[] = [
   {
     group: 'Tipo de pedido',
-    description: 'Estándar o autoventa según el tipo de operación.',
-    grid: 'grid-cols-1 gap-4',
+    description: 'Estándar o autoventa según el tipo de operación, y estado de facturación.',
+    grid: 'grid-cols-2 gap-4',
     fields: [
       {
         name: 'orderType',
@@ -136,6 +144,13 @@ const initialFormGroups: FormGroup[] = [
         component: 'Select',
         options: ORDER_TYPE_OPTIONS,
         props: { placeholder: 'Seleccionar tipo' },
+      },
+      {
+        name: 'invoiced',
+        label: 'Facturado',
+        component: 'Select',
+        options: INVOICED_OPTIONS,
+        props: { placeholder: 'Seleccionar estado' },
       },
     ],
   },
@@ -439,6 +454,7 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
       transportNotes: orderData.transportNotes || '',
       emails: orderData.emails || [],
       ccEmails: orderData.ccEmails || [],
+      invoiced: orderData.invoiced ? 'true' : 'false',
     };
   }, [orderData]);
 

@@ -30,6 +30,7 @@ export const orderEditSchema = z
     transportNotes: z.string().optional(),
     emails: z.array(z.string().email('Correo inválido')).optional().default([]),
     ccEmails: z.array(z.string().email('Correo inválido')).optional().default([]),
+    invoiced: z.enum(['true', 'false']).default('false'),
   })
   .superRefine((data, ctx) => {
     if (data.orderType === 'autoventa') return;

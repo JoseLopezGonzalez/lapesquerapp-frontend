@@ -68,7 +68,6 @@ const OrderContent = ({
     activeTab,
     setActiveTab,
     updateTemperatureOrder,
-    updateInvoicedOrder,
   } = useOrderContext();
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [editSheetOpen, setEditSheetOpen] = useState(false);
@@ -209,24 +208,6 @@ const OrderContent = ({
     [updateTemperatureOrder]
   );
 
-  const handleInvoicedChange = useCallback(
-    async (invoiced: boolean) => {
-      await notify.promise(updateInvoicedOrder(invoiced), {
-        loading: invoiced ? 'Marcando pedido como facturado...' : 'Marcando pedido como no facturado...',
-        success: invoiced ? 'Pedido marcado como facturado' : 'Pedido marcado como no facturado',
-        error: (err: unknown) => {
-          const e = err as Record<string, unknown>;
-          return (
-            (e?.userMessage as string) ||
-            (e?.message as string) ||
-            'Error al actualizar el estado de facturación del pedido'
-          );
-        },
-      });
-    },
-    [updateInvoicedOrder]
-  );
-
   const transportImage = useMemo(() => {
     return order?.transport
       ? getTransportImage((order.transport as Record<string, unknown>).name as string)
@@ -329,7 +310,6 @@ const OrderContent = ({
               onEdit={() => setEditSheetOpen(true)}
               onStatusChange={handleStatusChange}
               onTemperatureChange={handleTemperatureChange}
-              onInvoicedChange={handleInvoicedChange}
               onSelectSection={handleSelectSection}
               onPrint={handleOnClickPrint}
               readOnly={readOnly}
@@ -379,7 +359,6 @@ const OrderContent = ({
               transportImage={transportImage}
               onStatusChange={handleStatusChange}
               onTemperatureChange={handleTemperatureChange}
-              onInvoicedChange={handleInvoicedChange}
               onPrint={handleOnClickPrint}
               readOnly={readOnly}
             />
@@ -408,7 +387,6 @@ interface OrderMobileOverviewProps {
   onEdit: () => void;
   onStatusChange: (status: OrderStatus) => void;
   onTemperatureChange: (temperature: number) => void;
-  onInvoicedChange: (invoiced: boolean) => void;
   onSelectSection: (sectionId: string) => void;
   onPrint: () => void;
   readOnly: boolean;
@@ -424,7 +402,6 @@ function OrderMobileOverview({
   onEdit,
   onStatusChange,
   onTemperatureChange,
-  onInvoicedChange,
   onSelectSection,
   onPrint,
   readOnly,
@@ -450,7 +427,6 @@ function OrderMobileOverview({
           <OrderSummaryMobile
             order={order}
             onTemperatureChange={onTemperatureChange}
-            onInvoicedChange={onInvoicedChange}
             readOnly={readOnly}
           />
           <OrderSectionGrid

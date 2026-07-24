@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 const DATE_FIELDS = new Set<string>(['entryDate', 'loadDate']);
 const NULLABLE_INTEGER_FIELDS = new Set<string>(['fieldOperator', 'externalProcessor']);
 const NULLABLE_STRING_FIELDS = new Set<string>(['maquiladorDestination', 'loadingAddress']);
+const BOOLEAN_FIELDS = new Set<string>(['invoiced']);
 // These fields must always travel together — sending one without the other clears the other on the API
 const EMAIL_COUPLED_FIELDS = new Set<string>(['emails', 'ccEmails']);
 
@@ -31,6 +32,11 @@ export function buildOrderEditPayload(
 
     if (NULLABLE_STRING_FIELDS.has(fieldName)) {
       acc[fieldName] = fieldValue ? String(fieldValue) : null;
+      return acc;
+    }
+
+    if (BOOLEAN_FIELDS.has(fieldName)) {
+      acc[fieldName] = fieldValue === 'true';
       return acc;
     }
 

@@ -5,7 +5,6 @@ import { ThermometerSnowflake, ChevronDown } from 'lucide-react';
 import { MobileOptionSheet } from '@/components/Shadcn/MobileOptionSheet';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import { formatInteger, formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
-import { cn } from '@/lib/utils';
 import type { Order } from '@/services/orderService';
 
 const TEMPERATURE_OPTIONS = [0, 4, -18, -23];
@@ -13,7 +12,6 @@ const TEMPERATURE_OPTIONS = [0, 4, -18, -23];
 interface OrderSummaryMobileProps {
   order: Order;
   onTemperatureChange: (temperature: number) => void;
-  onInvoicedChange: (invoiced: boolean) => void;
   readOnly?: boolean;
 }
 
@@ -24,13 +22,11 @@ interface OrderSummaryMobileProps {
 export default function OrderSummaryMobile({
   order,
   onTemperatureChange,
-  onInvoicedChange,
   readOnly = false,
 }: OrderSummaryMobileProps) {
   const [temperatureSheetOpen, setTemperatureSheetOpen] = useState(false);
 
   const temperature = Number((order.temperature as number | string | undefined) ?? 0);
-  const invoiced = Boolean(order.invoiced);
 
   return (
     <div className="flex-shrink-0 space-y-4 px-4 pt-5 text-center">
@@ -87,34 +83,6 @@ export default function OrderSummaryMobile({
           <p className="text-lg font-medium">
             {order.totalAmount ? formatDecimalCurrency(order.totalAmount) : '-'}
           </p>
-        </div>
-        <div>
-          <p className="text-muted-foreground mb-1 text-sm">Facturado</p>
-          {readOnly ? (
-            <span
-              className={cn(
-                'text-lg font-medium',
-                invoiced ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
-              )}
-            >
-              {invoiced ? 'Sí' : 'No'}
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onInvoicedChange(!invoiced)}
-              className="flex min-h-[44px] min-w-[44px] items-start justify-center focus:outline-none"
-            >
-              <span
-                className={cn(
-                  'hover:text-muted-foreground flex items-center justify-center gap-1.5 text-lg font-medium underline decoration-dotted underline-offset-4 transition-colors',
-                  invoiced ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
-                )}
-              >
-                {invoiced ? 'Sí' : 'No'}
-              </span>
-            </button>
-          )}
         </div>
       </div>
     </div>

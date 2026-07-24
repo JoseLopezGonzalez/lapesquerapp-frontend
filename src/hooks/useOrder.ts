@@ -243,18 +243,6 @@ export function useOrder(
       });
   };
 
-  const updateInvoicedOrder = async (invoiced: boolean) => {
-    return updateOrder(orderId as unknown as string, { invoiced })
-      .then((updated) => {
-        if (updated) updateOrderCache(updated);
-        return updated;
-      })
-      .catch((err: unknown) => {
-        setMutationError(err);
-        throw err;
-      });
-  };
-
   const incidents = useOrderIncidents({
     order,
     onError: setMutationError,
@@ -316,7 +304,6 @@ export function useOrder(
     costAnalysisError,
     loadCostAnalysis,
     updateTemperatureOrder,
-    updateInvoicedOrder,
     openOrderIncident: incidents.openOrderIncident,
     resolveOrderIncident: incidents.resolveOrderIncident,
     deleteOrderIncident: incidents.deleteOrderIncident,
