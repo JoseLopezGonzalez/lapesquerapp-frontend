@@ -124,6 +124,15 @@ const ordersConfig: Record<string, any> = {
                 { name: 'autoventa', label: 'Autoventa', value: false },
               ],
             },
+            {
+              name: 'invoiced',
+              label: 'Facturado',
+              type: 'pairSelectBoxes',
+              options: [
+                { name: 'true', label: 'Facturado', value: false },
+                { name: 'false', label: 'No facturado', value: false },
+              ],
+            },
           ],
         },
 
@@ -246,6 +255,17 @@ const ordersConfig: Record<string, any> = {
             standard: { label: 'Estándar' },
             autoventa: { label: 'Autoventa' },
             default: { label: '—' },
+          },
+        },
+        {
+          name: 'invoiced',
+          label: 'Facturado',
+          type: 'badge',
+          path: 'invoiced',
+          hideOnMobile: true,
+          options: {
+            true: { label: 'Facturado', color: 'success', outline: true },
+            false: { label: 'Sin facturar', color: 'secondary', outline: true },
           },
         },
         {

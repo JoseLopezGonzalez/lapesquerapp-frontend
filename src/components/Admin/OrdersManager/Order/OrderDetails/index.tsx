@@ -77,6 +77,7 @@ export interface OrderDetailsData {
   transportationNotes?: string | null;
   truckPlate?: string | null;
   trailerPlate?: string | null;
+  invoiced?: boolean | null;
   [key: string]: unknown;
 }
 
@@ -339,6 +340,18 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
                       <div className="text-muted-foreground text-sm">Otros artículos (total)</div>
                       <div className="font-medium">{getNullableCurrency(order.auxiliaryTotal)}</div>
                     </div>
+                    <div>
+                      <div className="text-muted-foreground text-sm">Facturado</div>
+                      <Badge
+                        className={cn(
+                          order.invoiced
+                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                            : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                        )}
+                      >
+                        {order.invoiced ? 'Facturado' : 'Sin facturar'}
+                      </Badge>
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -525,6 +538,20 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
             value={getNullableCurrency(order.auxiliaryTotal)}
           />
         )}
+        <InfoRow
+          label="Facturado"
+          value={
+            <Badge
+              className={cn(
+                order.invoiced
+                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                  : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+              )}
+            >
+              {order.invoiced ? 'Facturado' : 'Sin facturar'}
+            </Badge>
+          }
+        />
       </MasonryCard>
 
       {/* Detalle del maquilador */}

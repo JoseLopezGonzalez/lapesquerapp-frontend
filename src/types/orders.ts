@@ -13,6 +13,7 @@ export interface OrderPayload {
 export interface Order {
   id: number | string;
   orderType?: 'standard' | 'autoventa';
+  invoiced?: boolean;
   revenuePerKg?: number | null;
   totalCost?: number | null;
   costPerKg?: number | null;

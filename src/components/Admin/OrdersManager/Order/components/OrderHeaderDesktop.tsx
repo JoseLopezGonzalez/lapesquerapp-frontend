@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Printer, Bookmark } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
 import { formatDate } from '@/helpers/formats/dates/formatDates';
 import OrderEditSheet from '../OrderEditSheet';
@@ -28,6 +29,7 @@ interface OrderHeaderDesktopProps {
   transportImage: string;
   onStatusChange: (status: OrderStatus) => void;
   onTemperatureChange: (temperature: number) => void;
+  onInvoicedChange: (invoiced: boolean) => void;
   onPrint: () => void;
   readOnly?: boolean;
 }
@@ -40,12 +42,14 @@ export default function OrderHeaderDesktop({
   transportImage,
   onStatusChange,
   onTemperatureChange,
+  onInvoicedChange,
   onPrint,
   readOnly = false,
 }: OrderHeaderDesktopProps) {
   const status = order.status as OrderStatus;
   const customer = order.customer as { id?: number | string; name?: string } | undefined;
   const transport = order.transport as { name?: string } | undefined;
+  const invoiced = Boolean(order.invoiced);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
@@ -97,6 +101,29 @@ export default function OrderHeaderDesktop({
               temperature={order.temperature as number | string | undefined}
               onTemperatureChange={onTemperatureChange}
             />
+          )}
+        </div>
+        <div>
+          <p className="text-muted-foreground text-sm">Facturado</p>
+          {readOnly ? (
+            <p
+              className={cn(
+                'text-sm font-medium',
+                invoiced ? 'text-emerald-600 dark:text-emerald-400' : ''
+              )}
+            >
+              {invoiced ? 'Sí' : 'No'}
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onInvoicedChange(!invoiced)}
+              className="hover:text-muted-foreground text-sm font-medium underline decoration-dotted underline-offset-4 focus:outline-none"
+            >
+              <span className={cn(invoiced ? 'text-emerald-600 dark:text-emerald-400' : '')}>
+                {invoiced ? 'Sí' : 'No'}
+              </span>
+            </button>
           )}
         </div>
         {order?.offerId ? (

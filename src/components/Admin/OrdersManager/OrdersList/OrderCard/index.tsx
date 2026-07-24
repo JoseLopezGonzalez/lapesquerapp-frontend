@@ -31,6 +31,7 @@ export interface OrderCardOrder {
   numberOfBoxes?: number | null;
   externalProcessor?: { id?: number | string; name?: string } | null;
   externalProcessorId?: number | string | null;
+  invoiced?: boolean | null;
   [key: string]: unknown;
 }
 
@@ -150,6 +151,11 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
                     {order.externalProcessor?.name ?? 'Maquilador'}
                   </span>
                 )}
+                {order?.invoiced && (
+                  <span className="inline-flex items-center rounded-full border border-emerald-400/50 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:border-emerald-500/50 dark:text-emerald-300">
+                    Facturado
+                  </span>
+                )}
               </div>
             </div>
             <ChevronRight className="text-muted-foreground h-5 w-5 flex-shrink-0" aria-hidden />
@@ -194,6 +200,11 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
               {order?.externalProcessor && (
                 <span className="inline-flex items-center rounded-full border border-amber-400/50 bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:border-amber-500/50 dark:text-amber-300">
                   {order.externalProcessor.name ?? 'Maquilador'}
+                </span>
+              )}
+              {order?.invoiced && (
+                <span className="inline-flex items-center rounded-full border border-emerald-400/50 bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:border-emerald-500/50 dark:text-emerald-300">
+                  Facturado
                 </span>
               )}
             </div>
