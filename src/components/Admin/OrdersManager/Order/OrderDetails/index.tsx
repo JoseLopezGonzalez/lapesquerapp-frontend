@@ -116,9 +116,10 @@ interface InfoRowProps {
   label: string;
   value: React.ReactNode;
   sub?: React.ReactNode;
+  valueClassName?: string;
 }
 
-function InfoRow({ label, value, sub }: InfoRowProps) {
+function InfoRow({ label, value, sub, valueClassName }: InfoRowProps) {
   const isTextValue = typeof value === 'string' || typeof value === 'number';
 
   return (
@@ -129,13 +130,17 @@ function InfoRow({ label, value, sub }: InfoRowProps) {
           <TooltipProvider delayDuration={300}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="min-w-0 truncate text-sm font-semibold">{value}</span>
+                <span className={cn('min-w-0 truncate text-sm font-semibold', valueClassName)}>
+                  {value}
+                </span>
               </TooltipTrigger>
               <TooltipContent>{value}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
-          <span className="min-w-0 truncate text-sm font-semibold">{value}</span>
+          <span className={cn('min-w-0 truncate text-sm font-semibold', valueClassName)}>
+            {value}
+          </span>
         )}
         {sub && <span className="text-muted-foreground shrink-0 text-xs">{sub}</span>}
       </span>
@@ -456,7 +461,11 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
         {order.fieldOperator && (
           <InfoRow label="Repartidor" value={order.fieldOperator.name ?? '—'} />
         )}
-        <InfoRow label="Forma de pago" value={order.paymentTerm?.name ?? '—'} />
+        <InfoRow
+          label="Forma de pago"
+          value={order.paymentTerm?.name ?? '—'}
+          valueClassName="max-w-32"
+        />
         {order.incoterm && (
           <InfoRow
             label="Incoterm"
