@@ -477,7 +477,7 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
         <InfoRow
           label="Forma de pago"
           value={order.paymentTerm?.name ?? '—'}
-          valueClassName="max-w-32"
+          valueClassName="w-24"
         />
         {order.incoterm && (
           <InfoRow
