@@ -1,7 +1,9 @@
 /**
  * Detecta si las fuentes (materia prima de stock / consumos del proceso padre) de un nodo
- * de producción están completamente repartidas entre sus salidas, o si quedó peso sin
- * asignar (o sobre-asignado) por haberse calculado con una merma/rendimiento desactualizada.
+ * de producción están completamente repartidas entre sus salidas, o si queda peso pendiente
+ * de asignar (o asignado de más). No implica necesariamente un error: puede ser que el reparto
+ * todavía no se haya terminado (manual o automáticamente), aunque también puede reflejar un
+ * desajuste heredado de un reparto anterior.
  *
  * Acepta datos tanto normalizados (camelCase, servicios de dominio) como en bruto
  * (camelCase/snake_case mezclado, árbol de procesos del diagrama) — mismo patrón defensivo

@@ -129,8 +129,12 @@ export function useProductionRecord(productionId, recordId = null, onRefresh = n
       }
 
       await Promise.all([
+        // Sin el recordId excluido: cada formulario abierto (alta, edición de otro
+        // registro...) cachea la lista de padres disponibles bajo su propia key. Invalidar
+        // solo la key de nextRecordId dejaba el select de otros formularios con datos
+        // obsoletos justo después de crear/editar un proceso.
         queryClient.invalidateQueries({
-          queryKey: productionQueryKeys.recordOptions(tenantId, productionId, nextRecordId),
+          queryKey: productionQueryKeys.recordOptionsPrefix(tenantId, productionId),
         }),
         queryClient.invalidateQueries({ queryKey: productionDetailKey }),
         queryClient.invalidateQueries({ queryKey: productionTotalsKey }),

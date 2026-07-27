@@ -503,8 +503,8 @@ export function transformProcessTreeToFlow(
               .map((out) => normalizeAccountingOutput(out, parentConsumptions))
               .filter(Boolean)
           : [];
-      // Se calcula siempre (no solo en modo detallado) porque es un aviso de integridad de
-      // datos, no un detalle informativo — ver GAP sobre merma/rendimiento desactualizada.
+      // Se calcula siempre (no solo en modo detallado): avisa de reparto de fuentes pendiente,
+      // no es un detalle informativo opcional.
       const sourcesAllocation = calculateSourcesAllocation(
         node.inputs,
         parentConsumptions,

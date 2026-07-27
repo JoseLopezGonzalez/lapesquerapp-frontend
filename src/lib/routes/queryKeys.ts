@@ -183,6 +183,14 @@ export const productionQueryKeys = {
     productionId: number | string | null | undefined,
     recordId: number | string | null | undefined
   ) => ['productionRecords', 'options', tenantId ?? 'unknown', productionId, recordId] as const,
+  // Sin el `recordId` final: usar solo para invalidar, nunca como queryKey de un useQuery.
+  // recordOptions() incluye el id del registro excluido en la propia key, así que cada
+  // formulario abierto (alta con padre null, edición de otro registro, etc.) cachea bajo
+  // una key distinta. Invalidar con la key exacta de un registro no refresca las demás.
+  recordOptionsPrefix: (
+    tenantId: string | null | undefined,
+    productionId: number | string | null | undefined
+  ) => ['productionRecords', 'options', tenantId ?? 'unknown', productionId] as const,
   inputs: (tenantId: string | null | undefined, recordId: number | string | null | undefined) =>
     ['productionInputs', tenantId ?? 'unknown', recordId] as const,
   outputs: (

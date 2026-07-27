@@ -123,9 +123,22 @@ export const useRecordFormData = (record, processes, isEditMode, defaultParentRe
         finalProcessId = prev.process_id;
       }
 
+      // Mismo tratamiento que process_id: si un refetch intermedio del mismo registro llega
+      // sin parentRecordId resuelto todavía, no lo pisamos con 'none' — si no, un guardado de
+      // cualquier otro campo de la cabecera reenvía parent_record_id: null y borra el padre real.
+      // Si el usuario quitó el padre a propósito, prev.parent_record_id ya está en 'none' antes
+      // de este sync (lo puso el propio Select), así que esta rama no aplica y se respeta el
+      // vaciado.
+      let finalParentRecordId = 'none';
+      if (parentRecordId != null) {
+        finalParentRecordId = parentRecordId.toString();
+      } else if (!isFirstSyncForThisRecord && prev.parent_record_id !== 'none') {
+        finalParentRecordId = prev.parent_record_id;
+      }
+
       const next = {
         process_id: finalProcessId,
-        parent_record_id: parentRecordId ? parentRecordId.toString() : 'none',
+        parent_record_id: finalParentRecordId,
         notes: notes || '',
         started_at: startedAtFormatted,
         finished_at: finishedAtFormatted,
