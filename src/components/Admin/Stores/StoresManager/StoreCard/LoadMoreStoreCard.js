@@ -11,7 +11,7 @@ const LoadMoreStoreCard = ({ onClick, loading }) => {
 
   return (
     <Card
-      className={`flex min-h-0 min-w-56 shrink-0 flex-col border-0 border-l-4 border-neutral-200 p-3 text-sm leading-5 font-medium ${
+      className={`flex min-h-0 min-w-56 shrink-0 flex-col p-3 text-sm leading-5 font-medium ${
         loading
           ? 'bg-foreground-100 cursor-not-allowed'
           : 'bg-foreground-100 hover:bg-foreground-200 cursor-pointer'

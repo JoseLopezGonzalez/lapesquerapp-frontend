@@ -42,21 +42,15 @@ function AnalysisMetricCard({
   value,
   description,
   detail,
-  icon: Icon,
   emphasize = false,
   isMobile = false,
 }) {
-  // Mobile: mismo lenguaje visual que las cards del grid principal de pedidos
-  // (icono en chip redondeado bg-muted, texto apilado debajo) — ver OrderSectionGrid.
-  // 2 columnas + líneas a una sola altura (line-clamp-1) para mantener la misma
-  // densidad que el resto de cards de la UI de pedidos en mobile.
+  // Mobile: mismo lenguaje visual que las cards del grid principal de pedidos,
+  // sin chip de icono (ver PL-029) — solo texto apilado.
   if (isMobile) {
     return (
       <div className="border-border bg-card rounded-2xl border p-3">
-        <div className="bg-muted text-foreground flex h-8 w-8 items-center justify-center rounded-xl">
-          <Icon className="h-4 w-4" />
-        </div>
-        <div className="mt-2 space-y-0.5">
+        <div className="space-y-0.5">
           <p className="text-muted-foreground text-[11px] leading-tight">{title}</p>
           <div
             className={
@@ -81,10 +75,7 @@ function AnalysisMetricCard({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardDescription className="flex items-center justify-between gap-2">
-          <span>{title}</span>
-          <Icon className="text-muted-foreground h-4 w-4" />
-        </CardDescription>
+        <CardDescription>{title}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-1">
         <div
@@ -101,13 +92,12 @@ function AnalysisMetricCard({
   );
 }
 
-// Silueta de AnalysisMetricCard: título+icono, valor, detalle y descripción (4 alturas distintas)
+// Silueta de AnalysisMetricCard: título, valor, detalle y descripción (4 alturas distintas)
 function AnalysisMetricCardSkeleton({ isMobile = false }) {
   if (isMobile) {
     return (
       <div className="border-border bg-card rounded-2xl border p-3">
-        <Skeleton className="h-8 w-8 rounded-xl" />
-        <div className="mt-2 space-y-1">
+        <div className="space-y-1">
           <Skeleton className="h-2.5 w-10" />
           <Skeleton className="h-5 w-14" />
           <Skeleton className="h-2.5 w-10" />
@@ -120,10 +110,7 @@ function AnalysisMetricCardSkeleton({ isMobile = false }) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-2">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 w-4 rounded" />
-        </div>
+        <Skeleton className="h-4 w-20" />
       </CardHeader>
       <CardContent className="space-y-1.5">
         <Skeleton className="h-7 w-24" />
@@ -254,7 +241,7 @@ function PalletMobileCard({ pallet }) {
                   </Badge>
                 ))
               ) : (
-                <p className="text-muted-foreground text-sm">Sin productos disponibles</p>
+                <p className="text-muted-foreground text-sm">—</p>
               )}
             </div>
           </div>
@@ -491,7 +478,7 @@ export default function OrderCostAnalysis({ canViewCostData = true }) {
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-muted-foreground text-sm">Sin productos</span>
+                            <span className="text-muted-foreground text-sm">—</span>
                           )}
                         </div>
                       </TableCell>
@@ -568,41 +555,27 @@ export default function OrderCostAnalysis({ canViewCostData = true }) {
         value={getNullableCurrency(summary.totalRevenue)}
         detail={getNullableCurrencyPerKg(order?.revenuePerKg)}
         description="Importe total del pedido"
-        icon={Wallet}
         isMobile={isMobile}
       />
       <AnalysisMetricCard
         title="Coste total"
         value={getNullableCurrency(summary.totalCost)}
         detail={getNullableCurrencyPerKg(order?.costPerKg)}
-        description={
-          summary.totalCost == null
-            ? 'Sin coste calculable'
-            : 'Coste acumulado de cajas disponibles'
-        }
-        icon={Package2}
+        description="Coste acumulado de cajas disponibles"
         isMobile={isMobile}
       />
       <AnalysisMetricCard
         title="Margen bruto"
         value={getNullableCurrency(summary.grossMargin)}
         detail={getNullableCurrencyPerKg(order?.marginPerKg)}
-        description={
-          summary.grossMargin == null ? 'Sin coste calculable' : 'Importe menos coste total'
-        }
-        icon={ChartColumn}
+        description="Importe menos coste total"
         emphasize
         isMobile={isMobile}
       />
       <AnalysisMetricCard
         title="Margen %"
         value={getNullablePercentage(summary.marginPercentage)}
-        description={
-          summary.marginPercentage == null
-            ? 'No calculable con los datos actuales'
-            : 'Porcentaje de margen sobre importe'
-        }
-        icon={ChartColumn}
+        description="Porcentaje de margen sobre importe"
         isMobile={isMobile}
       />
     </>

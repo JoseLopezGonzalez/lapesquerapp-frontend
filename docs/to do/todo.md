@@ -27,3 +27,12 @@ Noto que en el apartado de envio de documentos del mismo editor de pedidos, enb 
 En el apartado de descargas del editor de pedidos , en las descargas rapidas necesito que el listado sea scrollable para no hacer overflow vertical y que se siga viendo el card completo y el boton de descargar todo.
 
 En el apartado adjuntos necesito que cuando esta empty ese mismo empty sea receptor de archivos arrastrados al notar que llevamos arrastrado archivos, debe ser asi este empty y cuando haya ya algo adjunto tb.
+
+
+---
+
+El gestor de almacenes en desktop version al cargarse solo aparece el loader arriba y no está centrado verticalmente con toda la altura de la pantalla.
+
+Necesito que en el gestor de almacenes hagamos que los cards del listado de almacenes aparezcan con apariencia como las del listado de pedidos en el orders managers, me refiero a quitarle el borde derecho de color, y a hacer que cuando se seleccionen tenga todo el borde del color simplemente. Ademas el listado deberia de no verse la barra scrol y tener fade como lo tiene la de gestor de pedidos.
+
+Ahora una vez dentro de un almacen necesito que el filtro o el card del filtro se muestre y oculte pulsando en un boton de filtro para dejar mas espacio al mapa , con una transición acorde a nuestro proyecto.

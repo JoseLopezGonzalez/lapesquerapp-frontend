@@ -456,6 +456,23 @@ Every entry has:
   `OrderIncident/index.js:117-131,290-304`.
 - **Status:** Follow-up: GAP-088.
 
+### PL-029
+- **Date:** 2026-07-27
+- **Source:** Jose, navegación de prueba manual (tab Información/rentabilidad y tab Análisis del editor de pedidos)
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** Varios cards de KPI/rentabilidad y la tabla del tab Análisis usaban frases
+  completas al estilo IA para representar un valor vacío o cero (p.ej. "Sin margen
+  calculado", "Sin coste de transporte registrado para este pedido") en lugar de un
+  tratamiento numérico consistente con el resto de la UI. Estas frases leen como copy
+  generado, no como copy de producto. Regla aplicada: usar siempre `-` para dato ausente
+  o `0` / `0,00 €` / `0%` para un cero real — nunca una oración descriptiva. Documentado en
+  `design-context.md` § Microcopy for empty/zero numeric values. Aplica a cualquier
+  card/tabla KPI de la app, no solo al editor de pedidos.
+- **Found in:** `OrderCostAnalysis/index.jsx` (cards de rentabilidad, tab Información) y
+  cards + tabla del tab Análisis del mismo módulo.
+- **Status:** Corregido en el mismo turno (ver commit de la sesión 2026-07-27).
+
 ---
 
 ## DEPLOY_RULES

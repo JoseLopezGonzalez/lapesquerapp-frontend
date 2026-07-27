@@ -18,21 +18,20 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
 
   const occupancyStatus = fillPercentage <= 50 ? 'low' : fillPercentage <= 80 ? 'medium' : 'high';
 
-  const borderLClass =
+  const ringColorClass =
     occupancyStatus === 'low'
-      ? 'border-l-green-500'
+      ? 'ring-green-500'
       : occupancyStatus === 'medium'
-        ? 'border-l-amber-500'
-        : 'border-l-red-600';
+        ? 'ring-amber-500'
+        : 'ring-red-500';
+  const focusRingClass =
+    occupancyStatus === 'low'
+      ? 'focus-visible:ring-green-500'
+      : occupancyStatus === 'medium'
+        ? 'focus-visible:ring-amber-500'
+        : 'focus-visible:ring-red-500';
 
   const isThisSelected = store.id === isSelected;
-  const selectedClass =
-    isThisSelected &&
-    (occupancyStatus === 'low'
-      ? 'bg-green-500/10 border-green-500/60'
-      : occupancyStatus === 'medium'
-        ? 'bg-amber-500/10 border-amber-500/60'
-        : 'bg-red-500/10 border-red-500/60');
 
   const handleOnClick = () => {
     if (disabled) return;
@@ -45,17 +44,15 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
       <Card
         key={store.id}
         className={cn(
-          'relative flex min-h-0 flex-col overflow-hidden border-l-4 text-sm leading-5 font-medium transition-colors duration-150',
+          'relative flex min-h-0 flex-col overflow-hidden text-sm leading-5 font-medium transition-colors duration-150',
           'min-w-56 shrink-0',
           'p-3',
-          'border-slate-400 dark:border-slate-600',
-          store.id === isSelected && 'border-slate-500/70 bg-slate-500/10',
+          store.id === isSelected && 'ring-2 ring-slate-500',
           disabled && 'pointer-events-none cursor-not-allowed',
           !disabled && [
             'cursor-pointer',
-            isMobile &&
-              'hover:bg-accent/50 hover:border-accent active:bg-accent/70 active:scale-[0.99]',
-            'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+            isMobile && 'hover:bg-accent/50 active:bg-accent/70 active:scale-[0.99]',
+            'focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2 focus-visible:outline-none',
           ]
         )}
         role="button"
@@ -103,18 +100,18 @@ const StoreCard = ({ store, isSelected, onClick, disabled }) => {
     <Card
       key={store.id}
       className={cn(
-        'relative flex min-h-0 flex-col overflow-hidden border-l-4 text-sm leading-5 font-medium transition-colors duration-150',
+        'relative flex min-h-0 flex-col overflow-hidden text-sm leading-5 font-medium transition-colors duration-150',
         'min-w-56 shrink-0',
         'p-3',
         'bg-card',
-        borderLClass,
-        selectedClass,
+        isThisSelected && 'ring-2',
+        isThisSelected && ringColorClass,
         disabled && 'pointer-events-none cursor-not-allowed',
         !disabled && [
           'cursor-pointer',
-          isMobile &&
-            'hover:bg-accent/50 hover:border-accent active:bg-accent/70 active:scale-[0.99]',
-          'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+          isMobile && 'hover:bg-accent/50 active:bg-accent/70 active:scale-[0.99]',
+          'focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+          focusRingClass,
         ]
       )}
       role="button"

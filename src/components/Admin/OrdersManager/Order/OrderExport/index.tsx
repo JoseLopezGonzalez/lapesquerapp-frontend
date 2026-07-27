@@ -155,28 +155,30 @@ const OrderExport = () => {
           <CardDescription>Descarga documentos comunes con un solo clic</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid gap-2">
-            {fastExportDocuments.length === 0 ? (
-              <EmptyState
-                className="py-6"
-                title="No hay descargas rápidas"
-                description="No hay documentos rápidos disponibles para este pedido."
-              />
-            ) : (
-              fastExportDocuments.map((doc) => (
-                <Button
-                  key={doc.name}
-                  variant="outline"
-                  className="justify-start"
-                  onClick={() => handleOnClickFastExport(doc.name, doc.type, doc.label)}
-                >
-                  {doc.type === 'pdf' && <BsFileEarmarkPdf className="size-4" />}
-                  {doc.type === 'excel' && <RiFileExcel2Line className="size-4" />}
-                  {doc.label}
-                </Button>
-              ))
-            )}
-          </div>
+          {fastExportDocuments.length === 0 ? (
+            <EmptyState
+              className="py-6"
+              title="No hay descargas rápidas"
+              description="No hay documentos rápidos disponibles para este pedido."
+            />
+          ) : (
+            <ScrollArea className="h-full max-h-64">
+              <div className="grid gap-2 pr-3">
+                {fastExportDocuments.map((doc) => (
+                  <Button
+                    key={doc.name}
+                    variant="outline"
+                    className="justify-start"
+                    onClick={() => handleOnClickFastExport(doc.name, doc.type, doc.label)}
+                  >
+                    {doc.type === 'pdf' && <BsFileEarmarkPdf className="size-4" />}
+                    {doc.type === 'excel' && <RiFileExcel2Line className="size-4" />}
+                    {doc.label}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
           <div className="flex justify-end">
             <Button onClick={handleOnClickExportAll} disabled={fastExportDocuments.length === 0}>
               <Layers className="size-4" />

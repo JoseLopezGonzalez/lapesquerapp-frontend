@@ -5,7 +5,7 @@ import Map from './MapContainer/Map';
 import MapContainer from './MapContainer';
 import LoadingStoreDetails from '../LoadingStoreDetails';
 import { StoreProvider, useStoreContext } from '@/context/StoreContext';
-import { LocateFixed, Plus, ArrowRightLeft, MapPin, LayoutGrid } from 'lucide-react';
+import { LocateFixed, Plus, ArrowRightLeft, MapPin, LayoutGrid, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Filters from './Filters';
@@ -68,6 +68,7 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
     store?.name === 'En espera';
 
   const [viewMode, setViewMode] = useState<'map' | 'kanban'>('map');
+  const [isFiltersOpen, setIsFiltersOpen] = useState(true);
 
   const handleOnClickUnallocatedPosition = () => {
     // console.log("Unallocated positions clicked");
@@ -93,7 +94,14 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
           {/* Vista Kanban para almacén fantasma - Solo ScrollArea con cards */}
           <Card className="relative flex h-full w-full flex-1 items-center justify-center overflow-hidden">
             <PalletKanbanView />
-            <div className="absolute right-4 bottom-4 z-10">
+            <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
+              <Button
+                variant={isFiltersOpen ? 'secondary' : 'outline'}
+                onClick={() => setIsFiltersOpen((open) => !open)}
+              >
+                <Filter size={24} />
+                {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+              </Button>
               <Button
                 variant="outline"
                 onClick={openMoveMultiplePalletsToStoreDialog}
@@ -106,7 +114,12 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
           </Card>
 
           {/* Filtros a la derecha */}
-          <div className="h-full w-full max-w-[350px] overflow-hidden">
+          <div
+            className={cn(
+              'h-full overflow-hidden transition-[width,opacity] duration-200 ease-linear',
+              isFiltersOpen ? 'w-full max-w-[350px] opacity-100' : 'w-0 opacity-0'
+            )}
+          >
             <Filters />
           </div>
         </div>
@@ -233,9 +246,21 @@ export const StoreContent = ({ passedStoreId, passedStoreName }) => {
               <ArrowRightLeft size={24} />
               Traspaso masivo
             </Button>
+            <Button
+              variant={isFiltersOpen ? 'secondary' : 'outline'}
+              onClick={() => setIsFiltersOpen((open) => !open)}
+            >
+              <Filter size={24} />
+              {isFiltersOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+            </Button>
           </div>
         </Card>
-        <div className="h-full w-full max-w-[350px] overflow-hidden">
+        <div
+          className={cn(
+            'h-full overflow-hidden transition-[width,opacity] duration-200 ease-linear',
+            isFiltersOpen ? 'w-full max-w-[350px] opacity-100' : 'w-0 opacity-0'
+          )}
+        >
           <Filters />
         </div>
         <PositionSlideover />

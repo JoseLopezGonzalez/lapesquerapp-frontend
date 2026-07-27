@@ -14,6 +14,7 @@ import { useSession } from 'next-auth/react';
 import { isExternalActor } from '@/lib/auth/actor';
 import { useIsMobile } from '@/hooks/use-mobile';
 import MobileStoresManager from './Mobile/MobileStoresManager';
+import { cn } from '@/lib/utils';
 
 export default function StoresManager() {
   const isMobile = useIsMobile();
@@ -55,6 +56,9 @@ function StoresManagerDesktop() {
   };
 
   const horizontalScrollRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
   useEffect(() => {
     const el = horizontalScrollRef.current;
     if (!el) return;
@@ -66,9 +70,31 @@ function StoresManagerDesktop() {
     return () => el.removeEventListener('wheel', onWheel);
   }, [isInitialLoading]);
 
+  // Fade a los lados solo cuando realmente hay contenido oculto a izquierda/derecha
+  useEffect(() => {
+    const el = horizontalScrollRef.current;
+    if (!el) return;
+
+    const updateScrollFade = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1);
+    };
+
+    updateScrollFade();
+    el.addEventListener('scroll', updateScrollFade);
+    const resizeObserver = new ResizeObserver(updateScrollFade);
+    resizeObserver.observe(el);
+
+    return () => {
+      el.removeEventListener('scroll', updateScrollFade);
+      resizeObserver.disconnect();
+    };
+  }, [stores]);
+
   if (showLoader) {
     return (
-      <div className="flex min-h-0 w-full flex-1 items-center justify-center p-6">
+      <div className="flex h-full min-h-0 w-full items-center justify-center p-6">
         <Loader />
       </div>
     );
@@ -76,43 +102,57 @@ function StoresManagerDesktop() {
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col gap-4 p-2">
-      <div
-        ref={horizontalScrollRef}
-        className="flex shrink-0 gap-3 overflow-x-auto overflow-y-hidden rounded-xl py-2"
-      >
-        {stores?.length > 0 &&
-          stores.map((store) => (
-            <StoreCard
-              key={store.id || `store-${store.name}`}
-              store={store}
-              disabled={isStoreLoading}
-              isSelected={selectedStoreId}
-              onClick={() => handleOnSelectStore(store.id)}
-              block={loadingStore}
-            />
-          ))}
-        {realStores.length === 0 && !externalActor && (
-          <Card
-            onClick={() => router.push('/admin/stores/create')}
-            className="border-muted-foreground/25 bg-background hover:border-primary hover:bg-primary/5 min-w-56 cursor-pointer border-2 border-dashed transition-colors"
-          >
-            <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6">
-              <div className="relative">
-                <div className="from-primary/20 to-secondary/20 absolute -inset-1 rounded-full bg-gradient-to-r opacity-70 blur-xl" />
-                <div className="border-primary/20 bg-primary/10 relative flex h-12 w-12 items-center justify-center rounded-full border">
-                  <Plus className="text-primary h-6 w-6" strokeWidth={1.5} />
+      <div className="relative shrink-0">
+        <div
+          className={cn(
+            'from-background pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-8 bg-gradient-to-r to-transparent transition-opacity duration-200',
+            canScrollLeft ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+        <div
+          className={cn(
+            'from-background pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-8 bg-gradient-to-l to-transparent transition-opacity duration-200',
+            canScrollRight ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+        <div
+          ref={horizontalScrollRef}
+          className="scrollbar-hide flex shrink-0 gap-3 overflow-x-auto overflow-y-hidden rounded-xl py-2"
+        >
+          {stores?.length > 0 &&
+            stores.map((store) => (
+              <StoreCard
+                key={store.id || `store-${store.name}`}
+                store={store}
+                disabled={isStoreLoading}
+                isSelected={selectedStoreId}
+                onClick={() => handleOnSelectStore(store.id)}
+                block={loadingStore}
+              />
+            ))}
+          {realStores.length === 0 && !externalActor && (
+            <Card
+              onClick={() => router.push('/admin/stores/create')}
+              className="border-muted-foreground/25 bg-background hover:border-primary hover:bg-primary/5 min-w-56 cursor-pointer border-2 border-dashed transition-colors"
+            >
+              <div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6">
+                <div className="relative">
+                  <div className="from-primary/20 to-secondary/20 absolute -inset-1 rounded-full bg-gradient-to-r opacity-70 blur-xl" />
+                  <div className="border-primary/20 bg-primary/10 relative flex h-12 w-12 items-center justify-center rounded-full border">
+                    <Plus className="text-primary h-6 w-6" strokeWidth={1.5} />
+                  </div>
+                </div>
+                <div className="flex flex-col items-center gap-1 text-center">
+                  <span className="text-foreground text-sm font-medium">Crear almacén</span>
+                  <span className="text-muted-foreground text-xs">
+                    Haz clic para añadir tu primer almacén
+                  </span>
                 </div>
               </div>
-              <div className="flex flex-col items-center gap-1 text-center">
-                <span className="text-foreground text-sm font-medium">Crear almacén</span>
-                <span className="text-muted-foreground text-xs">
-                  Haz clic para añadir tu primer almacén
-                </span>
-              </div>
-            </div>
-          </Card>
-        )}
-        {hasMoreStores && <LoadMoreStoreCard onClick={loadMoreStores} loading={loadingMore} />}
+            </Card>
+          )}
+          {hasMoreStores && <LoadMoreStoreCard onClick={loadMoreStores} loading={loadingMore} />}
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-hidden">

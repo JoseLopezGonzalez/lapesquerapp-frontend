@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { useOrderContext } from '@/context/OrderContext';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { notify } from '@/lib/notifications';
+import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface OrderTransport {
@@ -560,24 +561,32 @@ const OrderDocuments = () => {
           <div>
             <label className="mb-2 block text-sm font-medium">Destinatarios:</label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              {recipients.map((recipient) => (
-                <Button
-                  key={recipient.name}
-                  type="button"
-                  variant="outline"
-                  className={`h-auto w-full justify-start gap-2 rounded-md p-2 transition-colors ${
-                    selectedRecipients[recipient.name as keyof SelectedRecipients]
-                      ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
-                      : ''
-                  }`}
-                  onClick={() =>
-                    toggleRecipientSelection(recipient.name as keyof SelectedRecipients)
-                  }
-                >
-                  <div className="bg-muted rounded-full p-1 [&_svg]:size-4">{recipient.icon}</div>
-                  <span className="text-sm font-medium">{recipient.label}</span>
-                </Button>
-              ))}
+              {recipients.map((recipient) => {
+                const isSelected =
+                  selectedRecipients[recipient.name as keyof SelectedRecipients];
+                return (
+                  <Button
+                    key={recipient.name}
+                    type="button"
+                    variant={isSelected ? 'default' : 'outline'}
+                    aria-pressed={isSelected}
+                    className="h-auto w-full justify-start gap-2 p-2"
+                    onClick={() =>
+                      toggleRecipientSelection(recipient.name as keyof SelectedRecipients)
+                    }
+                  >
+                    <div
+                      className={cn(
+                        'rounded-full p-1 [&_svg]:size-4',
+                        isSelected ? 'bg-primary-foreground/15' : 'bg-muted'
+                      )}
+                    >
+                      {recipient.icon}
+                    </div>
+                    <span className="text-sm font-medium">{recipient.label}</span>
+                  </Button>
+                );
+              })}
             </div>
           </div>
         </div>

@@ -410,6 +410,35 @@ Use Badge component for secondary tags and metadata; use inline pattern for the 
 
 ---
 
+### Microcopy for empty/zero numeric values (stat cards, KPI tables)
+
+**Never write a full AI-sounding sentence to describe a missing/zero value** inside a stat
+card, KPI tile, or analysis table cell — e.g. ~~"Sin margen calculado"~~, ~~"Sin coste de
+transporte registrado"~~, ~~"Sin datos de rentabilidad para este pedido"~~. These read as
+generated placeholder copy, not product copy, and don't match how the rest of the app
+communicates absence of a value.
+
+**Use instead:**
+- `"-"` for a value that is genuinely absent (no data to compute it) — same pattern as
+  table empty cells.
+- `0` or `0,00 €` / `0%` for a value that is numerically zero (has a defined unit, just
+  computes to nothing) — never replace a real number with a sentence.
+
+```tsx
+// ❌ PROHIBIDO
+<p className="text-sm text-muted-foreground">Sin margen calculado para este pedido</p>
+
+// ✅ CORRECTO — mismo componente de valor que el caso con datos, solo cambia el contenido
+<p className="text-lg font-medium">{margin != null ? formatCurrency(margin) : '-'}</p>
+<p className="text-lg font-medium">{formatPercent(marginPercent ?? 0)}</p>
+```
+
+This applies to any KPI/stat card or analysis table across the app (order profitability,
+cost analysis, dashboards) — not just the order editor. See `PL-029` in
+`project-learnings.md`.
+
+---
+
 ### Error States
 
 **Inline (field errors):** `text-red-400 text-xs pt-1` with `*` prefix
@@ -563,6 +592,12 @@ Extracted from `.claude/rules/`, GAP audits, and patterns found in the codebase:
 - Never use a `<Spinner>` or Loader2 as the primary loading state for lists or forms — use Skeleton
 - Never display "Cargando..." as a text loading state outside the `<Loader>` session gate context
 - Never trigger a destructive action (delete, close, irreversible) on a single button click without AlertDialog confirmation
+
+**Copy:**
+- Never write a full descriptive sentence ("Sin X calculado para...", "No hay Y disponible
+  para este...") to represent an empty/zero value in a stat card, KPI tile, or analysis
+  table cell — use `-` for absent data or `0` / `0,00 €` for a real zero. See § Microcopy
+  for empty/zero numeric values and `PL-029`.
 
 **Components:**
 - Never rewrite or duplicate a shadcn component — extend via `className` + `cn()`

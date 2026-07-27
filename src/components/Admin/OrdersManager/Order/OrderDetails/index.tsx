@@ -273,11 +273,6 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
                         <div className="text-muted-foreground mt-1 text-xs">
                           {getNullableCurrencyPerKg(order.costPerKg)}
                         </div>
-                        {order.totalCost == null ? (
-                          <div className="text-muted-foreground mt-1 text-xs">
-                            Sin coste calculable
-                          </div>
-                        ) : null}
                       </div>
                       <div>
                         <div className="text-muted-foreground text-sm">Margen bruto</div>
@@ -496,7 +491,7 @@ const OrderDetails = ({ canViewCostData = true }: OrderDetailsProps) => {
           <InfoRow
             label="Coste total"
             value={getNullableCurrency(order.totalCost)}
-            sub={order.totalCost == null ? 'Sin coste' : getNullableCurrencyPerKg(order.costPerKg)}
+            sub={getNullableCurrencyPerKg(order.costPerKg)}
           />
           <InfoRow
             label="Margen bruto"

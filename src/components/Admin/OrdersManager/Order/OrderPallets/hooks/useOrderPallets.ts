@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useOrderContext } from '@/context/OrderContext';
 import { useSession } from 'next-auth/react';
 import { useStoresOptions } from '@/hooks/useStoresOptions';
@@ -94,6 +94,9 @@ export function useOrderPallets() {
   const [isUnlinkingAll, setIsUnlinkingAll] = useState(false);
   const [selectedLinkedPalletIds, setSelectedLinkedPalletIds] = useState<(number | string)[]>([]);
   const [isPrintingExpeditionLabels, setIsPrintingExpeditionLabels] = useState(false);
+  const [isBulkPalletLabelDialogOpen, setIsBulkPalletLabelDialogOpen] = useState(false);
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
+  const [isUnlinkingSelected, setIsUnlinkingSelected] = useState(false);
 
   const [isCreateFromForecastDialogOpen, setIsCreateFromForecastDialogOpen] = useState(false);
   const [createFromForecastLot, setCreateFromForecastLot] = useState('');
@@ -268,6 +271,41 @@ export function useOrderPallets() {
     }
   }, [canPrintExpeditionLabels, selectedLinkedPalletIds]);
 
+  const selectedPalletsForBulkLabel = useMemo(
+    () => (pallets || []).filter((p) => selectedLinkedPalletIds.includes(p.id)),
+    [pallets, selectedLinkedPalletIds]
+  );
+
+  const handleOpenBulkPalletLabelDialog = useCallback(() => {
+    if (selectedLinkedPalletIds.length === 0) {
+      notify.error({ title: 'Selecciona al menos un palet' });
+      return;
+    }
+    setIsBulkPalletLabelDialogOpen(true);
+  }, [selectedLinkedPalletIds]);
+
+  const handleCloseBulkPalletLabelDialog = useCallback(() => {
+    setIsBulkPalletLabelDialogOpen(false);
+  }, []);
+
+  const handleUnlinkSelectedPallets = useCallback(() => {
+    if (selectedLinkedPalletIds.length === 0) {
+      notify.error({ title: 'Selecciona al menos un palet' });
+      return;
+    }
+    setConfirmAction('unlinkSelected');
+    setIsConfirmDialogOpen(true);
+  }, [selectedLinkedPalletIds]);
+
+  const handleDeleteSelectedPallets = useCallback(() => {
+    if (selectedLinkedPalletIds.length === 0) {
+      notify.error({ title: 'Selecciona al menos un palet' });
+      return;
+    }
+    setConfirmAction('deleteSelected');
+    setIsConfirmDialogOpen(true);
+  }, [selectedLinkedPalletIds]);
+
   const handleClonePallet = useCallback(
     async (palletId: number | string) => {
       try {
@@ -335,6 +373,45 @@ export function useOrderPallets() {
         } finally {
           setIsUnlinkingAll(false);
         }
+      } else if (confirmAction === 'unlinkSelected') {
+        if (selectedLinkedPalletIds.length === 0) {
+          notify.error({ title: 'No hay palets seleccionados para desvincular' });
+          setIsConfirmDialogOpen(false);
+          setConfirmAction(null);
+          setConfirmPalletId(null);
+          return;
+        }
+        setIsUnlinkingSelected(true);
+        try {
+          await onUnlinkAllPallets(selectedLinkedPalletIds);
+          setSelectedLinkedPalletIds([]);
+        } finally {
+          setIsUnlinkingSelected(false);
+        }
+      } else if (confirmAction === 'deleteSelected') {
+        if (selectedLinkedPalletIds.length === 0) {
+          notify.error({ title: 'No hay palets seleccionados para eliminar' });
+          setIsConfirmDialogOpen(false);
+          setConfirmAction(null);
+          setConfirmPalletId(null);
+          return;
+        }
+        setIsDeletingSelected(true);
+        try {
+          // No existe endpoint bulk de borrado en el backend: se itera reutilizando
+          // onDeletePallet (ya gestiona su propio notify de éxito/error por palet), sin
+          // dejar que el fallo de uno interrumpa el resto de la selección.
+          for (const id of selectedLinkedPalletIds) {
+            try {
+              await onDeletePallet(id);
+            } catch (err) {
+              console.error(`Error al eliminar el palet ${id}:`, err);
+            }
+          }
+          setSelectedLinkedPalletIds([]);
+        } finally {
+          setIsDeletingSelected(false);
+        }
       }
       setIsConfirmDialogOpen(false);
       setConfirmAction(null);
@@ -345,7 +422,15 @@ export function useOrderPallets() {
       notify.error({ title: 'Error al ejecutar la acción', description: msg });
       if (confirmAction === 'unlink') setUnlinkingPalletId(null);
     }
-  }, [confirmAction, confirmPalletId, pallets, onDeletePallet, onUnlinkPallet, onUnlinkAllPallets]);
+  }, [
+    confirmAction,
+    confirmPalletId,
+    pallets,
+    selectedLinkedPalletIds,
+    onDeletePallet,
+    onUnlinkPallet,
+    onUnlinkAllPallets,
+  ]);
 
   const handleCancelAction = useCallback(() => {
     setIsConfirmDialogOpen(false);
@@ -784,6 +869,10 @@ export function useOrderPallets() {
     isUnlinkingAll,
     isPrintingExpeditionLabels,
     canPrintExpeditionLabels,
+    isBulkPalletLabelDialogOpen,
+    selectedPalletsForBulkLabel,
+    isDeletingSelected,
+    isUnlinkingSelected,
     isCreateFromForecastDialogOpen,
     createFromForecastLot,
     setCreateFromForecastLot,
@@ -805,6 +894,10 @@ export function useOrderPallets() {
     handleDeselectAllLinkedPallets,
     handlePrintPalletExpeditionLabel,
     handlePrintSelectedPalletExpeditionLabels,
+    handleOpenBulkPalletLabelDialog,
+    handleCloseBulkPalletLabelDialog,
+    handleUnlinkSelectedPallets,
+    handleDeleteSelectedPallets,
     handleClonePallet,
     handleConfirmAction,
     handleCancelAction,

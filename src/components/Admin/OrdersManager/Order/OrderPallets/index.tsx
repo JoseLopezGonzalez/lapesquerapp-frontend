@@ -7,6 +7,7 @@ import PalletDialog from '@/components/Admin/Pallets/PalletDialog';
 import PalletLabelDialog from '@/components/Admin/Pallets/PalletLabelDialog';
 import StoreSelectionDialog from './dialogs/StoreSelectionDialog';
 import ConfirmActionDialog from './dialogs/ConfirmActionDialog';
+import BulkPalletLabelDialog from './dialogs/BulkPalletLabelDialog';
 import CreateFromForecastDialog from './dialogs/CreateFromForecastDialog';
 import LinkPalletsDialog from './dialogs/LinkPalletsDialog';
 import OrderPalletsToolbar from './components/OrderPalletsToolbar';
@@ -55,6 +56,10 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
     isUnlinkingAll,
     isPrintingExpeditionLabels,
     canPrintExpeditionLabels,
+    isBulkPalletLabelDialogOpen,
+    selectedPalletsForBulkLabel,
+    isDeletingSelected,
+    isUnlinkingSelected,
     isCreateFromForecastDialogOpen,
     createFromForecastLot,
     setCreateFromForecastLot,
@@ -76,6 +81,10 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
     handleDeselectAllLinkedPallets,
     handlePrintPalletExpeditionLabel,
     handlePrintSelectedPalletExpeditionLabels,
+    handleOpenBulkPalletLabelDialog,
+    handleCloseBulkPalletLabelDialog,
+    handleUnlinkSelectedPallets,
+    handleDeleteSelectedPallets,
     handleClonePallet,
     handleConfirmAction,
     handleCancelAction,
@@ -154,6 +163,12 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
             isPrintingExpeditionLabels={isPrintingExpeditionLabels}
             canPrintExpeditionLabels={canPrintExpeditionLabels}
             onPrintSelectedExpeditionLabels={handlePrintSelectedPalletExpeditionLabels}
+            onPrintSelectedLabels={handleOpenBulkPalletLabelDialog}
+            onUnlinkSelected={handleUnlinkSelectedPallets}
+            onDeleteSelected={handleDeleteSelectedPallets}
+            onCancelSelection={handleDeselectAllLinkedPallets}
+            isUnlinkingSelected={isUnlinkingSelected}
+            isDeletingSelected={isDeletingSelected}
           />
         </div>
       ) : (
@@ -171,6 +186,12 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
             isPrintingExpeditionLabels={isPrintingExpeditionLabels}
             canPrintExpeditionLabels={canPrintExpeditionLabels}
             onPrintSelectedExpeditionLabels={handlePrintSelectedPalletExpeditionLabels}
+            onPrintSelectedLabels={handleOpenBulkPalletLabelDialog}
+            onUnlinkSelected={handleUnlinkSelectedPallets}
+            onDeleteSelected={handleDeleteSelectedPallets}
+            onCancelSelection={handleDeselectAllLinkedPallets}
+            isUnlinkingSelected={isUnlinkingSelected}
+            isDeletingSelected={isDeletingSelected}
           />
           <CardContent className="flex-1 overflow-auto">
             <OrderPalletsContent
@@ -239,6 +260,15 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
         onCancel={handleCancelAction}
         isUnlinking={unlinkingPalletId !== null || isUnlinkingAll}
         unlinkAllCount={confirmAction === 'unlinkAll' ? pallets.length : undefined}
+        selectedCount={selectedLinkedPalletIds.length}
+        isProcessing={isDeletingSelected || isUnlinkingSelected}
+      />
+
+      {/* Bulk PalletLabelDialog (etiqueta no-expedición sobre la selección) */}
+      <BulkPalletLabelDialog
+        isOpen={isBulkPalletLabelDialogOpen}
+        onClose={handleCloseBulkPalletLabelDialog}
+        pallets={selectedPalletsForBulkLabel}
       />
 
       {/* PalletDialogWrapper */}
