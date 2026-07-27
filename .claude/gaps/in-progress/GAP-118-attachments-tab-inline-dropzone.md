@@ -127,11 +127,65 @@ Detectado por Jose en navegación de prueba manual, 2026-07-27.
 
 ### Archivos creados
 
+- Ninguno.
+
 ### Archivos modificados
+
+- `src/services/domain/orders/orderAttachmentService.ts` — nuevas constantes
+  `MAX_DOCUMENT_SIZE_BYTES` (20MB) / `MAX_IMAGE_SIZE_BYTES` (10MB) y función
+  `validateAttachmentFile(file, collection)` que valida MIME type y tamaño
+  contra los límites ya comunicados en el dropzone existente, devolviendo un
+  mensaje de error o `null`.
+- `src/components/Admin/OrdersManager/Order/OrderAttachments/OrderAttachmentUploadDialog.tsx`
+  — reescrito para soportar múltiples archivos precargados: nuevo prop
+  `initialFiles?: File[] | null` (consumido vía `useEffect` sobre
+  `[initialFiles, applyFiles]`), estado `pendingFiles: PendingAttachmentFile[]`
+  (cada uno con `id`, `file`, `collection` y `error`), lista con fila
+  (`PendingFileRow`) que permite quitar cada archivo y alternar manualmente
+  su tipo (documento/imagen, revalidando tamaño al cambiar), input
+  `<input type="file" multiple>`, dropzone y zona de lista ambas reciben
+  `onDrop`/`onDragOver`/`onDragLeave`. El envío (`handleSubmit`) itera
+  `uploadMutation.mutateAsync` secuencialmente sobre los archivos válidos,
+  deja en la lista los que fallaron (o los que ya tenían error de validación)
+  para reintento/eliminación manual, y solo cierra el modal si todos los
+  envíos tuvieron éxito.
+- `src/components/Admin/OrdersManager/Order/OrderAttachments/index.tsx` —
+  añadido estado `droppedFiles` / `isDraggingOverTab` / `dragCounterRef` y
+  handlers `handleTabDragEnter/Over/Leave/Drop` en el `div` raíz (cubre tanto
+  el layout mobile como el `Card` desktop, ya que ambos cuelgan de ese mismo
+  contenedor). Overlay visual con borde discontinuo + `bg-primary/5` (mismo
+  lenguaje que el dropzone del modal) se muestra mientras `isDraggingOverTab`
+  es `true`. Al soltar, los archivos se guardan en `droppedFiles` y se abre
+  el modal (`setUploadOpen(true)`), que los recibe vía `initialFiles`.
+  `handleUploadOpenChange` limpia `droppedFiles` al cerrar el modal.
 
 ### Decisiones tomadas durante la implementación
 
+- El contador de `dragenter`/`dragleave` (`dragCounterRef`) evita el parpadeo
+  del overlay al arrastrar sobre elementos hijos (cards, botones), patrón
+  estándar para drag-and-drop anidado en el DOM.
+- Los handlers de drag-and-drop se colocan en el `div` raíz del componente
+  (que envuelve tanto la rama mobile como la desktop) en vez de duplicarlos
+  en `Card` y en el wrapper mobile por separado — un único punto cubre "el
+  área completa del tab" pedida en el GAP sin duplicar lógica.
+- El campo "Notas" del modal es único y se aplica a todos los archivos del
+  envío (igual que el patrón de `UploadZone` en `PalletImagesTab`, tomado
+  como referencia) en vez de un campo de notas por archivo — no estaba
+  explícitamente exigido por los criterios de aceptación, que solo piden
+  poder quitar cada archivo y validarlo individualmente.
+- No se creó un endpoint bulk: se reutiliza `uploadMutation.mutateAsync` del
+  hook `useOrderAttachments` existente, iterando secuencialmente por archivo,
+  tal como exige la restricción del GAP.
+
 ### Desviaciones del plan (si las hay)
+
+- El selector "Tipo de adjunto" (radiogroup grande con auto-detección
+  visible) se sustituyó por un toggle compacto de dos iconos por fila de
+  archivo (documento/imagen), ya que el diseño original de radiogroup grande
+  no escala a una lista de N archivos. La detección automática por MIME type
+  se mantiene (`inferCollection`), solo cambió su representación visual; el
+  indicador "Auto-detectado" se eliminó a favor de mostrar directamente el
+  tipo seleccionado en cada fila.
 
 ---
 

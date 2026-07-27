@@ -63,8 +63,8 @@ podría agruparse en el mismo commit si Jose lo prefiere.
 
 ## Criterios de aceptación
 
-- [ ] El botón tiene `aria-label` correcto para ambos estados (idle/recargando).
-- [ ] `npm run lint` limpio.
+- [x] El botón tiene `aria-label` correcto para ambos estados (idle/recargando).
+- [x] `npm run lint` limpio.
 
 ## Plan de validación
 
@@ -76,11 +76,17 @@ npm run lint
 
 ## Notas de implementación
 
-{se rellena durante la implementación}
+Implementado tal cual la solución propuesta: se añadió `aria-label` dinámico
+(idle/recargando) al `Button` de recarga, manteniendo el `title` existente
+como tooltip en desktop.
 
 ## Resultado
 
-{se rellena al terminar la implementación}
+`src/components/Warehouse/OperarioDashboard/index.tsx:78-91` — el botón ahora
+tiene `aria-label={isRefreshing ? 'Recargando recepciones y salidas de cebo' : 'Actualizar recepciones y salidas de cebo'}`
+además del `title` ya existente. `npm run lint` limpio (0 errores; los 2
+warnings preexistentes en el archivo son de `no-restricted-syntax` en líneas
+62-63, no relacionados con este cambio — ver GAP-V2-134).
 
 ## Resultado de auditoría
 

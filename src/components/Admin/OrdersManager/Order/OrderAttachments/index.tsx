@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, type MouseEvent } from 'react';
+import { useState, useEffect, useRef, useCallback, type MouseEvent } from 'react';
 import Image from 'next/image';
 import {
   File,
@@ -19,6 +19,7 @@ import {
   ChevronRight,
   ExternalLink,
   MoreVertical,
+  Upload,
 } from 'lucide-react';
 import { useMe } from '@/hooks/useMe';
 import { Button } from '@/components/ui/button';
@@ -693,12 +694,47 @@ const OrderAttachments = () => {
   } = useOrderAttachments(orderId);
 
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState<File[] | null>(null);
+  const [isDraggingOverTab, setIsDraggingOverTab] = useState(false);
+  const dragCounterRef = useRef(0);
   const [editTarget, setEditTarget] = useState<OrderAttachment | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [previewAttachmentId, setPreviewAttachmentId] = useState<number | null>(null);
+
+  const handleUploadOpenChange = useCallback((open: boolean) => {
+    setUploadOpen(open);
+    if (!open) setDroppedFiles(null);
+  }, []);
+
+  const handleTabDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!e.dataTransfer.types.includes('Files')) return;
+    dragCounterRef.current += 1;
+    setIsDraggingOverTab(true);
+  };
+
+  const handleTabDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleTabDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current = Math.max(0, dragCounterRef.current - 1);
+    if (dragCounterRef.current === 0) setIsDraggingOverTab(false);
+  };
+
+  const handleTabDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounterRef.current = 0;
+    setIsDraggingOverTab(false);
+    const files = Array.from(e.dataTransfer.files ?? []);
+    if (!files.length) return;
+    setDroppedFiles(files);
+    setUploadOpen(true);
+  };
 
   const handleDownload = async (attachment: OrderAttachment) => {
     setDownloadingId(attachment.id);
@@ -851,9 +887,20 @@ const OrderAttachments = () => {
   return (
     <div
       className={cn(
+        'relative',
         isMobile ? 'flex min-h-0 flex-1 flex-col' : 'flex h-full min-h-0 flex-col pb-2'
       )}
+      onDragEnter={handleTabDragEnter}
+      onDragOver={handleTabDragOver}
+      onDragLeave={handleTabDragLeave}
+      onDrop={handleTabDrop}
     >
+      {isDraggingOverTab && (
+        <div className="border-primary bg-primary/5 pointer-events-none absolute inset-2 z-20 flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed">
+          <Upload className="text-primary h-8 w-8" />
+          <p className="text-primary text-sm font-medium">Suelta para adjuntar</p>
+        </div>
+      )}
       {isMobile ? (
         <div className="flex min-h-0 flex-1 flex-col">
           <ScrollArea className="min-h-0 flex-1">
@@ -882,8 +929,9 @@ const OrderAttachments = () => {
 
       <OrderAttachmentUploadDialog
         open={uploadOpen}
-        onOpenChange={setUploadOpen}
+        onOpenChange={handleUploadOpenChange}
         uploadMutation={uploadMutation}
+        initialFiles={droppedFiles}
       />
 
       {editTarget && (

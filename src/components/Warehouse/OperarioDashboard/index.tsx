@@ -81,6 +81,11 @@ export default function OperarioDashboard({ storeId = null }: OperarioDashboardP
           onClick={handleRefresh}
           disabled={isRefreshing}
           className="shrink-0"
+          aria-label={
+            isRefreshing
+              ? 'Recargando recepciones y salidas de cebo'
+              : 'Actualizar recepciones y salidas de cebo'
+          }
           title="Actualizar recepciones y salidas de cebo"
         >
           <RotateCw className={cn('h-4 w-4', isRefreshing && 'animate-spin', 'sm:mr-2')} />

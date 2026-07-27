@@ -32,16 +32,47 @@ export { ApiError, getErrorMessage };
 
 const endpoint = (orderId: number | string) => `${API_URL_V2}orders/${orderId}/attachments`;
 
+const IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const DOCUMENT_MIME_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+];
+
+export const MAX_DOCUMENT_SIZE_BYTES = 20 * 1024 * 1024;
+export const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
+
 /** Infiere la colección a partir del MIME type del archivo. */
 export function inferCollection(file: File): OrderAttachmentCollection {
-  const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  return imageTypes.includes(file.type) ? 'order_image' : 'order_document';
+  return IMAGE_MIME_TYPES.includes(file.type) ? 'order_image' : 'order_document';
 }
 
 export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/** Valida un archivo contra tipo y tamaño admitidos para la colección dada. */
+export function validateAttachmentFile(
+  file: File,
+  collection: OrderAttachmentCollection
+): string | null {
+  const isImage = collection === 'order_image';
+  const allowedTypes = isImage ? IMAGE_MIME_TYPES : DOCUMENT_MIME_TYPES;
+  const maxSize = isImage ? MAX_IMAGE_SIZE_BYTES : MAX_DOCUMENT_SIZE_BYTES;
+
+  if (!allowedTypes.includes(file.type)) {
+    return isImage
+      ? 'Formato no válido para imagen (usa JPG, PNG o WEBP)'
+      : 'Formato no válido para documento (usa PDF, Word o Excel)';
+  }
+  if (file.size > maxSize) {
+    return `Supera el tamaño máximo permitido (${formatBytes(maxSize)})`;
+  }
+  return null;
 }
 
 export const orderAttachmentService = {
