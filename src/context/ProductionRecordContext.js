@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useCallback, useMemo } from 'react';
 import { useProductionRecord } from '@/hooks/useProductionRecord';
 import { getProductionRecord } from '@/services/productionService';
+import { updateRecordWithCalculatedTotals } from '@/helpers/production/calculateTotals';
 import { useSession } from 'next-auth/react';
 
 const ProductionRecordContext = createContext();
@@ -58,7 +59,11 @@ export function ProductionRecordProvider({
   const updateInputs = useCallback(
     async (newInputs, shouldRefresh = false) => {
       if (setRecord) {
-        setRecord((prev) => ({ ...prev, inputs: newInputs }));
+        // Recalcula totales/merma localmente para no depender de un refetch completo
+        // (ver PL sobre useProductionOutputsManager.processTransformationFactor quedando obsoleto).
+        setRecord((prev) =>
+          updateRecordWithCalculatedTotals({ ...prev, inputs: newInputs }, newInputs)
+        );
       }
       if (shouldRefresh) {
         await updateRecord();
@@ -70,7 +75,9 @@ export function ProductionRecordProvider({
   const updateOutputs = useCallback(
     async (newOutputs, shouldRefresh = false) => {
       if (setRecord) {
-        setRecord((prev) => ({ ...prev, outputs: newOutputs }));
+        setRecord((prev) =>
+          updateRecordWithCalculatedTotals({ ...prev, outputs: newOutputs }, null, null, newOutputs)
+        );
       }
       if (shouldRefresh) {
         await updateRecord();
@@ -82,7 +89,13 @@ export function ProductionRecordProvider({
   const updateConsumptions = useCallback(
     async (newConsumptions, shouldRefresh = false) => {
       if (setRecord) {
-        setRecord((prev) => ({ ...prev, parentOutputConsumptions: newConsumptions }));
+        setRecord((prev) =>
+          updateRecordWithCalculatedTotals(
+            { ...prev, parentOutputConsumptions: newConsumptions },
+            null,
+            newConsumptions
+          )
+        );
       }
       if (shouldRefresh) {
         await updateRecord();
