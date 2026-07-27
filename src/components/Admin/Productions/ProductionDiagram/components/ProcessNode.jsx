@@ -28,6 +28,7 @@ import {
   ArrowRight,
   Loader2,
   Info,
+  AlertTriangle,
 } from 'lucide-react';
 import { formatWeight } from '@/helpers/production/formatters';
 import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
@@ -62,6 +63,22 @@ const PRODUCTION_LEVEL_ROWS = [
 
 function hasValue(value) {
   return value !== null && value !== undefined;
+}
+
+function describeSourceAllocationEntry(source) {
+  const label = source.productName || (source.sourceType === 'parent_output' ? 'Proceso anterior' : 'Producto');
+  if (source.status === 'over_allocated') {
+    return `${label}: sobre-asignado ${formatWeight(Math.abs(source.gapWeight))} (${formatDecimal(Math.abs(source.gapPercentage))}%)`;
+  }
+  return `${label}: ${formatWeight(source.gapWeight)} sin asignar (${formatDecimal(source.gapPercentage)}%)`;
+}
+
+function buildSourcesAllocationTooltip(sourcesAllocation) {
+  if (!sourcesAllocation?.hasIssues) return '';
+  return sourcesAllocation.sources
+    .filter((source) => source.status !== 'ok')
+    .map(describeSourceAllocationEntry)
+    .join('\n');
 }
 
 function hasRenderableCosts(costs) {
@@ -418,6 +435,7 @@ export default function ProcessNode({ data }) {
     outputProducts = [],
     nodeCosts = null,
     accountingOutputs = [],
+    sourcesAllocation = null,
     viewMode = 'simple',
     onNavigate,
     hasSalesOrStockChildren = false,
@@ -525,6 +543,23 @@ export default function ProcessNode({ data }) {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {sourcesAllocation?.hasIssues && (
+            <div className="border-border/50 border-t pt-2">
+              <Badge
+                variant={sourcesAllocation.worstSeverity === 'critical' ? 'destructive' : 'warning'}
+                className="w-full justify-start gap-1.5 py-1 whitespace-normal"
+                title={buildSourcesAllocationTooltip(sourcesAllocation)}
+              >
+                <AlertTriangle className="h-3 w-3 shrink-0" />
+                <span className="text-left">
+                  {sourcesAllocation.worstSeverity === 'critical'
+                    ? 'Fuentes mal repartidas entre salidas'
+                    : 'Fuentes no repartidas al 100%'}
+                </span>
+              </Badge>
             </div>
           )}
 

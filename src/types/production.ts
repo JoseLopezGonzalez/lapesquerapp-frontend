@@ -83,6 +83,20 @@ export interface BoxNormalized {
   [key: string]: unknown;
 }
 
+export interface ProductionOutputSourceNormalized {
+  id?: number;
+  productionOutputId?: number;
+  sourceType?: 'stock_product' | 'parent_output' | string | null;
+  productId?: number | null;
+  product?: { id: number; name: string; code?: string | null } | null;
+  productionInputId?: number | null;
+  productionOutputConsumptionId?: number | null;
+  contributedWeightKg?: number | null;
+  contributedBoxes?: number;
+  contributionPercentage?: number | null;
+  [key: string]: unknown;
+}
+
 export interface ProductionOutputNormalized {
   id: number;
   productionRecordId: number;
@@ -93,7 +107,7 @@ export interface ProductionOutputNormalized {
   notes?: string | null;
   costPerKg?: number | null;
   totalCost?: number | null;
-  sources?: unknown[];
+  sources?: ProductionOutputSourceNormalized[];
 }
 
 export interface ProductionOutputConsumptionNormalized {

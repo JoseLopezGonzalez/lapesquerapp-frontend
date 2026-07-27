@@ -100,6 +100,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useProductionOutputsManager } from '@/hooks/production/useProductionOutputsManager';
 import { useProductionRecordContextOptional } from '@/context/ProductionRecordContext';
+import { SourcesAllocationAlert } from './SourcesAllocationAlert';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -262,6 +263,7 @@ const ProductionOutputsManager = ({
   const record = recordContext?.record;
   /** Misma lista que `record.parentOutputConsumptions`, memoizada en contexto (mejor que leer solo `record`). */
   const recordConsumptions = recordContext?.recordConsumptions ?? record?.parentOutputConsumptions;
+  const recordInputs = recordContext?.recordInputs ?? record?.inputs;
   const {
     outputs,
     products,
@@ -1334,6 +1336,12 @@ const ProductionOutputsManager = ({
 
   const mainContent = (
     <>
+      <SourcesAllocationAlert
+        inputs={recordInputs}
+        parentOutputConsumptions={recordConsumptions}
+        outputs={outputs}
+      />
+
       {!hideTitle && !renderInCard && (
         <div className="flex items-center justify-between">
           <div>

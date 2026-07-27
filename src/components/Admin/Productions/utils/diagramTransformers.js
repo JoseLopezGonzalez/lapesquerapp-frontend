@@ -7,6 +7,7 @@ import {
   mergeCostBreakdownMaterialSourcesWithOutput,
   attachParentConsumptionsToSources,
 } from '@/helpers/production/mergeCostBreakdownMaterialSources';
+import { calculateSourcesAllocation } from '@/helpers/production/sourcesAllocation';
 
 /**
  * Calcula el nivel de profundidad de un nodo en el árbol
@@ -502,6 +503,13 @@ export function transformProcessTreeToFlow(
               .map((out) => normalizeAccountingOutput(out, parentConsumptions))
               .filter(Boolean)
           : [];
+      // Se calcula siempre (no solo en modo detallado) porque es un aviso de integridad de
+      // datos, no un detalle informativo — ver GAP sobre merma/rendimiento desactualizada.
+      const sourcesAllocation = calculateSourcesAllocation(
+        node.inputs,
+        parentConsumptions,
+        node.outputs
+      );
 
       // Verificar si el nodo tiene hijos de venta/stock/reprocessed/balance (para mostrar handle de salida en nodos finales)
       const hasSalesOrStockChildren =
@@ -570,6 +578,7 @@ export function transformProcessTreeToFlow(
           outputProducts: includeDetails ? outputProducts : [],
           nodeCosts,
           accountingOutputs,
+          sourcesAllocation,
           viewMode: viewMode,
         },
       };
