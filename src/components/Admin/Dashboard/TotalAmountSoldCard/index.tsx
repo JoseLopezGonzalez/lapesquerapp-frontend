@@ -1,14 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
-import { Toggle } from '@/components/ui/toggle';
 import { TrendingUp, TrendingDown, Info, Calendar } from 'lucide-react';
-import { useOrdersTotalAmountStats } from '@/hooks/useOrdersStats';
+import { useOrdersTotalAmountStats, useAuxiliaryLinesTotalAmountStats } from '@/hooks/useOrdersStats';
 import { formatDecimalCurrency } from '@/helpers/formats/numbers/formatNumbers';
 
 interface OrdersTotalAmountStats {
@@ -29,10 +27,12 @@ const formatDateRange = (from: string, to: string) => {
 };
 
 export function TotalAmountSoldCard() {
-  const [includeAuxiliary, setIncludeAuxiliary] = useState(false);
-  const { data, isLoading } = useOrdersTotalAmountStats({ includeAuxiliary }) as {
+  const { data, isLoading } = useOrdersTotalAmountStats() as {
     data: OrdersTotalAmountStats | null;
     isLoading: boolean;
+  };
+  const { data: auxiliaryData } = useAuxiliaryLinesTotalAmountStats() as {
+    data: OrdersTotalAmountStats | null;
   };
 
   const percentage = data?.percentageChange;
@@ -66,27 +66,16 @@ export function TotalAmountSoldCard() {
       <CardHeader className="p-0 pb-2">
         <div className="flex items-center justify-between">
           <CardDescription>Importe Total de Ventas</CardDescription>
-          <div className="flex items-center gap-1">
-            <Toggle
-              pressed={includeAuxiliary}
-              onPressedChange={setIncludeAuxiliary}
+          {hasValidPercentage && TrendIcon && (
+            <Badge
               variant="outline"
-              size="sm"
-              className="text-xs"
+              className={`flex items-center gap-1 px-2 py-1 text-xs ${trendColor}`}
             >
-              Incluir auxiliares
-            </Toggle>
-            {hasValidPercentage && TrendIcon && (
-              <Badge
-                variant="outline"
-                className={`flex items-center gap-1 px-2 py-1 text-xs ${trendColor}`}
-              >
-                <TrendIcon className="h-3 w-3" />
-                {(percentage as number) > 0 ? '+' : ''}
-                {(percentage as number).toFixed(1)}%
-              </Badge>
-            )}
-          </div>
+              <TrendIcon className="h-3 w-3" />
+              {(percentage as number) > 0 ? '+' : ''}
+              {(percentage as number).toFixed(1)}%
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-start gap-2">
@@ -98,7 +87,6 @@ export function TotalAmountSoldCard() {
                 </h1>
                 <div className="mt-1 text-xs text-neutral-500 italic dark:text-neutral-400">
                   {formatDecimalCurrency(data?.value ?? 0)} con IVA
-                  {includeAuxiliary ? ' (incl. auxiliares)' : ''}
                 </div>
               </div>
             ) : (
@@ -171,6 +159,35 @@ export function TotalAmountSoldCard() {
                     <div className="text-foreground-300 text-xs italic">
                       No hay datos de años anteriores
                     </div>
+                  )}
+
+                  {auxiliaryData && (
+                    <>
+                      <Separator className="bg-foreground-300 my-2" />
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-foreground-300 text-[11px] font-semibold tracking-wider uppercase">
+                          Otros artículos
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Importe</span>
+                        <span className="font-medium">
+                          {formatDecimalCurrency(auxiliaryData.value)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Subtotal</span>
+                        <span className="font-medium">
+                          {formatDecimalCurrency(auxiliaryData.subtotal)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>IVA</span>
+                        <span className="font-medium">
+                          {formatDecimalCurrency(auxiliaryData.tax)}
+                        </span>
+                      </div>
+                    </>
                   )}
                 </div>
               </TooltipContent>

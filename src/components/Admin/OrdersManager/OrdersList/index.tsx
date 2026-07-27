@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useRef, useEffect, type ChangeEvent } from 'react';
+import { memo, useRef, useEffect, useState, type ChangeEvent } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   PackageSearch,
@@ -107,6 +107,8 @@ const OrdersList = ({
   const scrollPositionRef = useRef(0);
   const prevSelectedOrderIdRef = useRef(selectedOrderId);
   const prevOrdersLengthRef = useRef(orders?.length || 0);
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
 
   // Interceptar botón back del navegador/dispositivo
   useBackButton(() => {
@@ -146,6 +148,30 @@ const OrdersList = ({
       }
     }
   }, [selectedOrderId, orders]);
+
+  // Mostrar el fade de scroll solo cuando realmente hay contenido oculto arriba/abajo
+  useEffect(() => {
+    const viewport = scrollAreaRef.current?.querySelector<HTMLDivElement>(
+      '[data-radix-scroll-area-viewport]'
+    );
+    if (!viewport) return;
+
+    const updateScrollFade = () => {
+      const { scrollTop, scrollHeight, clientHeight } = viewport;
+      setCanScrollUp(scrollTop > 0);
+      setCanScrollDown(scrollTop + clientHeight < scrollHeight - 1);
+    };
+
+    updateScrollFade();
+    viewport.addEventListener('scroll', updateScrollFade);
+    const resizeObserver = new ResizeObserver(updateScrollFade);
+    resizeObserver.observe(viewport);
+
+    return () => {
+      viewport.removeEventListener('scroll', updateScrollFade);
+      resizeObserver.disconnect();
+    };
+  }, [orders]);
 
   const exportDocument = async () => {
     const doExport = async () => {
@@ -378,9 +404,19 @@ const OrdersList = ({
         {/* Lista de orders - Solo esta sección es scrollable */}
         {orders?.length > 0 ? (
           <div className="relative min-h-0 flex-1 overflow-hidden">
-            {/* Fade gradients para indicar scroll arriba/abajo */}
-            <div className="from-background pointer-events-none absolute top-0 right-0 left-0 z-10 h-8 bg-gradient-to-b to-transparent" />
-            <div className="from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent" />
+            {/* Fade gradients para indicar scroll arriba/abajo - solo cuando hay contenido oculto */}
+            <div
+              className={cn(
+                'from-background pointer-events-none absolute top-0 right-0 left-0 z-10 h-8 bg-gradient-to-b to-transparent transition-opacity duration-200',
+                canScrollUp ? 'opacity-100' : 'opacity-0'
+              )}
+            />
+            <div
+              className={cn(
+                'from-background pointer-events-none absolute right-0 bottom-0 left-0 z-10 h-8 bg-gradient-to-t to-transparent transition-opacity duration-200',
+                canScrollDown ? 'opacity-100' : 'opacity-0'
+              )}
+            />
             <ScrollArea ref={scrollAreaRef} className="h-full w-full">
               <div
                 className={`flex flex-col ${isMobile ? 'gap-4 pt-2 pr-2 pb-6 pl-2' : 'gap-3 pt-2 pr-2 pb-4 pl-2'}`}

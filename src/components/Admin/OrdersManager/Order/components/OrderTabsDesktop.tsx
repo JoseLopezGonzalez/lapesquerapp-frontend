@@ -121,12 +121,13 @@ export default function OrderTabsDesktop({
                         <ChevronDown className="size-3.5" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
+                    <DropdownMenuContent align="start" className="w-auto min-w-48">
                       {overflowSections.map((section) => (
                         <DropdownMenuItem
                           key={section.id}
                           onSelect={() => onTabChange(section.id)}
                           className={cn(
+                            'whitespace-nowrap',
                             activeTab === section.id && 'bg-accent text-accent-foreground'
                           )}
                         >

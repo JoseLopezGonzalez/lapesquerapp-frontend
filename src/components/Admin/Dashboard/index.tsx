@@ -20,7 +20,6 @@ import { DailyCalibersBySpeciesCard } from './DailyCalibersBySpeciesCard';
 import { OrdersProfitabilitySummaryCard } from './OrdersProfitabilitySummaryCard';
 import { OrdersProfitabilityProductsCard } from './OrdersProfitabilityProductsCard';
 import { CompanySetupAlert } from './CompanySetupAlert';
-import { AuxiliaryLinesTotalCard } from './AuxiliaryLinesTotalCard';
 import { AuxiliaryLinesByProductCard } from './AuxiliaryLinesByProductCard';
 import { AuxiliaryLinesByCustomerCard } from './AuxiliaryLinesByCustomerCard';
 import { AuxiliaryLinesChartCard } from './AuxiliaryLinesChartCard';
@@ -80,9 +79,6 @@ export default function Dashboard() {
             </div>
             <div className="w-full overflow-hidden">
               <OrdersProfitabilitySummaryCard />
-            </div>
-            <div className="h-full w-full overflow-hidden">
-              <AuxiliaryLinesTotalCard />
             </div>
           </div>
 

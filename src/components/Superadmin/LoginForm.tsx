@@ -109,7 +109,13 @@ function SuperadminFormFields({
   }
 
   return (
-    <div className="space-y-4">
+    <form
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleVerifyOtp();
+      }}
+    >
       <div className="flex flex-col gap-1">
         <Alert className="max-w-sm">
           <Mail className="h-4 w-4" />
@@ -134,7 +140,13 @@ function SuperadminFormFields({
         <Label className={`${isMobile ? 'text-base ' : ''}w-full text-center`}>
           Código de 6 dígitos
         </Label>
-        <InputOTP maxLength={6} pattern={REGEXP_ONLY_DIGITS} value={otp} onChange={handleOtpChange}>
+        <InputOTP
+          maxLength={6}
+          pattern={REGEXP_ONLY_DIGITS}
+          value={otp}
+          onChange={handleOtpChange}
+          autoFocus
+        >
           <InputOTPGroup className="gap-2">
             {[0, 1, 2, 3, 4, 5].map((index) => (
               <InputOTPSlot key={index} index={index} className={otpSlotClass} />
@@ -147,9 +159,8 @@ function SuperadminFormFields({
       <div className="flex flex-col gap-2">
         <Button
           className={buttonClass}
-          type="button"
+          type="submit"
           disabled={submitting || otp.length < 6}
-          onClick={() => handleVerifyOtp()}
         >
           {submitting ? 'Verificando...' : 'Verificar código'}
         </Button>
@@ -168,7 +179,7 @@ function SuperadminFormFields({
           {cooldown > 0 ? `Reenviar código (${cooldown}s)` : 'Reenviar código'}
         </button>
       </div>
-    </div>
+    </form>
   );
 }
 

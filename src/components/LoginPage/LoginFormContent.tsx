@@ -34,6 +34,7 @@ type InputOTPProps = React.PropsWithChildren<{
   value?: string;
   onChange?: (value: string) => void;
   disabled?: boolean;
+  autoFocus?: boolean;
 }>;
 const InputOTP = InputOTPBase as React.ComponentType<InputOTPProps>;
 const InputOTPGroup = InputOTPGroupBase as React.ComponentType<
@@ -99,7 +100,13 @@ export default function LoginFormContent({
 
   if (!accessRequested) {
     return (
-      <>
+      <form
+        className={isMobile ? 'flex flex-col gap-6' : 'flex flex-col gap-4'}
+        onSubmit={(e) => {
+          e.preventDefault();
+          onEmailSubmit();
+        }}
+      >
         <div
           className={
             isMobile
@@ -116,26 +123,28 @@ export default function LoginFormContent({
             placeholder={exampleEmail}
             disabled={!tenantActive}
             className={inputClass}
+            autoFocus
             {...(emailRegister ? emailRegister('email') : {})}
           />
           {emailErrors?.email?.message && (
             <p className="text-destructive text-sm">{emailErrors.email.message}</p>
           )}
         </div>
-        <Button
-          className={buttonClass}
-          type="button"
-          disabled={loading || !tenantActive}
-          onClick={onEmailSubmit}
-        >
+        <Button className={buttonClass} type="submit" disabled={loading || !tenantActive}>
           {loading ? 'Enviando...' : 'Acceder'}
         </Button>
-      </>
+      </form>
     );
   }
 
   return (
-    <>
+    <form
+      className={isMobile ? 'flex flex-col gap-6' : 'flex flex-col gap-4'}
+      onSubmit={(e) => {
+        e.preventDefault();
+        onOtpSubmit();
+      }}
+    >
       {otpControl && <OtpWatcher control={otpControl} onIsComplete={setIsOtpComplete} />}
       <div className="flex flex-col gap-1">
         <Alert className="max-w-sm">
@@ -172,6 +181,7 @@ export default function LoginFormContent({
                 value={field.value}
                 onChange={field.onChange}
                 disabled={!tenantActive}
+                autoFocus
               >
                 <InputOTPGroup className="gap-2">
                   {[0, 1, 2, 3, 4, 5].map((index) => (
@@ -189,9 +199,8 @@ export default function LoginFormContent({
       <div className="flex flex-col gap-2">
         <Button
           className={buttonClass}
-          type="button"
+          type="submit"
           disabled={loading || !tenantActive || !isOtpComplete}
-          onClick={onOtpSubmit}
         >
           {loading ? 'Verificando...' : 'Verificar código'}
         </Button>
@@ -199,6 +208,6 @@ export default function LoginFormContent({
           Volver
         </Button>
       </div>
-    </>
+    </form>
   );
 }
