@@ -16,15 +16,19 @@
 |---|---|---|---|
 | 0 | Contexto + equipo de agentes | ✅ Completada 2026-07-27 | — |
 | 1 | Diagnóstico + comparativa + propuesta (este documento) | ✅ Completada 2026-07-27 | — |
-| A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | ⬜ Pendiente de arrancar | S |
+| A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | 🟡 GAP-119 abierto (2026-07-27) | S |
 | B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ⬜ Pendiente | L |
-| C | Pricing + Legal + PT/EN | ⬜ Pendiente | M |
+| C | Pricing + Legal + PT/EN | ⬜ Pendiente (páginas legales mínimas se adelantan en GAP-119, ver nota) | M |
 | D | Blog + GEO/AEO | ⬜ Pendiente | M |
 | E | Analítica + cadencia trimestral continua | ⬜ Pendiente | S |
 
-**Próxima acción recomendada:** confirmar con Jose el orden de fases (recomendación:
-A primero, en paralelo con el diseño de B) y abrir el primer lote de GAPs vía
-`gap-discovery`.
+**Próxima acción concreta:** implementar `GAP-119-landing-fase-a-detener-sangria.md`
+(`.claude/gaps/open/`) — cubre CTAs rotos, badges de confianza falsos, formulario de
+leads funcional (email vía Resend), `/legal/privacy` + `/legal/terms` mínimas
+(adelantadas desde Fase C por el riesgo RGPD del formulario), `sitemap.ts`/`robots.ts`
+y copyright dinámico. Decisiones ya confirmadas por Jose (2026-07-27) — ver el GAP para
+el detalle completo. `/legal/cookies` y la traducción PT/EN de las páginas legales
+siguen en Fase C.
 
 ---
 

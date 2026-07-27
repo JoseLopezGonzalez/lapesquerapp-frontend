@@ -1,3 +1,9 @@
+'use client';
+// Necesita 'use client': usa useForm (formulario de leads) y handlers de scroll/submit
+
+import { useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,7 +18,6 @@ import {
   Globe,
   Mail,
   Phone,
-  Star,
   Sparkle,
   Ticket,
   ArrowUpRight,
@@ -20,8 +25,42 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { appName, demoUrl, infoEmail } from '@/configs/branding';
+import { notify } from '@/lib/notifications';
+import { landingLeadSchema, type LandingLeadForm } from '@/schemas/landingLeadSchema';
+import { submitLandingLead } from '@/services/landing/landingLeadService';
+
+const MODULES_SECTION_ID = 'modulos';
 
 export default function LandingPage() {
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
+  const honeypotRef = useRef<HTMLInputElement>(null);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<LandingLeadForm>({
+    resolver: zodResolver(landingLeadSchema),
+    defaultValues: { email: '' },
+  });
+
+  const handleScrollToModules = () => {
+    document.getElementById(MODULES_SECTION_ID)?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const onSubmitLead = async (data: LandingLeadForm) => {
+    setIsSubmittingLead(true);
+    try {
+      await submitLandingLead({ email: data.email, company: honeypotRef.current?.value ?? '' });
+      notify.success('Solicitud enviada. Nos pondremos en contacto contigo pronto.');
+      reset({ email: '' });
+    } catch (error) {
+      notify.error(error instanceof Error ? error.message : 'No se pudo enviar la solicitud');
+    } finally {
+      setIsSubmittingLead(false);
+    }
+  };
+
   return (
     <div className="bg-background min-h-screen">
       <section className="relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-sky-900">
@@ -41,8 +80,6 @@ export default function LandingPage() {
         </div>
         <div className="relative container mx-auto px-4 py-24 sm:py-32 lg:py-32">
           <div className="mx-auto max-w-5xl text-center">
-            {' '}
-            {/*   */}
             <div className="mb-8 flex items-center justify-center gap-2">
               <div className="rounded-xl bg-sky-500 p-3">
                 <Waves className="h-8 w-8 text-white" />
@@ -67,7 +104,12 @@ export default function LandingPage() {
                 Ver demo
                 <ArrowUpRight className="h-5 w-5" />
               </Button>
-              <Button variant="outline" size="lg" className="w-full sm:w-fit">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-fit"
+                onClick={handleScrollToModules}
+              >
                 Ver características
               </Button>
             </div>
@@ -137,7 +179,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-      <section className="bg-neutral-50 py-24 sm:py-32">
+      <section id={MODULES_SECTION_ID} className="bg-neutral-50 py-24 sm:py-32">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl tracking-tight text-gray-900 sm:text-3xl dark:text-white">
@@ -221,23 +263,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Trust Section */}
-      {/*   <section className="bg-slate-50 py-16 dark:bg-slate-900">
-                <div className="container mx-auto px-4">
-                    <div className="mx-auto max-w-2xl text-center">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                            Confiado por empresas pesqueras líderes
-                        </h3>
-                        <div className="mt-8 flex items-center justify-center gap-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <Star key={star} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                            ))}
-                            <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">4.9/5 </span> 
-                        </div>
-                    </div>
-                </div>
-            </section> */}
 
       <section className="py-16">
         <div className="container mx-auto px-4">
@@ -401,21 +426,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-      <div className="flex w-full flex-col items-center justify-center gap-10 py-20 sm:flex-row sm:gap-20">
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 dark:bg-sky-900">
-            <Shield className="h-6 w-6 text-sky-600 dark:text-sky-400" />
-          </div>
-          <h4 className="font-semibold text-gray-900 dark:text-white">Seguridad Empresarial</h4>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Certificación ISO 27001</p>
-        </div>
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 dark:bg-sky-900">
-            <Globe className="h-6 w-6 text-sky-600 dark:text-sky-400" />
-          </div>
-          <h4 className="font-semibold text-gray-900 dark:text-white">Acceso Global</h4>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">99.9% de disponibilidad</p>
-        </div>
+      <div className="flex w-full flex-col items-center justify-center py-20">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 dark:bg-sky-900">
             <FileText className="h-6 w-6 text-sky-600 dark:text-sky-400" />
@@ -436,17 +447,39 @@ export default function LandingPage() {
               Solicita acceso anticipado y sé de los primeros en experimentar el futuro de la
               gestión pesquerapp.
             </p>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Input
-                  placeholder="tu@email.com"
-                  className="border-white/20 bg-white/10 text-white placeholder:text-white/70"
+            <form
+              onSubmit={handleSubmit(onSubmitLead)}
+              className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
+              noValidate
+            >
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                <div className="text-left">
+                  <Input
+                    type="email"
+                    placeholder="tu@email.com"
+                    className="border-white/20 bg-white/10 text-white placeholder:text-white/70"
+                    disabled={isSubmittingLead}
+                    {...register('email')}
+                  />
+                  {errors.email && (
+                    <p className="pt-1 text-xs text-red-100">* {errors.email.message}</p>
+                  )}
+                </div>
+                {/* Honeypot anti-spam: invisible para usuarios reales, leído aparte del schema RHF */}
+                <input
+                  ref={honeypotRef}
+                  type="text"
+                  name="company"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="absolute h-0 w-0 opacity-0"
                 />
-                <Button variant="secondary" className="">
-                  Solicitar acceso
+                <Button type="submit" variant="secondary" disabled={isSubmittingLead}>
+                  {isSubmittingLead ? 'Enviando...' : 'Solicitar acceso'}
                 </Button>
               </div>
-            </div>
+            </form>
             <p className="mt-10 text-sm text-sky-200">Sin compromiso. Cancela cuando quieras.</p>
           </div>
         </div>
@@ -483,13 +516,13 @@ export default function LandingPage() {
           <Separator className="my-8 bg-slate-800" />
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
             <p className="text-sm text-gray-400">
-              © 2025 {appName}. Todos los derechos reservados.
+              © {new Date().getFullYear()} {appName}. Todos los derechos reservados.
             </p>
             <div className="flex gap-6">
-              <Link href="#" className="text-sm text-gray-400 hover:text-white">
+              <Link href="/legal/terms" className="text-sm text-gray-400 hover:text-white">
                 Aviso Legal
               </Link>
-              <Link href="#" className="text-sm text-gray-400 hover:text-white">
+              <Link href="/legal/privacy" className="text-sm text-gray-400 hover:text-white">
                 Política de Privacidad
               </Link>
             </div>
