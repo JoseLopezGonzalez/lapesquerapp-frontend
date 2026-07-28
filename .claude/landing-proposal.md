@@ -19,7 +19,7 @@
 | A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | ✅ GAP-119 cerrado (2026-07-28, ⚠️ aprobado con observaciones ya resueltas) | S |
 | B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ✅ B1 (GAP-120) y B2 (GAP-121) cerrados 2026-07-28 — ver §8 | L |
 | C | Pricing + Legal + PT/EN | ✅ GAP-122 cerrado 2026-07-28 — ver §9 | M |
-| D | Blog + GEO/AEO | ⬜ Pendiente | M |
+| D | Blog + GEO/AEO | 🟡 GAP-123 abierto (discovery cerrado 2026-07-28) — ver §10 | M |
 | E | Analítica + cadencia trimestral continua | ⬜ Pendiente | S |
 
 **Estado de la Fase A:** implementada y auditada. `.claude/gaps/closed/GAP-119-landing-fase-a-detener-sangria.md`
@@ -540,3 +540,35 @@ heredado: verificación visual humana en navegador todavía no hecha (ninguno de
 landing la ha tenido) — recomendado especialmente para revisar el matiz de las traducciones
 PT/EN antes de dar Fase C por cerrada del todo. **Próximo paso: Fase D (blog + GEO/AEO) cuando
 Jose quiera retomarlo, o el GAP corto de assets pendiente de B2.**
+
+---
+
+## 10. Fase D — Decisiones confirmadas (2026-07-28)
+
+Ronda de preguntas de clarificación previa a `gap-discovery` de Fase D (blog + GEO/AEO),
+respondida por Jose antes de escribir el GAP. Vinculante para GAP-123 — mismo estatus que el
+resto de este documento. GAP completo:
+`.claude/gaps/open/GAP-123-landing-fase-d-blog-geo-aeo.md`.
+
+| Dimensión | Decisión |
+|---|---|
+| **División en GAPs** | Un solo GAP cubre infraestructura + los 3 primeros artículos (mismo patrón que Fase C). |
+| **Almacenamiento de contenido** | MDX versionado en el repo (`src/content/blog/{slug}/{es,pt,en}.mdx`) — publicar es añadir archivos y desplegar, sin CMS externo. |
+| **Artículos de lanzamiento** | 3, uno por cada topic cluster ya definido en §4.6 (trazabilidad, gestión de lonjas/compras, etiquetado y cumplimiento normativo). Títulos/ángulos exactos delegados a `landing-content-writer` dentro de cada pilar, sin aprobación previa de cada título — mismo patrón que los nombres de tiers en B2. |
+| **Autoría** | Founder-led, firma de Jose. Nombre/rol exacto **pendiente de confirmar** — se publica con placeholder de texto explícito mientras tanto, misma regla de honestidad que el precio pendiente de Fase C. |
+| **Layout del índice `/blog`** | Mismo sistema monocromo de B2, sin layout alternativo. |
+| **Portada por artículo** | Placeholder Tipo 3 (`AssetPlaceholder` reutilizado de B2) — no bloquea el cierre, GAP de assets de seguimiento las sustituye. |
+| **Traducción PT/EN** | En el mismo GAP, a cargo de `landing-content-writer`, mismo patrón que Fase C. |
+| **Pillar pages (topic cluster hubs)** | No se crean en este GAP — se revisan cuando haya 2–3 artículos por cluster. |
+| **Workflow de publicación** | Vía repo/deploy — sin CMS ni panel de edición. |
+| **RSS** | Sí, un feed por locale (`/blog/rss/{locale}`), fuera del árbol `[locale]` (no necesita tocar el middleware). |
+| **Mobile** | Aplica ya. |
+| **Dependencia nueva aprobada** | `next-mdx-remote` (variante `/rsc`) — único paquete nuevo, compila MDX en Server Components. |
+
+**Decisiones técnicas del discovery** (no preguntas, derivadas de patrones ya establecidos en
+Fase C): mismo slug en los 3 locales (`/blog/{slug}`, `/pt/blog/{slug}`, `/en/blog/{slug}`);
+`src/middleware.ts` se amplía con el mismo patrón exacto ya usado para `/pricing`/`/legal/*`
+(añadir `/blog` a `isPublicLocalePath()` y al `matcher`, resto del archivo intacto);
+`sitemap.ts` se extiende con el mismo patrón de `alternates`/`hreflang` ya usado.
+
+**Próximo paso:** GAP-123 aprobado por Jose, listo para implementación cuando se solicite.
