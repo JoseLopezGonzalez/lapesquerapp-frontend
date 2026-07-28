@@ -2,8 +2,8 @@
 
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
-> Last updated: 2026-07-24
-> Total entries: 33
+> Last updated: 2026-07-28
+> Total entries: 36
 
 ## How this file works
 
@@ -126,6 +126,29 @@ Every entry has:
   `OrderCostAnalysis/index.jsx:206-222`.
 - **Status:** Follow-up: GAP-111, GAP-112, GAP-113, GAP-114.
 
+### PL-030
+- **Date:** 2026-07-28
+- **Source:** GAP-123 (Fase D landing — blog + GEO/AEO), auditoría — System Learner check candidate 1b
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** Ninguna verificación de i18n (en un GAP, en una auditoría, o en el self-check del
+  implementador) puede darse por completa comprobando solo `<title>`/`generateMetadata`/
+  `alternates.languages` o el código de estado HTTP (`curl -o /dev/null -w "%{http_code}"`). Esas
+  tres señales pueden estar perfectamente correctas mientras el **body** entero se sirve en el
+  locale por defecto — exactamente lo que ocurrió en Fases B1/B2/C hasta GAP-123, invisible en 4
+  auditorías previas. **Regla:** cualquier verificación de i18n futura debe inspeccionar
+  contenido de body real (`<h1>`, texto visible, `href` de navegación) en al menos una ruta
+  prefijada por locale (`/pt/*` o `/en/*`), e idealmente con **verificación intercalada**
+  (varias requests a distintos locales en secuencia, p.ej. es/pt/en/pt/en/es/pt) para descartar
+  bugs de caché o de contexto de request compartido entre locales — el bug real de este GAP era
+  intermitente/dependiente del orden de requests hasta que se corrigió por completo (ver PL-031).
+- **Found in:** Verificación manual de `/pt/pricing`, `/en/legal/privacy` y home en `/pt` durante
+  GAP-123 — el `<title>` estaba correctamente traducido pero el `<h1>`/cuerpo visible se servía
+  en español.
+- **Status:** Aplicado en el cierre de GAP-123 (7 rondas intercaladas es/pt/en sobre
+  `/pricing` y `/blog/etiquetado-normativa-pesca`). Aplicable a `landing-auditor` y a cualquier
+  `gap-auditor` que audite un GAP bajo `src/app/[locale]/`.
+
 ---
 
 ## CODEBASE_PATTERNS
@@ -195,6 +218,28 @@ Every entry has:
 - **Status:** Corregido en ambos archivos el 2026-07-24. Candidato a check en futuras
   auditorías de UI (`ui-audit-agent`, `design-quality-auditor`): grep de `truncate` sin
   `min-w-0` dentro de contenedores `flex`.
+
+### PL-032
+
+- **Date:** 2026-07-28
+- **Source:** GAP-123 (Fase D landing — blog + GEO/AEO), implementación — System Learner check candidate 2
+- **Category:** CODEBASE_PATTERN
+- **Confidence:** MEDIUM
+- **Entry:** Para contenido versionado en git con frontmatter (blog, páginas pilar de topic
+  cluster, casos de estudio futuros), el patrón del proyecto es "registro estático +
+  `meta.ts` tipado por carpeta de contenido": una carpeta por pieza de contenido con un
+  archivo `.md` por locale (solo cuerpo, sin frontmatter) y un `meta.ts` único que exporta un
+  `Record<Locale, Frontmatter>` tipado, leído en build/request time con `fs`/`path` desde un
+  repository server-only (nunca desde un Client Component). Evita parsear frontmatter en
+  runtime (sin `gray-matter`), da autocompletado y type-safety completos, y es coherente con
+  "TypeScript first" (`.claude/rules/typescript.md`). El registro estático de slugs sigue el
+  mismo patrón ya usado para los tiers de pricing (`TIER_KEYS` en `pricing/page.tsx`).
+- **Found in:** `src/lib/blog/blogRepository.ts` + `src/content/blog/{slug}/meta.ts` (los 3
+  artículos de GAP-123); precedente parcial en `src/app/[locale]/pricing/page.tsx`
+  (`TIER_KEYS`, registro estático sin `meta.ts` por carpeta).
+- **Status:** Confianza MEDIA — encontrado en 2 lugares, no confirmado aún por Jose como regla
+  obligatoria. Reevaluar a HIGH si se reutiliza en un tercer contenido (páginas pilar de Fase D
+  ampliada, casos de estudio).
 
 ---
 
@@ -472,6 +517,39 @@ Every entry has:
 - **Found in:** `OrderCostAnalysis/index.jsx` (cards de rentabilidad, tab Información) y
   cards + tabla del tab Análisis del mismo módulo.
 - **Status:** Corregido en el mismo turno (ver commit de la sesión 2026-07-27).
+
+### PL-031
+- **Date:** 2026-07-28
+- **Source:** GAP-123 (Fase D landing — blog + GEO/AEO), implementación — bug pre-existente
+  descubierto y confirmado explícitamente por Jose durante la sesión — System Learner check
+  candidate 1a
+- **Category:** ANTI_PATTERN
+- **Confidence:** HIGH
+- **Entry:** `setRequestLocale()` de `next-intl` nunca se llamaba en ninguna página del
+  proyecto. `src/middleware.ts` solo invoca `intlMiddleware` para rutas **sin** prefijo de
+  locale (`isPublicLocalePath()`); las rutas ya prefijadas (`/pt/*`, `/en/*`) nunca pasan por
+  el middleware — Next.js resuelve el segmento `[locale]` por carpetas sin necesitarlo — pero
+  `next-intl` necesita `setRequestLocale()` para fijar el locale ambiental que usan
+  `getTranslations()`/`useTranslations()` **sin locale explícito** (el patrón usado en casi
+  todos los componentes de la landing). Sin esa llamada, esas invocaciones ambientales caían
+  siempre al locale por defecto (`es`) bajo `/pt/*`/`/en/*` — un bug que afectó a
+  prácticamente todo el contenido de body de las Fases B1/B2/C ya cerradas (Hero,
+  ModulesBento, HowItWorks, Footer, TrustBadge, PricingPreview, LeadCaptureForm, páginas
+  legales), invisible en 4 auditorías previas porque solo el `<title>` (vía `generateMetadata`,
+  que sí recibe el locale explícito) se libraba. Con `generateStaticParams` declarado en
+  `[locale]/layout.tsx`, `setRequestLocale()` solo en el layout resultó inestable entre
+  requests intercaladas de distintos locales — cada página necesita su propia llamada, no
+  solo el layout (comportamiento documentado de `next-intl`). **Regla:** toda página bajo
+  `src/app/[locale]/**` DEBE llamar `setRequestLocale(locale)` como primera línea tras
+  `const { locale } = await params;`, antes de cualquier `getTranslations()`/render — tanto en
+  el `layout.tsx` como en cada `page.tsx` de la ruta.
+- **Found in:** Corregido en `[locale]/layout.tsx`, `[locale]/page.tsx`, `pricing/page.tsx`,
+  `legal/privacy/page.tsx`, `legal/terms/page.tsx`, `blog/page.tsx`, `blog/[slug]/page.tsx`
+  (las 7 páginas existentes bajo `[locale]` en el momento de GAP-123).
+- **Status:** Corregido en GAP-123, verificado con 7 rondas intercaladas es/pt/en (ver
+  PL-030). Toda página nueva bajo `[locale]` (Fase D ampliada, Fase E) debe incluir esta
+  llamada desde el primer commit — reflejado en `.claude/landing-context.md` §4.7 y
+  `.claude/agents/gap-discovery.md`.
 
 ---
 

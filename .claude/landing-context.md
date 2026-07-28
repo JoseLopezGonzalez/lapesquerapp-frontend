@@ -234,6 +234,19 @@ generó este documento). Esto informa la Fase 2, no la reemplaza.
   indexable, para no autocompetir en buscadores entre versiones.
 - Igual que con el resto de la landing: cero contenido inventado en PT/EN — traducción
   fiel del mensaje aprobado en ES, revisada antes de publicar.
+- **Regla técnica obligatoria (PL-031):** toda página bajo `src/app/[locale]/**` DEBE llamar
+  `setRequestLocale(locale)` como primera línea tras `const { locale } = await params;`, tanto
+  en `layout.tsx` como en cada `page.tsx` de la ruta. `src/middleware.ts` solo invoca
+  `intlMiddleware` para rutas sin prefijo de locale — las rutas ya prefijadas (`/pt/*`, `/en/*`)
+  nunca pasan por el middleware, así que sin `setRequestLocale()` cualquier
+  `getTranslations()`/`useTranslations()` sin locale explícito cae silenciosamente al locale
+  por defecto (`es`). Bug real descubierto y corregido en GAP-123: afectó a todo el body de
+  Fases B1/B2/C durante varias semanas, invisible porque `generateMetadata` (y por tanto
+  `<title>`) sí recibe el locale explícito y parecía correcto.
+- **Regla de verificación (PL-030):** ninguna comprobación de i18n se da por completa mirando
+  solo `<title>`/metadata o el código de estado HTTP — hay que inspeccionar el body real
+  (`<h1>`, texto visible, `href`) de al menos una ruta `/pt/*` o `/en/*`, idealmente con
+  requests intercaladas entre locales para descartar bugs de caché/contexto compartido.
 
 ---
 

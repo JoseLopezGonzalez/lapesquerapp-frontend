@@ -226,6 +226,11 @@ Stack: Next.js 16 App Router · React 19-rc canary · TypeScript strict · Tailw
 Regla HTTP única: todo pasa por `fetchWithTenant` — nunca `fetch()` directo.
 Regla tenant: el header `X-Tenant` lo inyecta `fetchWithTenant` automáticamente — nunca hardcodear.
 Regla de archivos: todo código nuevo es `.ts` o `.tsx` — nunca `.js`.
+Regla i18n landing (PL-031): toda página nueva bajo `src/app/[locale]/**` debe llamar
+`setRequestLocale(locale)` como primera línea tras `const { locale } = await params;` (layout
+y cada page). Sin esto, `getTranslations()`/`useTranslations()` sin locale explícito cae
+silenciosamente al locale por defecto bajo rutas prefijadas (`/pt/*`, `/en/*`) — ver
+`.claude/landing-context.md` §4.7 y `project-learnings.md` PL-031.
 
 Archivos protegidos que requieren permiso explícito de Jose:
 

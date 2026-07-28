@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link, getPathname } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { Waves } from 'lucide-react';
@@ -34,6 +34,9 @@ export default async function PrivacyPolicyPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  // Requerido con generateStaticParams (next-intl): sin esto, getTranslations() ambiental
+  // puede caer al locale por defecto en algunas requests (bug descubierto en GAP-123).
+  setRequestLocale(locale);
   const t = await getTranslations('Legal.privacy');
   const tCommon = await getTranslations('Legal.common');
   const dateLocale = DATE_LOCALES[locale] ?? 'es-ES';

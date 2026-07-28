@@ -44,6 +44,12 @@ export default async function Footer() {
           </p>
           <div className="flex gap-6">
             <Link
+              href="/blog"
+              className="text-invert-foreground/70 hover:text-invert-foreground text-sm"
+            >
+              {t('blogLink')}
+            </Link>
+            <Link
               href="/legal/terms"
               className="text-invert-foreground/70 hover:text-invert-foreground text-sm"
             >

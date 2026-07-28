@@ -92,7 +92,19 @@
       "contactHeading": "Contacto",
       "copyrightSuffix": "Todos os direitos reservados.",
       "legalTerms": "Aviso Legal",
-      "legalPrivacy": "Política de Privacidade"
+      "legalPrivacy": "Política de Privacidade",
+      "blogLink": "Blog"
+    }
+  },
+  "Blog": {
+    "indexTitle": "Blog",
+    "indexDescription": "Rastreabilidade, lotas e rotulagem: o que aprendemos a gerir pesca e congelados, sem rodeios.",
+    "backToBlog": "← Voltar ao blog",
+    "byLabel": "Por",
+    "clusters": {
+      "trazabilidad": "Rastreabilidade",
+      "lonjas-compras": "Lotas e compras",
+      "etiquetado-normativa": "Rotulagem e regulamentação"
     }
   },
   "Pricing": {

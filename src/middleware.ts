@@ -74,7 +74,16 @@ function redirectToLoginClearing(req: NextRequest, pathname: string): NextRespon
  * de archivos sin pasar por aquí.
  */
 function isPublicLocalePath(pathname: string): boolean {
-  return pathname === '/' || pathname === '/pricing' || pathname.startsWith('/legal/');
+  // '/blog/{slug}' es un único segmento — el regex evita capturar '/blog/rss/{locale}'
+  // (2 segmentos), que vive fuera del árbol [locale] y no necesita el rewrite de next-intl.
+  const isBlogArticlePath = /^\/blog\/[^/]+$/.test(pathname);
+  return (
+    pathname === '/' ||
+    pathname === '/pricing' ||
+    pathname.startsWith('/legal/') ||
+    pathname === '/blog' ||
+    isBlogArticlePath
+  );
 }
 
 export async function middleware(req: NextRequest) {
@@ -296,6 +305,8 @@ export const config = {
     '/',
     '/pricing',
     '/legal/:path*',
+    '/blog',
+    '/blog/:slug',
     '/admin/:path*',
     '/operator/:path*',
     '/comercial/:path*',

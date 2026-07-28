@@ -92,7 +92,19 @@
       "contactHeading": "Contacto",
       "copyrightSuffix": "Todos los derechos reservados.",
       "legalTerms": "Aviso Legal",
-      "legalPrivacy": "Política de Privacidad"
+      "legalPrivacy": "Política de Privacidad",
+      "blogLink": "Blog"
+    }
+  },
+  "Blog": {
+    "indexTitle": "Blog",
+    "indexDescription": "Trazabilidad, lonjas y etiquetado: lo que aprendemos gestionando pesca y congelados, sin rodeos.",
+    "backToBlog": "← Volver al blog",
+    "byLabel": "Por",
+    "clusters": {
+      "trazabilidad": "Trazabilidad",
+      "lonjas-compras": "Lonjas y compras",
+      "etiquetado-normativa": "Etiquetado y normativa"
     }
   },
   "Pricing": {

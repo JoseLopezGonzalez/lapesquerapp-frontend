@@ -92,7 +92,19 @@
       "contactHeading": "Contact",
       "copyrightSuffix": "All rights reserved.",
       "legalTerms": "Legal Notice",
-      "legalPrivacy": "Privacy Policy"
+      "legalPrivacy": "Privacy Policy",
+      "blogLink": "Blog"
+    }
+  },
+  "Blog": {
+    "indexTitle": "Blog",
+    "indexDescription": "Traceability, fish markets, and labeling: what we learn running a fishing and frozen goods business, straight up.",
+    "backToBlog": "← Back to blog",
+    "byLabel": "By",
+    "clusters": {
+      "trazabilidad": "Traceability",
+      "lonjas-compras": "Fish markets and purchasing",
+      "etiquetado-normativa": "Labeling and regulation"
     }
   },
   "Pricing": {

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import {
   Card,
   CardContent,
@@ -46,6 +46,9 @@ export async function generateMetadata({
 
 export default async function PricingPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  // Requerido con generateStaticParams (next-intl): sin esto, getTranslations() ambiental
+  // puede caer al locale por defecto en algunas requests (bug descubierto en GAP-123).
+  setRequestLocale(locale);
   const t = await getTranslations('Pricing');
   const tPreview = await getTranslations('Landing.pricingPreview');
   // /pricing no tiene su propio formulario — el CTA redirige al ancla de leads de la home,

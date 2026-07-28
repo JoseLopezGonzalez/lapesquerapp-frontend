@@ -19,7 +19,7 @@
 | A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | ✅ GAP-119 cerrado (2026-07-28, ⚠️ aprobado con observaciones ya resueltas) | S |
 | B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ✅ B1 (GAP-120) y B2 (GAP-121) cerrados 2026-07-28 — ver §8 | L |
 | C | Pricing + Legal + PT/EN | ✅ GAP-122 cerrado 2026-07-28 — ver §9 | M |
-| D | Blog + GEO/AEO | 🟡 GAP-123 abierto (discovery cerrado 2026-07-28) — ver §10 | M |
+| D | Blog + GEO/AEO | ✅ GAP-123 cerrado 2026-07-28 (⚠️ aprobado con observaciones) — ver §10 | M |
 | E | Analítica + cadencia trimestral continua | ⬜ Pendiente | S |
 
 **Estado de la Fase A:** implementada y auditada. `.claude/gaps/closed/GAP-119-landing-fase-a-detener-sangria.md`
@@ -548,12 +548,12 @@ Jose quiera retomarlo, o el GAP corto de assets pendiente de B2.**
 Ronda de preguntas de clarificación previa a `gap-discovery` de Fase D (blog + GEO/AEO),
 respondida por Jose antes de escribir el GAP. Vinculante para GAP-123 — mismo estatus que el
 resto de este documento. GAP completo:
-`.claude/gaps/open/GAP-123-landing-fase-d-blog-geo-aeo.md`.
+`.claude/gaps/closed/GAP-123-landing-fase-d-blog-geo-aeo.md`.
 
 | Dimensión | Decisión |
 |---|---|
 | **División en GAPs** | Un solo GAP cubre infraestructura + los 3 primeros artículos (mismo patrón que Fase C). |
-| **Almacenamiento de contenido** | MDX versionado en el repo (`src/content/blog/{slug}/{es,pt,en}.mdx`) — publicar es añadir archivos y desplegar, sin CMS externo. |
+| **Almacenamiento de contenido** | Markdown plano versionado en el repo (`src/content/blog/{slug}/{es,pt,en}.md` + `meta.ts` tipado) — publicar es añadir archivos y desplegar, sin CMS externo. Pivote técnico durante la implementación: de MDX (`next-mdx-remote`, dependencia nueva) a Markdown plano con `react-markdown`/`remark-gfm`, ya instalados y en uso real (`MarkdownRenderer.js` del chat IA) — cero dependencias nuevas, confirmado con Jose. |
 | **Artículos de lanzamiento** | 3, uno por cada topic cluster ya definido en §4.6 (trazabilidad, gestión de lonjas/compras, etiquetado y cumplimiento normativo). Títulos/ángulos exactos delegados a `landing-content-writer` dentro de cada pilar, sin aprobación previa de cada título — mismo patrón que los nombres de tiers en B2. |
 | **Autoría** | Founder-led, firma de Jose. Nombre/rol exacto **pendiente de confirmar** — se publica con placeholder de texto explícito mientras tanto, misma regla de honestidad que el precio pendiente de Fase C. |
 | **Layout del índice `/blog`** | Mismo sistema monocromo de B2, sin layout alternativo. |
@@ -563,7 +563,7 @@ resto de este documento. GAP completo:
 | **Workflow de publicación** | Vía repo/deploy — sin CMS ni panel de edición. |
 | **RSS** | Sí, un feed por locale (`/blog/rss/{locale}`), fuera del árbol `[locale]` (no necesita tocar el middleware). |
 | **Mobile** | Aplica ya. |
-| **Dependencia nueva aprobada** | `next-mdx-remote` (variante `/rsc`) — único paquete nuevo, compila MDX en Server Components. |
+| **Dependencia nueva** | Ninguna — tras el pivote a Markdown plano, cero paquetes nuevos en `package.json`. |
 
 **Decisiones técnicas del discovery** (no preguntas, derivadas de patrones ya establecidos en
 Fase C): mismo slug en los 3 locales (`/blog/{slug}`, `/pt/blog/{slug}`, `/en/blog/{slug}`);
@@ -571,4 +571,44 @@ Fase C): mismo slug en los 3 locales (`/blog/{slug}`, `/pt/blog/{slug}`, `/en/bl
 (añadir `/blog` a `isPublicLocalePath()` y al `matcher`, resto del archivo intacto);
 `sitemap.ts` se extiende con el mismo patrón de `alternates`/`hreflang` ya usado.
 
-**Próximo paso:** GAP-123 aprobado por Jose, listo para implementación cuando se solicite.
+### Fase D — cerrado (GAP-123, 2026-07-28)
+
+`.claude/gaps/closed/GAP-123-landing-fase-d-blog-geo-aeo.md` — ⚠️ APROBADO CON OBSERVACIONES,
+9/10. Implementado: `/blog` + `/blog/{slug}` con 3 artículos reales (uno por topic cluster:
+trazabilidad, gestión de lonjas y compras, etiquetado y normativa) en `es`/`pt`/`en`, contenido
+en Markdown plano (`react-markdown`+`remark-gfm`, **pivote técnico desde MDX** — cero
+dependencias nuevas, confirmado con Jose durante la implementación), RSS por locale, `sitemap.xml`
+ampliado, enlace nuevo en el footer.
+
+**Hallazgo importante durante la implementación (fuera del alcance original, corregido con
+autorización explícita de Jose):** se descubrió que **todo el contenido de body en `/pt/*` y
+`/en/*` se servía en español** desde que se activaron esos locales en Fase C — el `<title>` de
+cada página sí estaba bien traducido (pasa el locale explícitamente), pero cualquier
+`getTranslations()`/`useTranslations()` sin locale explícito (el patrón usado en casi todos los
+componentes del sitio) caía al locale por defecto, porque `setRequestLocale()` de `next-intl`
+nunca se llamaba en el proyecto y el middleware solo invoca `intlMiddleware` para rutas sin
+prefijo. Afectaba a Hero, ModulesBento, HowItWorks, Footer, TrustBadge, PricingPreview,
+LeadCaptureForm y las páginas legales — es decir, prácticamente todo el contenido visible de las
+Fases B1/B2/C ya cerradas. Corregido añadiendo `setRequestLocale(locale)` en `[locale]/layout.tsx`
+y en las 7 páginas bajo `[locale]` (home, pricing, legal/privacy, legal/terms, blog, blog/[slug]),
+verificado con 7 rondas intercaladas es/pt/en para descartar inestabilidad. Detalle completo de la
+causa raíz y la corrección en la sección "Implementación → Desviaciones del plan" de GAP-123.
+
+**Pendiente nuevo, dejado fuera a propósito (decisión de Jose):** `<html lang="es">` sigue fijo en
+`src/app/layout.js` (layout raíz, compartido con el ERP autenticado, no multiidioma) — no afecta
+al contenido visible, solo al atributo que leen buscadores/lectores de pantalla. Corregirlo
+requiere tocar un archivo `.js` legacy compartido con toda la app y migrarlo a `.tsx` en el mismo
+commit (regla de CLAUDE.md) — candidato a GAP corto independiente, no bloquea nada.
+
+Verificado con servidor de desarrollo real: 12 combinaciones página×locale del blog (200 todas),
+RSS en los 3 idiomas, sitemap con hreflang, cero cifra/certificación inventada, cero clase
+`sky-*`, cero regresión sobre Fases A/B1/B2/C (lead form, subdominio de tenant, generic branding).
+Pendiente heredado: nombre/rol exacto del autor founder-led (placeholder en
+`src/lib/blog/blogAuthor.ts`), y verificación visual humana en navegador — recomendada con
+urgencia dado el bug descubierto en este GAP, para confirmar con los propios ojos de Jose que
+`/pt` y `/en` ya se ven bien.
+
+**Próximo paso:** verificación visual humana de Jose (más urgente que nunca tras el hallazgo de
+este GAP), decidir si se abre el GAP corto del `<html lang>`, y el GAP corto de assets de B2
+(pendiente desde hace dos fases) sigue disponible cuando Jose quiera retomarlo. Fase E (analítica
++ cadencia trimestral) es la única fase del roadmap original todavía sin empezar.

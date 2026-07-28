@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { appName, metadataBaseUrl } from '@/configs/branding';
 import { getPathname } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
@@ -32,7 +32,16 @@ export async function generateMetadata({
   };
 }
 
-export default function LandingHomePage() {
+export default async function LandingHomePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  // Requerido con generateStaticParams (next-intl): sin esto, getTranslations() ambiental
+  // puede caer al locale por defecto en algunas requests (bug descubierto en GAP-123).
+  setRequestLocale(locale);
+
   const softwareApplicationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
