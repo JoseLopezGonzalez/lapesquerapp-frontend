@@ -58,21 +58,24 @@
     },
     "pricingPreview": {
       "title": "A plan for every company size",
-      "description": "Clear pricing, no surprises. See the full details on the pricing page.",
+      "description": "Clear pricing, no surprises. Add blocks to your plan whenever you need them. See the full details on the pricing page.",
       "cta": "View plans",
       "mostPopular": "Most popular",
       "tiers": {
         "starter": {
           "name": "Essential",
-          "audience": "For warehouses and workshops starting to digitize their operations"
+          "audience": "For companies that want to digitize orders and sales",
+          "priceFrom": "From €149/month"
         },
         "pro": {
           "name": "Professional",
-          "audience": "For companies with production, stock, and sales across multiple locations"
+          "audience": "For companies already managing warehouse, suppliers, and a sales team",
+          "priceFrom": "From €349/month"
         },
         "enterprise": {
           "name": "Enterprise",
-          "audience": "For groups with multiple facilities, toll processors, and custom needs"
+          "audience": "For groups with in-house production, toll processors, and custom needs",
+          "priceFrom": "Custom pricing"
         }
       }
     },
@@ -109,18 +112,63 @@
   },
   "Pricing": {
     "title": "A plan for every company size",
-    "description": "Choose the tier that best fits your operation. Switch plans whenever you need.",
-    "priceTbd": "Price to be confirmed",
+    "description": "Choose the tier that best fits your operation, and add the blocks you need whenever you need them.",
+    "annualNote": "Save ~20% with annual billing",
     "periodMonthly": "Monthly",
     "periodAnnual": "Annual",
     "ctaTier": "Request demo",
+    "ctaEnterprise": "Talk to sales",
     "mostPopular": "Most popular",
+    "tiers": {
+      "starter": {
+        "priceMonthly": "149",
+        "priceAnnual": "119",
+        "limitsNote": "Up to 3 users",
+        "features": [
+          "Complete order and sales management",
+          "Catalog of species, fishing gear, capture zones, and countries",
+          "Users, transport, and company settings"
+        ]
+      },
+      "pro": {
+        "priceMonthly": "349",
+        "priceAnnual": "279",
+        "limitsNote": "Up to 10 users",
+        "features": [
+          "Everything in Essential",
+          "Stock traceability by pallet, box, and batch",
+          "Interactive warehouse map",
+          "Supplier management and settlements",
+          "Sales CRM: prospects, offers, calendar, and routes"
+        ]
+      },
+      "enterprise": {
+        "priceLabel": "Custom",
+        "limitsNote": "Unlimited users",
+        "features": [
+          "Everything in Professional",
+          "In-house and toll processing production, with process traceability",
+          "Regulatory label editor",
+          "NFC time tracking and clock-in",
+          "Route sales and mobile van sales",
+          "AI-powered fish market document extraction"
+        ]
+      }
+    },
+    "addonsTitle": "Add-on blocks, for any plan",
+    "addonsDescription": "Add these blocks to your plan whenever you need them — billed separately.",
+    "addons": [
+      "Regulatory label editor",
+      "NFC time tracking and clock-in",
+      "Route sales and mobile van sales",
+      "Production and toll processing (upon request)"
+    ],
     "capabilitiesTitle": "Included in every plan",
-    "capability1": "Production and traceability by batch",
-    "capability2": "Warehouse and stock with interactive map",
-    "capability3": "Purchasing and sales",
-    "capability4": "AI-powered document extraction",
-    "capability5": "Label editor",
+    "capability1": "Secure multi-tenancy: your data isolated from other companies",
+    "capability2": "Updates and improvements included at no extra cost",
+    "capability3": "Support during onboarding and daily use",
+    "capability4": "Access from any device, no installation required",
+    "capability5": "Configurable roles and permissions per user",
     "faqTitle": "Frequently asked questions",
     "faqQ1": {
       "question": "Can I change plans later?",
@@ -133,6 +181,10 @@
     "faqQ3": {
       "question": "What support does each plan include?",
       "answer": "All plans include support to answer questions during onboarding and daily use."
+    },
+    "faqQ4": {
+      "question": "Can I add a module that isn't included in my plan?",
+      "answer": "Yes. The label editor, NFC clock-in, the route sales/van sales app, and production are available as add-on blocks for any plan, billed separately."
     }
   },
   "Legal": {

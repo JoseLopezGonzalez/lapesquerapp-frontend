@@ -612,3 +612,83 @@ urgencia dado el bug descubierto en este GAP, para confirmar con los propios ojo
 este GAP), decidir si se abre el GAP corto del `<html lang>`, y el GAP corto de assets de B2
 (pendiente desde hace dos fases) sigue disponible cuando Jose quiera retomarlo. Fase E (analítica
 + cadencia trimestral) es la única fase del roadmap original todavía sin empezar.
+
+---
+
+## 11. Cifras de pricing y estructura de bloques — implementado (2026-07-28)
+
+Trabajo fuera de las fases A–E numeradas (no es un GAP formal, hecho directamente a petición de
+Jose una vez cerrado `.claude/product-catalog.md`): sustituir el placeholder "precio a confirmar"
+de `/pricing` (Fase C, GAP-122) por precios reales de ejemplo y la estructura de bloques/add-ons
+que salió del catálogo funcional. Ver `.claude/product-catalog.md` → "Propuesta concreta de
+niveles de plan" para el razonamiento completo de qué bloque va en qué nivel.
+
+**Implementado:**
+- `src/app/[locale]/pricing/page.tsx` — cada tier (`starter`/`pro`/`enterprise`) muestra ahora
+  precio mensual/anual real (excepto `enterprise`, que muestra "A medida" + CTA "Hablar con
+  ventas", sin cifra — mismo patrón de mercado ya documentado en §4.3, y coherente con que
+  Producción/IA son "bajo consulta" en el catálogo), una nota de límite de usuarios por nivel, y
+  una lista de features acumulativas por tier (`t.raw()` de next-intl sobre arrays JSON). Nueva
+  sección "Bloques adicionales, para cualquier plan" (editor de etiquetas, fichaje NFC,
+  repartidores/autoventa, producción bajo consulta). La sección "Incluido en todos los planes" se
+  reescribió: antes listaba los 5 módulos como si estuvieran en todos los planes (ya no es cierto
+  con el modelo por bloques); ahora lista únicamente garantías transversales reales
+  (multi-tenant, actualizaciones incluidas, soporte, acceso multi-dispositivo, roles/permisos).
+  FAQ ampliada con una cuarta pregunta sobre añadir bloques a un plan existente.
+- `src/components/LandingPage/PricingPreview.tsx` (teaser de home) — añadido precio de partida
+  por tier ("Desde 149 €/mes" / "Desde 349 €/mes" / "Precio a medida"), sin desglose de features
+  (eso se queda en `/pricing`, la home mantiene la densidad baja de §4.2).
+- `src/messages/{es,pt,en}/landing.json` — namespaces `Pricing` y `Landing.pricingPreview`
+  reescritos con la nueva estructura (precios, `limitsNote`, `features[]`, `addons[]`). ES
+  redactado directamente; PT/EN traducidos por `landing-content-writer` manteniendo paridad de
+  claves. Clave `priceTbd` eliminada de los 3 archivos (ya no se usa en ningún componente).
+- Verificado con servidor de desarrollo real (`curl`): `/es/pricing`, `/pt/pricing`,
+  `/en/pricing` devuelven 200 con el contenido nuevo correctamente interpolado (precios, límites,
+  features, CTA de enterprise) en los tres idiomas; teaser de home verificado igual en los 3
+  locales.
+
+**Cifras de ejemplo (NO validadas contra coste real ni competencia — marcadas así también en
+`product-catalog.md`):** Esencial 149€/mes (119€/mes facturación anual), Profesional 349€/mes
+(279€/mes anual), Empresas a medida. Jose las revisará junto con el resto del catálogo y puede
+cambiarlas sin que eso implique tocar la estructura de bloques.
+
+**Traducciones sin precedente previo en el proyecto, señaladas por `landing-content-writer` para
+revisión de Jose:** "Fichaje y control horario por NFC" → PT *"Registo de ponto e controlo
+horário por NFC"*, EN *"NFC time tracking and clock-in"*. "Repartidores y autoventa móvil" → PT
+*"Distribuição e venda direta móvel"* (se evitó traducir "repartidor" literal por la connotación
+de repartidor de comida a domicilio en PT-PT), EN *"Route sales and mobile van sales"*. Ninguna
+de las dos tenía traducción previa fijada en `landing.json` ni en la navegación de la app — si
+ya existe un naming preferido en otro sitio (ERP, materiales comerciales), debería sustituir a
+este.
+
+### ⚠️ Hallazgo no relacionado, descubierto durante la verificación — rutas públicas sin
+### prefijo de idioma devuelven 404 en el servidor de desarrollo actual
+
+Durante la verificación con `curl` se confirmó que **`/pricing`, `/legal/privacy` y `/blog`
+(las variantes SIN prefijo `/es`, que es como se sirve el español por defecto con
+`localePrefix: 'as-needed'`) devuelven 404** en este entorno — mientras que `/`, `/es`,
+`/es/pricing`, `/pt/pricing` y `/en/pricing` sí devuelven 200 correctamente. Es decir: el
+contenido nuevo de pricing funciona perfectamente vía `/es/pricing`, pero la URL "natural" en
+español que un visitante real usaría (`lapesquerapp.es/pricing`, sin prefijo) parece rota.
+
+**No es un efecto de este cambio de pricing** — se reproduce igual en `/legal/privacy` y
+`/blog`, páginas de fases anteriores (C y D) que en su momento sí se verificaron en 200 sin
+prefijo. La diferencia detectada: `node_modules` tiene instalado **Next.js 16.1.3**, ya fijado
+también en `package-lock.json` (no es una desviación local no comprometida — `git status` no
+marca cambios en `package.json`/`package-lock.json`), mientras que `CLAUDE.md` documenta la
+versión bloqueada como **16.0.7**. El propio arranque del servidor de desarrollo muestra el aviso
+`⚠ The "middleware" file convention is deprecated. Please use "proxy" instead` — coincide en
+tiempo con que el rewrite de `src/middleware.ts` (que es lo único que resuelve `/pricing` →
+`/es/pricing` a nivel de dominio raíz sin archivo literal fuera de `[locale]`) haya dejado de
+aplicarse para estas rutas concretas en esta versión de Next.js, sin afectar a `/` (que si acaso
+tiene su propio `src/app/page.js` literal fuera del árbol `[locale]`, no depende únicamente del
+rewrite).
+
+**No se ha tocado `src/middleware.ts` para investigar/corregir esto** — es un archivo protegido
+(`CLAUDE.md` "Archivos protegidos") y el diagnóstico de causa raíz de arriba es una hipótesis
+razonable, no una confirmación exhaustiva; requiere revisión explícita de Jose antes de tocarlo,
+y probablemente conviene decidir primero si se fija Next.js en `16.0.7` exacto (sin `^`) o se
+migra el archivo a la convención `proxy.ts` nueva. **Si esto también ocurre en producción, las
+URLs sin prefijo de español (el idioma principal, sin prefijo por diseño) de pricing/legal/blog
+podrían estar rotas ahora mismo para visitantes reales** — recomendación: verificarlo cuanto
+antes en el dominio real, no solo en local.

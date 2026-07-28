@@ -193,7 +193,7 @@ import { fetchWithTenant } from '@/lib/fetchWithTenant'; // ← prohibido aquí
 | Stock / Almacén           | `pallets`, `boxes`, `lots`, `stores`                               | Activo — operativa warehouse         |
 | Etiquetas                 | `labelEditor`                                                      | Activo — editor visual propio        |
 | Catálogos de sector       | `species`, `fishing-gears`, `capture-zones`, `countries`           | Activo — EntityClient                |
-| CRM                       | `customers`, `prospects`, `interactions`, agenda                   | **En progreso** — agenda pendiente   |
+| CRM                       | `customers`, `prospects`, `interactions`, agenda                   | Activo — agenda, ofertas y rutas comerciales implementadas |
 | Proveedores               | `suppliers`, `supplier-liquidations`                               | Activo                               |
 | Maquiladores / Producción | `productions`, `raw-material-receptions`                           | Activo                               |
 | Repartidores              | `field-operators`, `cebo-dispatches`                               | Activo — mobile-first                |

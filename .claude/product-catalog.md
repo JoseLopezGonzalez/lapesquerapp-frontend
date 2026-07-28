@@ -56,7 +56,15 @@ module.labels
 
 Y en el panel Superadmin existen ya **3 planes** en el modelo de datos: `basic` / `professional` / `enterprise`, con una pantalla (`GlobalFeatureFlagsTable`) que define qué flags trae cada plan por defecto, y overrides por tenant individual. **No hay facturación ni límites cuantitativos (nº usuarios, nº pedidos/mes) implementados** — el modelo actual es binario por feature, no por consumo.
 
-Esto significa que la pregunta de pricing no es "¿inventamos un sistema de planes?" sino **"¿qué claves de `module.*` faltan por crear para que cada módulo de este catálogo sea activable/desactivable, y qué combinación de flags define Básico/Pro/Enterprise?"**
+> ⚠️ **Matización de Jose (2026-07-28):** este sistema de flags/planes ya era
+> conocido, pero se construyó rápido y **no es determinante** — no debe leerse
+> como la estructura de pricing definitiva. Es muy probable que, a raíz de la
+> lógica de negocio que se defina a partir de este catálogo, tanto las claves
+> `module.*` como los propios planes de Superadmin se rediseñen o se
+> sustituyan. Tratarlo como plumbing técnico reutilizable (evita construir el
+> mecanismo desde cero), no como una decisión de producto ya tomada.
+
+Esto significa que la pregunta de pricing no es "¿inventamos un sistema de planes?" — el mecanismo técnico ya existe y probablemente se pueda reutilizar — sino **"¿qué estructura de planes/add-ons se desprende de la lógica de negocio real, y cómo se remapea (o se sustituye) el sistema de flags/planes actual para reflejarla?"**
 
 ---
 
@@ -115,7 +123,7 @@ Esto significa que la pregunta de pricing no es "¿inventamos un sistema de plan
 **Problema que resuelve:** gestionar la relación con clientes y prospectos (captación, seguimiento, próximas acciones, ofertas) sin depender de un CRM externo desconectado del pedido real.
 **Estado global:** ✅ Activo.
 
-> ⚠️ **Discrepancia con `CLAUDE.md` detectada:** el archivo raíz documenta el CRM como *"En progreso — agenda pendiente"*. El código muestra la agenda **completamente implementada** (ruta montada, hook con 4 funciones completas, mutaciones de reprogramar/cancelar/resolver, componente de 1484 líneas, cero TODOs detectados). Recomendación: actualizar la tabla de módulos de `CLAUDE.md` en un commit aparte cuando Jose lo confirme — no se ha tocado aquí para no mezclar este catálogo con cambios de código/doc no solicitados.
+> ✅ **Discrepancia con `CLAUDE.md` corregida (2026-07-28):** el archivo raíz documentaba el CRM como *"En progreso — agenda pendiente"*. El código muestra la agenda **completamente implementada** (ruta montada, hook con 4 funciones completas, mutaciones de reprogramar/cancelar/resolver, componente de 1484 líneas, cero TODOs detectados). Confirmado por Jose y corregido en la tabla de módulos de `CLAUDE.md` en este mismo turno.
 
 ### Features
 
@@ -352,7 +360,7 @@ Esto significa que la pregunta de pricing no es "¿inventamos un sistema de plan
 **Por qué se documenta aquí aunque no se venda:** dos piezas de datos que gestiona son insumo directo para el catálogo de planes:
 
 1. **Los 3 planes ya existentes en el modelo de datos**: `basic` / `professional` / `enterprise` — hoy son solo una etiqueta (sin lógica de facturación ni límites numéricos asociados).
-2. **El mecanismo real de Feature Flags por plan + override por tenant** (`GlobalFeatureFlagsTable` define el default por plan, `FeatureFlagsTab` permite excepciones puntuales por tenant) — es la pieza técnica que ya existe para construir cualquier segmentación de planes que se decida a partir de este catálogo. No hace falta construirla desde cero.
+2. **El mecanismo real de Feature Flags por plan + override por tenant** (`GlobalFeatureFlagsTable` define el default por plan, `FeatureFlagsTab` permite excepciones puntuales por tenant) — es la pieza técnica que ya existe para construir cualquier segmentación de planes que se decida a partir de este catálogo. No hace falta construirla desde cero, **pero según Jose ni las claves `module.*` actuales ni los 3 planes son la clasificación definitiva** — se construyeron rápido y es probable que se rediseñen una vez salga la lógica de negocio real de este catálogo. Reutilizar el mecanismo, no dar por buena la clasificación actual.
 
 **Lo que NO existe hoy en Superadmin** (relevante para no prometerlo en la landing todavía): facturación/cobro (sin Stripe, sin importes — solo una fecha de renovación sin lógica de cobro), métricas de consumo por tenant (usuarios, almacenamiento, pedidos), soporte/tickets, límites cuantitativos por plan (solo flags booleanas, no "máx. N usuarios").
 
@@ -360,7 +368,7 @@ Esto significa que la pregunta de pricing no es "¿inventamos un sistema de plan
 
 ## Propuesta inicial de clasificación Core / Add-on
 
-Esta es una **propuesta de partida basada en evidencia técnica** (qué ya está gateado por feature flag, qué es dependencia de qué, qué es "nicho sectorial" vs. "operativa base") — no una decisión de pricing cerrada. A ajustar por Jose.
+Esta es una **propuesta de partida basada en evidencia técnica** (qué ya está gateado por feature flag, qué es dependencia de qué, qué es "nicho sectorial" vs. "operativa base") — no una decisión de pricing cerrada, y **tampoco debe confundirse con los 3 planes/flags que ya existen en Superadmin**, que según Jose son provisionales y probablemente cambien a raíz de este mismo catálogo (ver matización arriba). A ajustar por Jose.
 
 ### Núcleo (difícil de vender el producto sin esto)
 
@@ -370,9 +378,11 @@ Esta es una **propuesta de partida basada en evidencia técnica** (qué ya está
 
 ### Candidatos a add-on con evidencia técnica ya en el código (`requiredFeature`)
 
+> El mecanismo (`requiredFeature`/flags) es reutilizable; la lista de claves y a qué plan pertenecen hoy no es definitiva — ver matización de Jose arriba.
+
 - **Editor de Etiquetas** (`module.labels`) — ya gateado hoy.
 - **Fichaje / gestión horaria NFC** (`module.punch_events`) — ya gateado hoy.
-- Flags adicionales confirmadas en uso pero no auditadas a fondo en esta pasada: `module.inventory`, `module.raw_material`, `module.production`, `module.sales`, `module.supplier_liquidations` — sugieren que Stock, Producción, Proveedores/Liquidaciones y el propio módulo de Ventas **ya tienen la percha técnica lista** para activarse/desactivarse por plan, aunque no se ha confirmado en esta pasada si están efectivamente aplicadas de forma granular o si hoy actúan como on/off de todo el módulo.
+- Flags adicionales confirmadas en uso pero no auditadas a fondo en esta pasada: `module.inventory`, `module.raw_material`, `module.production`, `module.sales`, `module.supplier_liquidations` — sugieren que Stock, Producción, Proveedores/Liquidaciones y el propio módulo de Ventas **ya tienen la percha técnica lista** para activarse/desactivarse por plan, aunque no se ha confirmado en esta pasada si están efectivamente aplicadas de forma granular o si hoy actúan como on/off de todo el módulo — y su asignación actual a un plan concreto es la parte que más probablemente cambie.
 
 ### Candidatos a add-on por criterio de nicho/complejidad (sin flag técnica confirmada todavía)
 
@@ -388,12 +398,71 @@ Esta es una **propuesta de partida basada en evidencia técnica** (qué ya está
 
 ---
 
-## Preguntas abiertas para cerrar el modelo de pricing
+## Dirección de pricing decidida por Jose (2026-07-28)
 
-Estas son las decisiones que este catálogo no puede tomar por sí solo:
+Respuesta a la pregunta 1 de abajo — no es un modelo binario puro ni un modelo puramente cuantitativo, sino **híbrido**:
 
-1. ¿El modelo de precios será binario por feature (como hoy, flags on/off) o se quiere introducir límites cuantitativos (nº usuarios, nº pedidos/mes, nº tenants de almacén)? Hoy no existe infraestructura para lo segundo.
-2. ¿`module.inventory`, `module.raw_material`, `module.production`, `module.sales`, `module.supplier_liquidations` ya se usan realmente hoy para dar/quitar acceso a tenants concretos, o son flags creadas pero sin aplicar en producción? (verificable solo con acceso al backend/BD, fuera del alcance de este análisis de frontend).
-3. ¿Se quiere resolver el límite de 60s y el mapeo hardcodeado de IA/Extracción antes de posicionarlo como feature de plan superior, o se vende igualmente con la salvedad de "requiere onboarding técnico"?
-4. ¿El bug de precisión GS1-128 (peso ×100 en lectores externos) se corrige antes de usar "trazabilidad por código de barras" como claim de marketing?
-5. ¿Se corrige la discrepancia de `CLAUDE.md` sobre el estado de la agenda del CRM (documentado como pendiente, en realidad completa)?
+- **Planes base** que combinan (a) **límites cuantitativos** (nº de usuarios, cuota de uso de IA, y posiblemente otros ejes aún por determinar — nº de pedidos/mes, almacenamiento, etc.) con (b) un **conjunto de bloques/features incluidos por defecto** según el nivel de plan (los módulos de este catálogo, agrupados).
+- **Bloques adicionales tarifables por separado** — un tenant en un plan que no incluye un bloque por defecto puede añadirlo a la carta, pagando un extra.
+- **El plan más alto incluye todos los bloques** sin necesidad de add-ons — es el plan "todo incluido".
+- **Pendiente de definir** (no inventar cifras todavía): qué ejes cuantitativos concretos entran en el modelo, qué bloques van por defecto en cada nivel de plan, y los números/precios de cada uno. Este catálogo (sección [Propuesta inicial de clasificación Core / Add-on](#propuesta-inicial-de-clasificación-core--add-on)) es el punto de partida para decidir qué bloques existen — falta mapearlos a niveles de plan concretos.
+
+**Importante:** esta dirección de modelo es independiente de los flags/planes que ya existen en Superadmin (ver matización de Jose más arriba) — probablemente el sistema técnico actual se remapee para soportar límites cuantitativos, que hoy no existen en absoluto (los flags actuales son binarios, sin contador de uso).
+
+---
+
+## Propuesta concreta de niveles de plan (borrador — 2026-07-28, a validar por Jose)
+
+Primera propuesta concreta para arrancar la conversación, **no es una decisión cerrada** — la idea es que Jose la revise, tache/ajuste bloques y confirme o cambie los ejes cuantitativos y sus cifras. Reutiliza los nombres ya existentes en Superadmin (`Básico` / `Profesional` / `Enterprise`) por continuidad técnica con el modelo de datos actual — el nombre comercial final se puede cambiar sin afectar a la estructura de bloques.
+
+### Ejes cuantitativos (borrador, cifras ilustrativas — NO usar en landing/pricing público hasta validar coste real)
+
+| Eje | Básico | Profesional | Enterprise |
+| --- | --- | --- | --- |
+| Usuarios internos incluidos | p.ej. 3 | p.ej. 10 | Alto/ilimitado |
+| Cuota de extracción IA de documentos de lonja (docs/mes) | No incluida | No incluida (requiere onboarding, ver nota) | Incluida, con onboarding técnico |
+| Cuota de asistencia de texto IA (CRM: mejora de textos) | No incluida | Incluida | Incluida |
+| Usuarios repartidor/campo | 0 | p.ej. 2 incluidos | Según necesidad |
+
+> Las cifras concretas (nº de usuarios, cuotas) requieren datos que este catálogo no tiene: coste real por llamada a OpenAI, coste de infraestructura por tenant, y benchmark de lo que cobra la competencia. Son placeholders para que Jose las sustituya, no una propuesta de precio.
+
+### Bloques por nivel de plan
+
+| Bloque | Básico | Profesional | Enterprise |
+| --- | --- | --- | --- |
+| Ventas / Pedidos | Incluido (core) | Incluido (core) | Incluido (core) |
+| Catálogos de Sector | Incluido (core) | Incluido (core) | Incluido (core) |
+| Administración (usuarios, transportes, config. empresa) | Incluido (core) | Incluido (core) | Incluido (core) |
+| Stock / Almacén | Add-on | Incluido | Incluido |
+| Proveedores (ficha + liquidaciones) | Add-on | Incluido | Incluido |
+| CRM (prospectos, ofertas, agenda, rutas) | Add-on | Incluido | Incluido |
+| Editor de Etiquetas | Add-on | Add-on | Incluido |
+| Fichaje / gestión horaria NFC | Add-on | Add-on | Incluido |
+| Repartidores / Autoventa | Add-on | Add-on | Incluido |
+| Maquiladores / Producción | Add-on (bajo consulta) | Add-on (bajo consulta) | Incluido |
+| IA / Extracción de documentos de lonja | No disponible | No disponible (self-service) | Incluido, con onboarding técnico |
+
+### Notas de diseño detrás de esta propuesta
+
+- **Core siempre activo en los 3 planes**: Ventas/Pedidos, Catálogos de Sector y Administración básica son la base mínima sin la que el ERP no tiene sentido — no se plantean como add-on.
+- **El salto Básico → Profesional está pensado como "salgo de solo vender" a "opero almacén + capto clientes activamente"**: Stock/Almacén, Proveedores y CRM completo se agrupan porque son el conjunto típico de un tenant que ya gestiona trazabilidad física y equipo comercial, no solo facturación.
+- **Etiquetas, Fichaje/NFC y Repartidores se mantienen como add-on incluso en Profesional** porque responden a necesidades operativas específicas que no todo tenant mediano tiene (cumplimiento normativo de etiquetado, control horario de plantilla, flota de reparto propia) — tiene sentido cobrarlos aparte en vez de forzar su inclusión.
+- **Producción/Maquila marcado "bajo consulta" en Básico/Profesional**: es la feature más compleja de todo el catálogo (árbol de procesos, cierre con 11 validaciones); técnicamente nada impide venderla como add-on de cualquier plan, pero probablemente tenga más sentido comercial reservarla para tenants con planta propia y tratarla como conversación de ventas, no checkbox de autoservicio.
+- **IA/Extracción no se ofrece como add-on de autoservicio en ningún plan por debajo de Enterprise**, y en Enterprise se vende "con onboarding técnico" explícito — reflejo directo de la limitación real detectada en el catálogo (mapeos contables hardcodeados por tenant en el código fuente, no configurables por el cliente). No convertirlo en checkbox de autoservicio hasta generalizar esa parte del código.
+
+### Qué falta decidir (para la revisión de Jose)
+
+1. Confirmar o ajustar qué bloques van en qué nivel de la tabla de arriba (es una hipótesis de partida, no un análisis de mercado).
+2. Definir los ejes cuantitativos reales que se van a cobrar y sus cifras (la tabla de ejes es solo un esqueleto).
+3. Decidir si Producción/Maquila e IA/Extracción se venden "bajo consulta comercial" (como se propone aquí) o se convierten también en checkbox de autoservicio a futuro.
+4. Decidir el naming comercial final de los 3 niveles (o si el número de niveles cambia — nada obliga a mantener exactamente 3).
+
+---
+
+## Preguntas abiertas para cerrar el modelo de pricing — estado 2026-07-28
+
+1. ✅ **Resuelta** — ver "Dirección de pricing decidida" arriba: modelo híbrido de planes (límites cuantitativos + bloques por defecto) con add-ons tarifables, plan superior = todos los bloques incluidos.
+2. 🟡 **Sigue abierta.** Jose tampoco tiene certeza de si `module.inventory`, `module.raw_material`, `module.production`, `module.sales`, `module.supplier_liquidations` están aplicándose hoy de forma granular en producción o si actúan como on/off grosero de todo el módulo. Requiere verificación directa en backend/BD — fuera del alcance de un análisis de frontend.
+3. ✅ **Resuelta.** Se deja el límite de 60s tal cual por ahora; se marca como deuda técnica (ya documentada como punto 9 de "Deuda técnica documentada" en `CLAUDE.md`). No bloquea el uso de este catálogo.
+4. ✅ **Resuelta.** El bug de precisión GS1-128 se marca como deuda técnica; no bloquea el estudio del producto ahora mismo. Sigue siendo relevante resolverlo antes de usar "trazabilidad por código de barras estándar" como claim explícito de marketing.
+5. ✅ **Resuelta.** Corregido en `CLAUDE.md` en este mismo turno — la tabla de módulos ya no dice "agenda pendiente".

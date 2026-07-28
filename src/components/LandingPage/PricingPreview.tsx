@@ -32,10 +32,13 @@ export default async function PricingPreview() {
                   {tier === 'pro' && <Badge className="mb-2 w-fit">{t('mostPopular')}</Badge>}
                   <CardTitle className="text-xl">{t(`tiers.${tier}.name`)}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex flex-col gap-3">
                   <CardDescription className="text-base">
                     {t(`tiers.${tier}.audience`)}
                   </CardDescription>
+                  <p className="text-foreground text-lg font-semibold">
+                    {t(`tiers.${tier}.priceFrom`)}
+                  </p>
                 </CardContent>
                 <CardFooter>
                   <Button

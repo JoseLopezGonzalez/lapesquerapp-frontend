@@ -58,21 +58,24 @@
     },
     "pricingPreview": {
       "title": "Un plan para cada tamaño de empresa",
-      "description": "Precios claros, sin sorpresas. Consulta el detalle completo en la página de planes.",
+      "description": "Precios claros, sin sorpresas. Añade bloques a tu plan cuando los necesites. Consulta el detalle completo en la página de planes.",
       "cta": "Ver planes",
       "mostPopular": "Más popular",
       "tiers": {
         "starter": {
           "name": "Esencial",
-          "audience": "Para almacenes y talleres que empiezan a digitalizar su operativa"
+          "audience": "Para empresas que quieren digitalizar pedidos y ventas",
+          "priceFrom": "Desde 149 €/mes"
         },
         "pro": {
           "name": "Profesional",
-          "audience": "Para empresas con producción, stock y ventas en varios puntos"
+          "audience": "Para empresas que ya gestionan almacén, proveedores y equipo comercial",
+          "priceFrom": "Desde 349 €/mes"
         },
         "enterprise": {
           "name": "Empresas",
-          "audience": "Para grupos con varios centros, maquiladores y necesidades a medida"
+          "audience": "Para grupos con producción propia, maquiladores y necesidades a medida",
+          "priceFrom": "Precio a medida"
         }
       }
     },
@@ -109,18 +112,63 @@
   },
   "Pricing": {
     "title": "Un plan para cada tamaño de empresa",
-    "description": "Elige el nivel que mejor se adapta a tu operativa. Cambia de plan cuando lo necesites.",
-    "priceTbd": "Precio a confirmar",
+    "description": "Elige el nivel que mejor se adapta a tu operativa, y añade los bloques que necesites cuando los necesites.",
+    "annualNote": "Ahorra ~20% con facturación anual",
     "periodMonthly": "Mensual",
     "periodAnnual": "Anual",
     "ctaTier": "Solicitar demo",
+    "ctaEnterprise": "Hablar con ventas",
     "mostPopular": "Más popular",
+    "tiers": {
+      "starter": {
+        "priceMonthly": "149",
+        "priceAnnual": "119",
+        "limitsNote": "Hasta 3 usuarios",
+        "features": [
+          "Gestión completa de pedidos y ventas",
+          "Catálogo de especies, artes de pesca, zonas de captura y países",
+          "Usuarios, transportes y configuración de empresa"
+        ]
+      },
+      "pro": {
+        "priceMonthly": "349",
+        "priceAnnual": "279",
+        "limitsNote": "Hasta 10 usuarios",
+        "features": [
+          "Todo lo de Esencial",
+          "Trazabilidad de stock por palet, caja y lote",
+          "Mapa interactivo de almacén",
+          "Gestión de proveedores y liquidaciones",
+          "CRM comercial: prospectos, ofertas, agenda y rutas"
+        ]
+      },
+      "enterprise": {
+        "priceLabel": "A medida",
+        "limitsNote": "Usuarios ilimitados",
+        "features": [
+          "Todo lo de Profesional",
+          "Producción y maquila con trazabilidad de procesos",
+          "Editor de etiquetas normativas",
+          "Fichaje y control horario por NFC",
+          "Repartidores y autoventa móvil",
+          "Extracción de documentos de lonja con IA"
+        ]
+      }
+    },
+    "addonsTitle": "Bloques adicionales, para cualquier plan",
+    "addonsDescription": "Añade estos bloques a tu plan cuando los necesites — se facturan aparte.",
+    "addons": [
+      "Editor de etiquetas normativas",
+      "Fichaje y control horario por NFC",
+      "Repartidores y autoventa móvil",
+      "Producción y maquila (bajo consulta)"
+    ],
     "capabilitiesTitle": "Incluido en todos los planes",
-    "capability1": "Producción y trazabilidad por lote",
-    "capability2": "Almacén y stock con mapa interactivo",
-    "capability3": "Compras y ventas",
-    "capability4": "Extracción de documentos con IA",
-    "capability5": "Editor de etiquetas",
+    "capability1": "Multi-tenant seguro: tus datos aislados del resto de empresas",
+    "capability2": "Actualizaciones y mejoras incluidas sin coste adicional",
+    "capability3": "Soporte durante la puesta en marcha y el día a día",
+    "capability4": "Acceso desde cualquier dispositivo, sin instalación",
+    "capability5": "Roles y permisos configurables por usuario",
     "faqTitle": "Preguntas frecuentes",
     "faqQ1": {
       "question": "¿Puedo cambiar de plan más adelante?",
@@ -133,6 +181,10 @@
     "faqQ3": {
       "question": "¿Qué soporte incluye cada plan?",
       "answer": "Todos los planes incluyen soporte para resolver dudas durante la puesta en marcha y el uso diario."
+    },
+    "faqQ4": {
+      "question": "¿Puedo añadir un módulo que no viene incluido en mi plan?",
+      "answer": "Sí. El editor de etiquetas, el fichaje por NFC, la app de repartidores/autoventa y producción están disponibles como bloques adicionales para cualquier plan, facturados aparte."
     }
   },
   "Legal": {
