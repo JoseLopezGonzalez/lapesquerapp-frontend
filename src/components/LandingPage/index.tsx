@@ -459,10 +459,13 @@ export default function LandingPage() {
                     placeholder="tu@email.com"
                     className="border-white/20 bg-white/10 text-white placeholder:text-white/70"
                     disabled={isSubmittingLead}
+                    aria-invalid={!!errors.email}
                     {...register('email')}
                   />
                   {errors.email && (
-                    <p className="pt-1 text-xs text-red-100">* {errors.email.message}</p>
+                    <p className="mt-1 w-fit rounded bg-white/95 px-2 py-0.5 text-xs font-medium text-red-600">
+                      * {errors.email.message}
+                    </p>
                   )}
                 </div>
                 {/* Honeypot anti-spam: invisible para usuarios reales, leído aparte del schema RHF */}

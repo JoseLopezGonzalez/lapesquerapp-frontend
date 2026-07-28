@@ -15,11 +15,18 @@ export interface LandingLeadPayload {
 }
 
 export async function submitLandingLead(payload: LandingLeadPayload): Promise<void> {
-  const response = await fetch(LANDING_LEAD_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+  let response: Response;
+  try {
+    response = await fetch(LANDING_LEAD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // fetch() lanza TypeError nativo ("Failed to fetch") en fallos de red/conexión.
+    // Se normaliza aquí para no propagar un mensaje técnico en inglés al usuario.
+    throw new Error('No se pudo conectar. Revisa tu conexión e inténtalo de nuevo.');
+  }
 
   const result = await response.json().catch(() => ({}));
 

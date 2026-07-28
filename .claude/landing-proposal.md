@@ -16,19 +16,26 @@
 |---|---|---|---|
 | 0 | Contexto + equipo de agentes | ✅ Completada 2026-07-27 | — |
 | 1 | Diagnóstico + comparativa + propuesta (este documento) | ✅ Completada 2026-07-27 | — |
-| A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | 🟡 GAP-119 abierto (2026-07-27) | S |
+| A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | ✅ GAP-119 cerrado (2026-07-28, ⚠️ aprobado con observaciones ya resueltas) | S |
 | B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ⬜ Pendiente | L |
-| C | Pricing + Legal + PT/EN | ⬜ Pendiente (páginas legales mínimas se adelantan en GAP-119, ver nota) | M |
+| C | Pricing + Legal + PT/EN | ⬜ Pendiente (páginas legales mínimas ya adelantadas en GAP-119, ver nota) | M |
 | D | Blog + GEO/AEO | ⬜ Pendiente | M |
 | E | Analítica + cadencia trimestral continua | ⬜ Pendiente | S |
 
-**Próxima acción concreta:** implementar `GAP-119-landing-fase-a-detener-sangria.md`
-(`.claude/gaps/open/`) — cubre CTAs rotos, badges de confianza falsos, formulario de
-leads funcional (email vía Resend), `/legal/privacy` + `/legal/terms` mínimas
+**Estado de la Fase A:** implementada y auditada. `.claude/gaps/closed/GAP-119-landing-fase-a-detener-sangria.md`
+cubre CTAs rotos, badges de confianza falsos, formulario de leads funcional (email vía
+Resend, con capa de servicio dedicada), `/legal/privacy` + `/legal/terms` mínimas
 (adelantadas desde Fase C por el riesgo RGPD del formulario), `sitemap.ts`/`robots.ts`
-y copyright dinámico. Decisiones ya confirmadas por Jose (2026-07-27) — ver el GAP para
-el detalle completo. `/legal/cookies` y la traducción PT/EN de las páginas legales
+y copyright dinámico. Veredicto: técnico ✅, visual ✅, UX ⚠️ (7/10, fricciones de
+accesibilidad en el formulario ya corregidas post-cierre). Pendiente real: sin
+Playwright/navegador headless en este entorno, nadie ha podido confirmar visualmente el
+resultado en un navegador real — Jose debería darle un vistazo antes de considerar la
+Fase A 100% cerrada. `/legal/cookies` y la traducción PT/EN de las páginas legales
 siguen en Fase C.
+
+**Próxima acción recomendada:** verificación visual manual de la Fase A por parte de
+Jose, y luego decidir si se arranca el diseño de la Fase B (rediseño visual completo,
+componentización real) vía `gap-discovery`.
 
 ---
 
