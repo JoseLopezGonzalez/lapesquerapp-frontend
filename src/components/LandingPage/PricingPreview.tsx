@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Link } from '@/i18n/navigation';
 import ScrollReveal from './ScrollReveal';
 
 const TIER_KEYS = ['starter', 'pro', 'enterprise'] as const;
@@ -42,8 +43,7 @@ export default async function PricingPreview() {
                     className="w-full"
                     asChild
                   >
-                    {/* TODO Fase C: apuntar a /pricing cuando exista la página real */}
-                    <a href="#lead-form">{t('cta')}</a>
+                    <Link href="/pricing">{t('cta')}</Link>
                   </Button>
                 </CardFooter>
               </Card>

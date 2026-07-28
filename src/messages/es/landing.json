@@ -1,6 +1,7 @@
 {
   "Landing": {
     "hero": {
+      "metaTitle": "ERP para la industria pesquera",
       "subtitle": "Trazabilidad, lotes y caducidades bajo control, del muelle a la venta.",
       "modulesList": "Producción ∷ Compras ∷ Ventas ∷ Etiquetado ∷ Trazabilidad",
       "ctaDemo": "Ver demo",
@@ -92,6 +93,68 @@
       "copyrightSuffix": "Todos los derechos reservados.",
       "legalTerms": "Aviso Legal",
       "legalPrivacy": "Política de Privacidad"
+    }
+  },
+  "Pricing": {
+    "title": "Un plan para cada tamaño de empresa",
+    "description": "Elige el nivel que mejor se adapta a tu operativa. Cambia de plan cuando lo necesites.",
+    "priceTbd": "Precio a confirmar",
+    "periodMonthly": "Mensual",
+    "periodAnnual": "Anual",
+    "ctaTier": "Solicitar demo",
+    "mostPopular": "Más popular",
+    "capabilitiesTitle": "Incluido en todos los planes",
+    "capability1": "Producción y trazabilidad por lote",
+    "capability2": "Almacén y stock con mapa interactivo",
+    "capability3": "Compras y ventas",
+    "capability4": "Extracción de documentos con IA",
+    "capability5": "Editor de etiquetas",
+    "faqTitle": "Preguntas frecuentes",
+    "faqQ1": {
+      "question": "¿Puedo cambiar de plan más adelante?",
+      "answer": "Sí, puedes cambiar de nivel cuando lo necesites según crezca tu operativa."
+    },
+    "faqQ2": {
+      "question": "¿Hay período de prueba?",
+      "answer": "Solicita una demo y te acompañamos para que veas la plataforma con datos de tu propia operativa."
+    },
+    "faqQ3": {
+      "question": "¿Qué soporte incluye cada plan?",
+      "answer": "Todos los planes incluyen soporte para resolver dudas durante la puesta en marcha y el uso diario."
+    }
+  },
+  "Legal": {
+    "common": {
+      "lastUpdated": "Última actualización"
+    },
+    "privacy": {
+      "pageTitle": "Política de Privacidad",
+      "heading": "Política de Privacidad",
+      "controllerTitle": "Responsable del tratamiento",
+      "controllerBody": "{appName} es un producto de Congelados Brisamar. Para cualquier cuestión relacionada con tus datos personales, escríbenos a:",
+      "dataCollectedTitle": "Qué datos recogemos",
+      "dataCollectedBody": "Cuando solicitas acceso a través del formulario de esta web, únicamente recogemos la dirección de email que nos facilitas voluntariamente. No utilizamos cookies de analítica ni de seguimiento en este sitio.",
+      "dataUseTitle": "Para qué usamos tus datos",
+      "dataUseBody": "Usamos tu email exclusivamente para responder a tu solicitud de acceso y ponernos en contacto contigo sobre {appName}. No lo usamos con ningún otro fin ni lo cedemos a terceros para fines comerciales.",
+      "dataSharingTitle": "Con quién compartimos tus datos",
+      "dataSharingBody": "Tu solicitud se envía a través de un proveedor de envío de emails transaccionales (Resend), que actúa como encargado del tratamiento únicamente para hacer llegar el mensaje. No compartimos tu email con terceros para publicidad ni lo vendemos.",
+      "rightsTitle": "Tus derechos",
+      "rightsBody": "Puedes solicitar acceso, rectificación o eliminación de tus datos escribiéndonos a:",
+      "disclaimer": "Este documento es una versión inicial y honesta de nuestra política de privacidad, pendiente de revisión legal formal. Si tienes cualquier duda mientras tanto, contáctanos directamente."
+    },
+    "terms": {
+      "pageTitle": "Aviso Legal",
+      "heading": "Aviso Legal",
+      "ownershipTitle": "Titularidad del sitio",
+      "ownershipBody": "Este sitio web es operado por Congelados Brisamar como titular de {appName}. Para cualquier consulta, puedes escribir a:",
+      "purposeTitle": "Objeto",
+      "purposeBody": "Esta web presenta {appName}, un ERP para empresas del sector pesquero y de congelados, y permite solicitar acceso a una demostración del producto.",
+      "ipTitle": "Propiedad intelectual",
+      "ipBody": "Los contenidos de este sitio (textos, marca, logotipo, diseño) son propiedad de Congelados Brisamar. No está permitida su reproducción sin autorización expresa.",
+      "contactFormTitle": "Uso del formulario de contacto",
+      "contactFormBody": "Al enviar el formulario de solicitud de acceso, aceptas que usemos el email proporcionado para responder a tu solicitud, según se describe en nuestra:",
+      "contactFormLink": "Política de Privacidad",
+      "disclaimer": "Este documento es una versión inicial y honesta de nuestro aviso legal, pendiente de revisión legal formal. Si tienes cualquier duda mientras tanto, contáctanos directamente."
     }
   }
 }

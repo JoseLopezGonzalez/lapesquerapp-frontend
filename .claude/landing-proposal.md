@@ -18,7 +18,7 @@
 | 1 | Diagnóstico + comparativa + propuesta (este documento) | ✅ Completada 2026-07-27 | — |
 | A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | ✅ GAP-119 cerrado (2026-07-28, ⚠️ aprobado con observaciones ya resueltas) | S |
 | B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ✅ B1 (GAP-120) y B2 (GAP-121) cerrados 2026-07-28 — ver §8 | L |
-| C | Pricing + Legal + PT/EN | ⬜ Pendiente (páginas legales mínimas ya adelantadas en GAP-119, ver nota) | M |
+| C | Pricing + Legal + PT/EN | ✅ GAP-122 cerrado 2026-07-28 — ver §9 | M |
 | D | Blog + GEO/AEO | ⬜ Pendiente | M |
 | E | Analítica + cadencia trimestral continua | ⬜ Pendiente | S |
 
@@ -485,3 +485,58 @@ archivo protegido (auth + tenant + RBAC, 274 líneas, ver CLAUDE.md "Archivos pr
 Componer el middleware de `next-intl` con el middleware existente sin romper la detección de
 tenant/subdominio es el punto de mayor riesgo técnico de B1 y debe tratarse como tal en la
 fase de discovery — no asumir que es un cambio trivial de routing.
+
+---
+
+## 9. Fase C — Decisiones confirmadas (2026-07-28)
+
+Ronda de preguntas de clarificación previa a `gap-discovery` de Fase C (pricing + legal + i18n
+completo), respondida por Jose antes de tocar ningún archivo. Vinculante para el/los GAP(s) de
+Fase C — mismo estatus que el resto de este documento.
+
+| Dimensión | Decisión |
+|---|---|
+| **División en GAPs** | Un solo GAP cubre pricing + legal + i18n completo — no se divide en C1/C2. La página `/pricing` se construye con placeholders de cifras si aún no están confirmadas (mismo patrón de disciplina de placeholder que B2), sin bloquear el resto. |
+| **Cifras de pricing** | Jose no las tiene confirmadas todavía — la página se monta con la estructura completa (3 niveles, toggle mensual/anual, comparativa, FAQ) y las cifras marcadas explícitamente como pendientes (mismo patrón `AssetPlaceholder`-like de B2, adaptado a texto en vez de imagen). |
+| **Traducción PT/EN** | `landing-content-writer` traduce todo lo publicado (home + legal) en este ciclo; Jose revisa después sin que eso bloquee el cierre del GAP — el contenido vive en JSON, fácil de corregir en una pasada posterior si hace falta. |
+| **Redirect de URLs legales viejas** | `/legal/privacy` y `/legal/terms` (fuera de `[locale]`, indexadas desde GAP-119) pasan a `/[locale]/legal/...`. Las URLs viejas quedan con redirect 301 a `/es/legal/...` vía `next.config.mjs` `redirects()` — preserva el SEO ya acumulado. |
+| **`/legal/cookies`** | Sigue pospuesta — no hay cookies no esenciales todavía (sin analítica, eso es Fase E). Se crea cuando exista analítica real que la necesite, no antes. |
+
+### Riesgo técnico señalado para Fase C (no una decisión, un aviso para `gap-discovery`)
+
+`src/middleware.ts` hoy solo intercepta la ruta raíz exacta (`pathname === '/'`) para decidir
+dominio-raíz-vs-subdominio-de-tenant y delegar en `intlMiddleware` (`next-intl`). Con
+`localePrefix: 'as-needed'` (español sin prefijo), cualquier página nueva bajo `[locale]` que
+deba ser accesible **sin prefijo** en español (`/pricing`, `/legal/privacy`, `/legal/terms`)
+necesita que el middleware también la intercepte y delegue en `intlMiddleware` — igual que ya
+hace hoy solo para `/`. Sin ampliar el `matcher`/la rama de detección más allá de la ruta raíz
+exacta, una petición a `/pricing` en el dominio raíz no llegaría a resolverse (no hay
+`src/app/pricing/page.tsx` fuera de `[locale]`, y el middleware no la reescribe a `/es/pricing`).
+
+Esto es una ampliación real, no trivial, del cambio que ya se aprobó en B1 (GAP-120) — de
+"interceptar solo `/`" a "interceptar `/`, `/pricing` y `/legal/:path*`". Sigue sin tocar la
+lógica de auth/RBAC del resto del archivo, pero el `gap-discovery` de Fase C debe tratarlo como
+un cambio explícito a confirmar con Jose antes de implementar, no asumir que es una extensión
+trivial del patrón de B1.
+
+### Fase C — cerrado (GAP-122, 2026-07-28)
+
+`.claude/gaps/closed/GAP-122-landing-fase-c-pricing-legal-i18n.md` — ✅ APROBADO, 9/10.
+Implementado: `next-intl` con `locales: ['es', 'pt', 'en']`; `/pricing` nuevo (3 niveles, toggle
+mensual/anual sin descuento inventado, precio marcado "pendiente de confirmar", capacidades
+comunes de plataforma sin tabla comparativa por nivel — confirmado con Jose no incluirla
+todavía); páginas legales movidas a `[locale]/legal/*` con la MISMA URL en español que antes (se
+detectó y corrigió durante el discovery que el redirect 301 inicialmente aprobado no hacía falta
+— con `localePrefix: 'as-needed'` la URL en español nunca cambia); traducción completa de
+`landing.json` (99 claves) a PT/EN por `landing-content-writer`, paridad de claves verificada;
+`sitemap.xml` y cada página con `hreflang`/`canonical` correctos por idioma; `middleware.ts`
+ampliado para interceptar también `/pricing` y `/legal/:path*` (además de `/`), resto de su
+lógica de auth/RBAC intacta. El implementador encontró y corrigió 3 huecos reales no previstos
+en el plan (título de home hardcodeado en español, `canonical` ausente en varias páginas, link
+del footer no locale-aware) — los tres eran necesarios para que la traducción funcionara de
+verdad, no alcance nuevo. Verificado con servidor real: 12 combinaciones página×locale, todas
+200, cero regresión sobre Fases A/B1/B2, cero cifra/certificación inventada. Pendiente real
+heredado: verificación visual humana en navegador todavía no hecha (ninguno de los 4 GAPs de
+landing la ha tenido) — recomendado especialmente para revisar el matiz de las traducciones
+PT/EN antes de dar Fase C por cerrada del todo. **Próximo paso: Fase D (blog + GEO/AEO) cuando
+Jose quiera retomarlo, o el GAP corto de assets pendiente de B2.**

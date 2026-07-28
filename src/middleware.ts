@@ -66,12 +66,23 @@ function redirectToLoginClearing(req: NextRequest, pathname: string): NextRespon
   return response;
 }
 
+/**
+ * Rutas públicas del sitio localizado que deben ser accesibles sin prefijo en español
+ * (localePrefix: 'as-needed') — necesitan el mismo rewrite interno de next-intl que ya
+ * aplica a '/'. Las variantes ya prefijadas (/pt/pricing, /en/legal/privacy...) no lo
+ * necesitan: Next.js las resuelve de forma nativa contra el segmento [locale] del árbol
+ * de archivos sin pasar por aquí.
+ */
+function isPublicLocalePath(pathname: string): boolean {
+  return pathname === '/' || pathname === '/pricing' || pathname.startsWith('/legal/');
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Ruta raíz pública: decide dominio raíz (home localizada vía next-intl) vs subdominio
-  // de tenant (deja pasar, page.js sigue mostrando LoginPage exactamente como hoy).
-  if (pathname === '/') {
+  // Rutas públicas del sitio: deciden dominio raíz (contenido localizado vía next-intl) vs
+  // subdominio de tenant (dejan pasar, page.js sigue mostrando LoginPage exactamente como hoy).
+  if (isPublicLocalePath(pathname)) {
     if (isGenericBranding) {
       // Deploy white-label sin landing pública: comportamiento sin cambios (page.js
       // sigue mostrando la página en blanco para este caso).
@@ -283,6 +294,8 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     '/',
+    '/pricing',
+    '/legal/:path*',
     '/admin/:path*',
     '/operator/:path*',
     '/comercial/:path*',

@@ -1,0 +1,160 @@
+{
+  "Landing": {
+    "hero": {
+      "metaTitle": "ERP for the fishing industry",
+      "subtitle": "Traceability, batches, and expiry dates under control, from the dock to the sale.",
+      "modulesList": "Production ∷ Purchasing ∷ Sales ∷ Labeling ∷ Traceability",
+      "ctaDemo": "View demo",
+      "trustSecure": "Secure, encrypted data",
+      "trustGlobal": "Access from any fish market or warehouse"
+    },
+    "modules": {
+      "title": "From the fish market to the final customer, without losing a single batch",
+      "description": "Every process in your fishing business, connected: catch, production, warehouse, sales, and labeling.",
+      "production": {
+        "title": "Production and Traceability",
+        "description": "Track every batch from catch to final product and comply with traceability regulations without spreadsheets."
+      },
+      "stock": {
+        "title": "Warehouse and Stock",
+        "description": "Control expiry dates and batches by location with an interactive warehouse map, before they expire on the dock."
+      },
+      "sales": {
+        "title": "Purchasing and Sales",
+        "description": "Manage orders to suppliers and customers, with fish market prices updated without manual entry."
+      },
+      "ai": {
+        "title": "AI-Powered PDF Extraction",
+        "description": "Turn fish market and supplier PDFs into automatic receptions and delivery notes, without manual transcription."
+      },
+      "labels": {
+        "title": "Label Editor",
+        "description": "Design and print labels with batch, expiry date, and traceability compliant with regulations."
+      }
+    },
+    "integratedLonjas": {
+      "title": "Integrated with the leading fish markets in Andalusia and Portugal",
+      "description": "Designed together with real buyers from these regions, not based on assumptions."
+    },
+    "trustBadge": {
+      "title": "Legal Compliance",
+      "description": "Traceability and labeling regulations for the fishing industry"
+    },
+    "howItWorks": {
+      "title": "How it works, from the dock to the sale",
+      "description": "Three steps you already follow every day, now connected in a single platform.",
+      "step1": {
+        "title": "Catch or fish market",
+        "description": "Record the fish market purchase or your own catch, with weight, species, and origin."
+      },
+      "step2": {
+        "title": "Production and stock",
+        "description": "Process, label, and store by batch, with expiry date and location always visible."
+      },
+      "step3": {
+        "title": "Sale and traceability",
+        "description": "Generate the order and documentation with full traceability already included."
+      }
+    },
+    "pricingPreview": {
+      "title": "A plan for every company size",
+      "description": "Clear pricing, no surprises. See the full details on the pricing page.",
+      "cta": "View plans",
+      "mostPopular": "Most popular",
+      "tiers": {
+        "starter": {
+          "name": "Essential",
+          "audience": "For warehouses and workshops starting to digitize their operations"
+        },
+        "pro": {
+          "name": "Professional",
+          "audience": "For companies with production, stock, and sales across multiple locations"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "audience": "For groups with multiple facilities, toll processors, and custom needs"
+        }
+      }
+    },
+    "leadForm": {
+      "title": "Ready to stop chasing a batch through a spreadsheet?",
+      "description": "Request a demo and we'll show you how it works with your own operation's data.",
+      "emailPlaceholder": "you@email.com",
+      "submitIdle": "Request demo",
+      "submitLoading": "Sending...",
+      "successMessage": "Request sent. We'll get in touch with you soon.",
+      "genericError": "The request could not be sent",
+      "disclaimer": "No commitment. Cancel anytime."
+    },
+    "footer": {
+      "tagline": "The ERP for the fishing and frozen goods industry.",
+      "taglineLine2": "Traceability, stock, and sales in a single platform.",
+      "contactHeading": "Contact",
+      "copyrightSuffix": "All rights reserved.",
+      "legalTerms": "Legal Notice",
+      "legalPrivacy": "Privacy Policy"
+    }
+  },
+  "Pricing": {
+    "title": "A plan for every company size",
+    "description": "Choose the tier that best fits your operation. Switch plans whenever you need.",
+    "priceTbd": "Price to be confirmed",
+    "periodMonthly": "Monthly",
+    "periodAnnual": "Annual",
+    "ctaTier": "Request demo",
+    "mostPopular": "Most popular",
+    "capabilitiesTitle": "Included in every plan",
+    "capability1": "Production and traceability by batch",
+    "capability2": "Warehouse and stock with interactive map",
+    "capability3": "Purchasing and sales",
+    "capability4": "AI-powered document extraction",
+    "capability5": "Label editor",
+    "faqTitle": "Frequently asked questions",
+    "faqQ1": {
+      "question": "Can I change plans later?",
+      "answer": "Yes, you can change tiers whenever you need as your operation grows."
+    },
+    "faqQ2": {
+      "question": "Is there a trial period?",
+      "answer": "Request a demo and we'll walk you through the platform using your own operation's data."
+    },
+    "faqQ3": {
+      "question": "What support does each plan include?",
+      "answer": "All plans include support to answer questions during onboarding and daily use."
+    }
+  },
+  "Legal": {
+    "common": {
+      "lastUpdated": "Last updated"
+    },
+    "privacy": {
+      "pageTitle": "Privacy Policy",
+      "heading": "Privacy Policy",
+      "controllerTitle": "Data controller",
+      "controllerBody": "{appName} is a product of Congelados Brisamar. For any questions related to your personal data, write to us at:",
+      "dataCollectedTitle": "What data we collect",
+      "dataCollectedBody": "When you request access through this website's form, we only collect the email address you voluntarily provide. We do not use analytics or tracking cookies on this site.",
+      "dataUseTitle": "What we use your data for",
+      "dataUseBody": "We use your email exclusively to respond to your access request and to contact you about {appName}. We do not use it for any other purpose or share it with third parties for commercial purposes.",
+      "dataSharingTitle": "Who we share your data with",
+      "dataSharingBody": "Your request is sent through a transactional email provider (Resend), which acts as a data processor solely to deliver the message. We do not share your email with third parties for advertising purposes, nor do we sell it.",
+      "rightsTitle": "Your rights",
+      "rightsBody": "You can request access to, rectification of, or deletion of your data by writing to us at:",
+      "disclaimer": "This document is an initial, honest version of our privacy policy, pending formal legal review. If you have any questions in the meantime, please contact us directly."
+    },
+    "terms": {
+      "pageTitle": "Legal Notice",
+      "heading": "Legal Notice",
+      "ownershipTitle": "Site ownership",
+      "ownershipBody": "This website is operated by Congelados Brisamar as the owner of {appName}. For any inquiries, you can write to:",
+      "purposeTitle": "Purpose",
+      "purposeBody": "This website presents {appName}, an ERP for companies in the fishing and frozen goods industry, and allows you to request access to a product demo.",
+      "ipTitle": "Intellectual property",
+      "ipBody": "The content on this site (text, brand, logo, design) is the property of Congelados Brisamar. Reproduction without express authorization is not permitted.",
+      "contactFormTitle": "Use of the contact form",
+      "contactFormBody": "By submitting the access request form, you agree that we may use the email address provided to respond to your request, as described in our:",
+      "contactFormLink": "Privacy Policy",
+      "disclaimer": "This document is an initial, honest version of our legal notice, pending formal legal review. If you have any questions in the meantime, please contact us directly."
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Mail, Phone, Waves } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Separator } from '@/components/ui/separator';
 import { appName, infoEmail } from '@/configs/branding';
 

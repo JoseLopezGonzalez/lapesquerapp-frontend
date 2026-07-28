@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { appName, metadataBaseUrl } from '@/configs/branding';
+import { getPathname } from '@/i18n/navigation';
+import { routing } from '@/i18n/routing';
 import Hero from '@/components/LandingPage/Hero';
 import ModulesBento from '@/components/LandingPage/ModulesBento';
 import HowItWorks from '@/components/LandingPage/HowItWorks';
@@ -10,14 +12,23 @@ import PricingPreview from '@/components/LandingPage/PricingPreview';
 import LeadCaptureForm from '@/components/LandingPage/LeadCaptureForm';
 import Footer from '@/components/LandingPage/Footer';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('Landing.hero');
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Landing.hero' });
+  const base = metadataBaseUrl.replace(/\/$/, '');
+  const languages = Object.fromEntries(
+    routing.locales.map((l) => [l, `${base}${getPathname({ locale: l, href: '/' })}`])
+  );
 
   return {
     // `absolute` evita que el `title.template` del layout raíz duplique el appName
-    title: { absolute: `${appName} | ERP para la industria pesquera` },
+    title: { absolute: `${appName} | ${t('metaTitle')}` },
     description: t('subtitle'),
-    alternates: { canonical: metadataBaseUrl },
+    alternates: { canonical: `${base}${getPathname({ locale, href: '/' })}`, languages },
   };
 }
 

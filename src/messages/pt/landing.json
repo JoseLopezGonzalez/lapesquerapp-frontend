@@ -1,0 +1,160 @@
+{
+  "Landing": {
+    "hero": {
+      "metaTitle": "ERP para a indústria da pesca",
+      "subtitle": "Rastreabilidade, lotes e validades sob controlo, do cais até à venda.",
+      "modulesList": "Produção ∷ Compras ∷ Vendas ∷ Rotulagem ∷ Rastreabilidade",
+      "ctaDemo": "Ver demonstração",
+      "trustSecure": "Dados seguros e encriptados",
+      "trustGlobal": "Acede a partir de qualquer lota ou armazém"
+    },
+    "modules": {
+      "title": "Da lota ao cliente final, sem perder um único lote",
+      "description": "Cada processo da tua empresa de pesca, ligado: captura, produção, armazém, vendas e rotulagem.",
+      "production": {
+        "title": "Produção e Rastreabilidade",
+        "description": "Acompanha cada lote desde a captura até ao produto final e cumpre a regulamentação de rastreabilidade sem folhas de cálculo."
+      },
+      "stock": {
+        "title": "Armazém e Stock",
+        "description": "Controla validades e lotes por localização com mapa interativo do armazém, antes que expirem no cais."
+      },
+      "sales": {
+        "title": "Compras e Vendas",
+        "description": "Gere encomendas a fornecedores e clientes, com preços de lota atualizados sem os introduzir manualmente."
+      },
+      "ai": {
+        "title": "Extração de PDF com IA",
+        "description": "Converte os PDF de lotas e fornecedores em receções e guias de remessa automáticas, sem transcrição manual."
+      },
+      "labels": {
+        "title": "Editor de Etiquetas",
+        "description": "Cria e imprime etiquetas com lote, data de validade e rastreabilidade em conformidade com a regulamentação."
+      }
+    },
+    "integratedLonjas": {
+      "title": "Integrado com as principais lotas da Andaluzia e de Portugal",
+      "description": "Concebido junto de compradores reais destas zonas, não com base em suposições."
+    },
+    "trustBadge": {
+      "title": "Conformidade Legal",
+      "description": "Regulamentação de rastreabilidade e rotulagem do setor da pesca"
+    },
+    "howItWorks": {
+      "title": "É assim que funciona, do cais à venda",
+      "description": "Três passos que já segues todos os dias, agora ligados numa única plataforma.",
+      "step1": {
+        "title": "Captura ou lota",
+        "description": "Regista a compra em lota ou a captura própria, com peso, espécie e proveniência."
+      },
+      "step2": {
+        "title": "Produção e stock",
+        "description": "Transforma, etiqueta e armazena por lote, com validade e localização sempre visíveis."
+      },
+      "step3": {
+        "title": "Venda e rastreabilidade",
+        "description": "Gera a encomenda e a documentação com a rastreabilidade completa já incluída."
+      }
+    },
+    "pricingPreview": {
+      "title": "Um plano para cada tamanho de empresa",
+      "description": "Preços claros, sem surpresas. Consulta todos os detalhes na página de planos.",
+      "cta": "Ver planos",
+      "mostPopular": "Mais popular",
+      "tiers": {
+        "starter": {
+          "name": "Essencial",
+          "audience": "Para armazéns e oficinas que começam a digitalizar a sua operação"
+        },
+        "pro": {
+          "name": "Profissional",
+          "audience": "Para empresas com produção, stock e vendas em vários pontos"
+        },
+        "enterprise": {
+          "name": "Empresas",
+          "audience": "Para grupos com vários centros, produção subcontratada e necessidades à medida"
+        }
+      }
+    },
+    "leadForm": {
+      "title": "Pronto para deixar de perseguir um lote numa folha de cálculo?",
+      "description": "Solicita uma demonstração e mostramos-te como funciona com dados da tua própria operação.",
+      "emailPlaceholder": "teu@email.com",
+      "submitIdle": "Solicitar demonstração",
+      "submitLoading": "A enviar...",
+      "successMessage": "Pedido enviado. Entraremos em contacto contigo em breve.",
+      "genericError": "Não foi possível enviar o pedido",
+      "disclaimer": "Sem compromisso. Cancela quando quiseres."
+    },
+    "footer": {
+      "tagline": "O ERP para a indústria da pesca e dos congelados.",
+      "taglineLine2": "Rastreabilidade, stock e vendas numa única plataforma.",
+      "contactHeading": "Contacto",
+      "copyrightSuffix": "Todos os direitos reservados.",
+      "legalTerms": "Aviso Legal",
+      "legalPrivacy": "Política de Privacidade"
+    }
+  },
+  "Pricing": {
+    "title": "Um plano para cada tamanho de empresa",
+    "description": "Escolhe o nível que melhor se adapta à tua operação. Muda de plano sempre que precisares.",
+    "priceTbd": "Preço a confirmar",
+    "periodMonthly": "Mensal",
+    "periodAnnual": "Anual",
+    "ctaTier": "Solicitar demonstração",
+    "mostPopular": "Mais popular",
+    "capabilitiesTitle": "Incluído em todos os planos",
+    "capability1": "Produção e rastreabilidade por lote",
+    "capability2": "Armazém e stock com mapa interativo",
+    "capability3": "Compras e vendas",
+    "capability4": "Extração de documentos com IA",
+    "capability5": "Editor de etiquetas",
+    "faqTitle": "Perguntas frequentes",
+    "faqQ1": {
+      "question": "Posso mudar de plano mais tarde?",
+      "answer": "Sim, podes mudar de nível sempre que precisares, à medida que a tua operação cresce."
+    },
+    "faqQ2": {
+      "question": "Existe período de teste?",
+      "answer": "Solicita uma demonstração e acompanhamos-te para que vejas a plataforma com dados da tua própria operação."
+    },
+    "faqQ3": {
+      "question": "Que suporte inclui cada plano?",
+      "answer": "Todos os planos incluem suporte para esclarecer dúvidas durante a implementação e o uso diário."
+    }
+  },
+  "Legal": {
+    "common": {
+      "lastUpdated": "Última atualização"
+    },
+    "privacy": {
+      "pageTitle": "Política de Privacidade",
+      "heading": "Política de Privacidade",
+      "controllerTitle": "Responsável pelo tratamento",
+      "controllerBody": "{appName} é um produto da Congelados Brisamar. Para qualquer questão relacionada com os teus dados pessoais, escreve-nos para:",
+      "dataCollectedTitle": "Que dados recolhemos",
+      "dataCollectedBody": "Quando solicitas acesso através do formulário deste site, recolhemos apenas o endereço de email que nos facultas voluntariamente. Não utilizamos cookies de análise nem de rastreio neste site.",
+      "dataUseTitle": "Para que usamos os teus dados",
+      "dataUseBody": "Usamos o teu email exclusivamente para responder ao teu pedido de acesso e para entrar em contacto contigo sobre {appName}. Não o usamos para qualquer outro fim nem o cedemos a terceiros para fins comerciais.",
+      "dataSharingTitle": "Com quem partilhamos os teus dados",
+      "dataSharingBody": "O teu pedido é enviado através de um fornecedor de envio de emails transacionais (Resend), que atua como subcontratante do tratamento apenas para fazer chegar a mensagem. Não partilhamos o teu email com terceiros para fins publicitários nem o vendemos.",
+      "rightsTitle": "Os teus direitos",
+      "rightsBody": "Podes solicitar o acesso, a retificação ou a eliminação dos teus dados escrevendo-nos para:",
+      "disclaimer": "Este documento é uma versão inicial e honesta da nossa política de privacidade, pendente de revisão jurídica formal. Se tiveres qualquer dúvida entretanto, contacta-nos diretamente."
+    },
+    "terms": {
+      "pageTitle": "Aviso Legal",
+      "heading": "Aviso Legal",
+      "ownershipTitle": "Titularidade do site",
+      "ownershipBody": "Este site é operado pela Congelados Brisamar, titular de {appName}. Para qualquer questão, podes escrever para:",
+      "purposeTitle": "Objeto",
+      "purposeBody": "Este site apresenta {appName}, um ERP para empresas do setor da pesca e dos congelados, e permite solicitar acesso a uma demonstração do produto.",
+      "ipTitle": "Propriedade intelectual",
+      "ipBody": "Os conteúdos deste site (textos, marca, logótipo, design) são propriedade da Congelados Brisamar. Não é permitida a sua reprodução sem autorização expressa.",
+      "contactFormTitle": "Uso do formulário de contacto",
+      "contactFormBody": "Ao enviar o formulário de pedido de acesso, aceitas que usemos o email fornecido para responder ao teu pedido, conforme descrito na nossa:",
+      "contactFormLink": "Política de Privacidade",
+      "disclaimer": "Este documento é uma versão inicial e honesta do nosso aviso legal, pendente de revisão jurídica formal. Se tiveres qualquer dúvida entretanto, contacta-nos diretamente."
+    }
+  }
+}

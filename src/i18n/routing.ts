@@ -1,9 +1,9 @@
 import { defineRouting } from 'next-intl/routing';
 
-// Solo 'es' está publicado por ahora (Fase B1). 'pt'/'en' se añaden en Fase C
-// cuando exista contenido traducido real — evita rutas /pt, /en sin contenido.
+// 'es' sin prefijo (locale por defecto), 'pt'/'en' con prefijo — Fase C ya tiene
+// contenido traducido real para los 3 locales (ver src/messages/{locale}/landing.json).
 export const routing = defineRouting({
-  locales: ['es'],
+  locales: ['es', 'pt', 'en'],
   defaultLocale: 'es',
   localePrefix: 'as-needed',
 });
