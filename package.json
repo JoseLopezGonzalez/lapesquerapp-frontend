@@ -10,13 +10,12 @@
     "lint:fix": "eslint src --fix",
     "test": "vitest",
     "test:run": "vitest run",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit 2>&1",
     "generate-generic-icons": "node scripts/generate-generic-icons.js",
     "gaps:registry": "node scripts/build-gaps-registry.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky",
-    "type-check": "tsc --noEmit 2>&1"
+    "prepare": "husky"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -77,6 +76,7 @@
     "mapbox-gl": "^3.20.0",
     "next": "^16.0.7",
     "next-auth": "^4.24.13",
+    "next-intl": "^4.13.4",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
     "react": "19.0.0-rc-66855b96-20241106",

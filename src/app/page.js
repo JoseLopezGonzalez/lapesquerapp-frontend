@@ -1,12 +1,11 @@
 'use client';
 
-import LandingPage from '@/components/LandingPage';
 import LoginPage from '@/components/LoginPage';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Loader from '@/components/Utilities/Loader';
-import { baseDomain, isGenericBranding } from '@/configs/branding';
+import { baseDomain } from '@/configs/branding';
 import { getDefaultAuthenticatedRoute } from '@/lib/auth/actor';
 
 export default function HomePage() {
@@ -76,9 +75,9 @@ export default function HomePage() {
     );
   }
 
-  // Modo genérico: landing no accesible; no mostrar nada en la raíz (página en blanco)
-  if (isGenericBranding) {
-    return <div className="bg-background min-h-screen" />;
-  }
-  return <LandingPage />;
+  // Dominio raíz: en producción (branding pesquerapp) el middleware ya reescribió esta
+  // petición a /[locale] (home pública) antes de llegar aquí — esta rama solo se alcanza
+  // en modo isGenericBranding (deploy white-label sin landing pública) o como fallback
+  // defensivo si el middleware no llegó a interceptar la petición.
+  return <div className="bg-background min-h-screen" />;
 }

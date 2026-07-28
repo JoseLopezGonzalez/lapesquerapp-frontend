@@ -17,7 +17,7 @@
 | 0 | Contexto + equipo de agentes | ✅ Completada 2026-07-27 | — |
 | 1 | Diagnóstico + comparativa + propuesta (este documento) | ✅ Completada 2026-07-27 | — |
 | A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | ✅ GAP-119 cerrado (2026-07-28, ⚠️ aprobado con observaciones ya resueltas) | S |
-| B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ⬜ Pendiente | L |
+| B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | 🔶 B1 (arquitectura) ✅ GAP-120 cerrado 2026-07-28. B2 (sistema visual) pendiente — ver §8 | L |
 | C | Pricing + Legal + PT/EN | ⬜ Pendiente (páginas legales mínimas ya adelantadas en GAP-119, ver nota) | M |
 | D | Blog + GEO/AEO | ⬜ Pendiente | M |
 | E | Analítica + cadencia trimestral continua | ⬜ Pendiente | S |
@@ -398,3 +398,46 @@ flujo `gap-discovery` → `gap-implementor` ya existente en el proyecto.
 **Siguiente acción concreta:** confirmar con Jose el orden de fases (recomendación:
 A primero, en paralelo con el diseño de B) y abrir el primer lote de GAPs vía
 `gap-discovery`.
+
+---
+
+## 8. Fase B — Decisiones confirmadas (2026-07-28)
+
+Ronda de preguntas de clarificación previa a `gap-discovery`, respondida por Jose antes de
+tocar ningún archivo. Vinculante para los GAPs de Fase B salvo que Jose las cambie
+explícitamente — mismo estatus que las decisiones de `landing-context.md` §3.
+
+| Dimensión | Decisión |
+|---|---|
+| **División en GAPs** | Dos GAPs secuenciales, no uno solo: **B1 (arquitectura)** — componentización real de `LandingPage`, infraestructura `[locale]`, convivencia con `src/app/page.js` (routing subdominio login vs landing pública), SEO/metadata por página vía Server Components. **B2 (sistema visual)** — monocromo + bento + assets, sobre la base ya componentizada de B1. B2 no arranca hasta que B1 esté cerrado y auditado. |
+| **URL de idioma** | Español sin prefijo (`lapesquerapp.es/` sirve ES directamente); `/pt` y `/en` sí llevan prefijo. `next-intl` con `localePrefix: 'as-needed'`. |
+| **Dependencia i18n** | Aprobado `next-intl` explícitamente (regla de CLAUDE.md "no añadir dependencias sin aprobación" — cubierta para esta librería, para esta fase). |
+| **Copy nuevo** | `landing-content-writer` redacta el copy nuevo (titulares, tarjetas de módulo, CTA) en el mismo ciclo de B2, siguiendo `landing-context.md` §4.3 — no se maqueta con el copy actual y se reescribe después. |
+| **Assets visuales (Tipo 1/2/3)** | B2 implementa el layout bento completo con placeholders explícitamente marcados con su clasificación (tipo 1/2/3, según `landing-context.md` §7b). Jose genera los prompts de IA (Tipo 3, ya redactados en §5) y captura las pantallas reales (Tipo 1) por su cuenta cuando el layout esté listo — no bloquea el cierre de B2. Un GAP corto de seguimiento inserta los assets finales. |
+| **Testimonios / prueba social** | Jose aún no tiene testimonios reales confirmados (nombre/empresa/cita/logo). B2 construye la sección solo con logos de lonjas ya integradas si existen, o la deja fuera por completo — cero citas ni nombres inventados. Se añade en un GAP posterior cuando Jose los aporte. |
+| **Pricing preview en home** | Incluida en B2, sin cifras — nombre de cada nivel + a quién va dirigido + CTA a `/pricing` (la página completa con cifras es Fase C). |
+
+### B1 — cerrado (GAP-120, 2026-07-28)
+
+`.claude/gaps/closed/GAP-120-landing-locale-arquitectura.md` — ✅ APROBADO, 9/10. Implementado:
+`next-intl` (`locales: ['es']` únicamente), `src/app/[locale]/layout.tsx`+`page.tsx`,
+`LandingPage` componentizado en 7 archivos (visual idéntico, cero reescritura de copy),
+`middleware.ts` reescribe `/` → `/es` en dominio raíz sin tocar el resto de su lógica de
+auth/RBAC, `page.js` simplificado, JSON-LD `Organization`+`SoftwareApplication`. Verificado con
+servidor de desarrollo real (no solo lectura de código) en los tres escenarios de dominio
+(root PesquerApp, subdominio de tenant, generic branding) — cero regresión sobre GAP-119.
+Pendiente real heredado: verificación visual humana en navegador todavía no hecha (ni en
+GAP-119 ni en este). **Próximo paso: GAP de B2 (sistema visual monocromo + bento + assets)
+vía `gap-discovery`, sobre esta base ya componentizada.**
+
+### Riesgo técnico señalado para B1 (no una decisión, un aviso para `gap-discovery`)
+
+`src/app/page.js` es `'use client'` y decide landing-vs-login leyendo
+`window.location.hostname` en runtime (incluye el caso `isGenericBranding`, que devuelve
+página en blanco para marcas white-label distintas de PesquerApp). La elección de "ES sin
+prefijo" implica que `next-intl` necesita reescribir internamente `/` → `/es` sin mostrarlo
+en la URL, lo cual normalmente se resuelve en middleware — y `src/middleware.ts` ya es un
+archivo protegido (auth + tenant + RBAC, 274 líneas, ver CLAUDE.md "Archivos protegidos").
+Componer el middleware de `next-intl` con el middleware existente sin romper la detección de
+tenant/subdominio es el punto de mayor riesgo técnico de B1 y debe tratarse como tal en la
+fase de discovery — no asumir que es un cambio trivial de routing.

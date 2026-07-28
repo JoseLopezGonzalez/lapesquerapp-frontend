@@ -1,10 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import createMiddleware from 'next-intl/middleware';
 import roleConfig from './configs/roleConfig';
 import { API_BASE_URL } from './configs/config';
 import { fetchWithTenant } from './lib/fetchWithTenant';
 import { isAuthError } from './configs/authConfig';
 import { log as devLog, error as logError } from './lib/logger';
+import { baseDomain, isGenericBranding } from './configs/branding';
+import { routing } from './i18n/routing';
+
+const intlMiddleware = createMiddleware(routing);
+
+/**
+ * Misma lógica de detección de subdominio de tenant que src/app/page.js (antes solo
+ * evaluada en el cliente vía window.location.hostname). Se replica aquí server-side
+ * porque la ruta raíz '/' ahora necesita decidir, antes de renderizar nada, si reescribir
+ * a la home pública localizada (dominio raíz) o dejar pasar sin cambios (subdominio de
+ * tenant, sigue resolviendo en page.js exactamente igual que hoy).
+ */
+function isTenantSubdomain(hostname: string): boolean {
+  const isLocal = hostname.includes('localhost') || hostname === '127.0.0.1';
+  if (isLocal) {
+    const parts = hostname.split('.');
+    return parts.length > 1 && parts[0] !== 'localhost';
+  }
+  const domain = baseDomain || '';
+  if (!domain) return false;
+  if (hostname === domain || hostname === `www.${domain}`) return false;
+  return hostname.endsWith(`.${domain}`);
+}
 
 interface JWTToken {
   accessToken?: string;
@@ -44,6 +68,22 @@ function redirectToLoginClearing(req: NextRequest, pathname: string): NextRespon
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Ruta raíz pública: decide dominio raíz (home localizada vía next-intl) vs subdominio
+  // de tenant (deja pasar, page.js sigue mostrando LoginPage exactamente como hoy).
+  if (pathname === '/') {
+    if (isGenericBranding) {
+      // Deploy white-label sin landing pública: comportamiento sin cambios (page.js
+      // sigue mostrando la página en blanco para este caso).
+      return NextResponse.next();
+    }
+    const hostname = (req.headers.get('host') || '').split(':')[0];
+    if (isTenantSubdomain(hostname)) {
+      return NextResponse.next();
+    }
+    return intlMiddleware(req);
+  }
+
   const isExternalRoute = pathname.startsWith('/external');
   const isInternalProtectedRoute =
     pathname.startsWith('/admin') ||
@@ -210,7 +250,11 @@ export async function middleware(req: NextRequest) {
   }
 
   // Supervisor: solo puede acceder a /admin/home — cualquier otra ruta /admin redirige ahí
-  if (userRole === 'supervisor' && pathname.startsWith('/admin') && !pathname.startsWith('/admin/home')) {
+  if (
+    userRole === 'supervisor' &&
+    pathname.startsWith('/admin') &&
+    !pathname.startsWith('/admin/home')
+  ) {
     const homeUrl = new URL('/admin/home', req.url);
     return NextResponse.redirect(homeUrl);
   }
@@ -238,6 +282,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    '/',
     '/admin/:path*',
     '/operator/:path*',
     '/comercial/:path*',
