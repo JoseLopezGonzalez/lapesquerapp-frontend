@@ -1,85 +1,93 @@
 {
   "Landing": {
     "hero": {
-      "subtitle": "Gestión total para industrias pesqueras",
+      "subtitle": "Trazabilidad, lotes y caducidades bajo control, del muelle a la venta.",
       "modulesList": "Producción ∷ Compras ∷ Ventas ∷ Etiquetado ∷ Trazabilidad",
       "ctaDemo": "Ver demo",
-      "ctaFeatures": "Ver características",
-      "heroImageAlt": "sky App - Dashboard Principal",
-      "floatingProductionLabel": "En Producción",
-      "floatingProductionValue": "2.450,00 kg ",
-      "floatingStockLabel": "Stock",
-      "floatingStockValue": "15.230,00 kg",
-      "floatingSalesLabel": "Ventas",
-      "floatingSalesValue": "24.580,00€",
-      "trustSecure": "Seguro y confiable",
-      "trustGlobal": "Acceso desde cualquier lugar"
+      "trustSecure": "Datos seguros y cifrados",
+      "trustGlobal": "Accede desde cualquier lonja o almacén"
     },
     "modules": {
-      "title": "Todo lo que necesita tu industria",
-      "description": "Una solución completa que integra todos los procesos de tu empresa en una única plataforma.",
+      "title": "De la lonja al cliente final, sin perder ni un lote",
+      "description": "Cada proceso de tu empresa pesquera, conectado: captura, producción, almacén, ventas y etiquetado.",
       "production": {
         "title": "Producción y Trazabilidad",
-        "description": "Control completo desde la captura hasta el producto final. Trazabilidad total para cumplir normativas."
+        "description": "Sigue cada lote desde la captura hasta el producto final y cumple la normativa de trazabilidad sin hojas de cálculo."
       },
       "stock": {
         "title": "Almacén y Stock",
-        "description": "Gestión inteligente de inventarios con mapa interactivo de almacenes, fechas de caducidad y lotes..."
+        "description": "Controla caducidades y lotes por ubicación con mapa interactivo de almacén, antes de que caduquen en el muelle."
       },
       "sales": {
         "title": "Compras y Ventas",
-        "description": "Automatiza pedidos, gestiona proveedores y optimiza las ventas con análisis en tiempo real."
+        "description": "Gestiona pedidos a proveedores y clientes, con precios de lonja actualizados sin introducirlos a mano."
       },
       "ai": {
         "title": "Extracción de PDF con IA",
-        "description": "Extrae automáticamente datos de documentos PDF de lonjas y proveedores con inteligencia artificial."
+        "description": "Convierte los PDF de lonjas y proveedores en recepciones y albaranes automáticos, sin transcripción manual."
       },
       "labels": {
         "title": "Editor de Etiquetas",
-        "description": "Crea, edita e imprime etiquetas personalizadas para tus productos."
+        "description": "Diseña e imprime etiquetas con lote, fecha de caducidad y trazabilidad conforme a normativa."
       }
     },
     "integratedLonjas": {
       "title": "Integrado con las principales lonjas de Andalucía y Portugal",
-      "description": "Ideamos la plataforma en base a las necesidades reales de compradores de las diferentes zonas."
-    },
-    "productShowcase": {
-      "title": "Plataforma empresarial de nivel profesional",
-      "description": "Interfaz intuitiva diseñada para maximizar la productividad de tu equipo con datos en tiempo real.",
-      "mainImageAlt": "sky App Dashboard Principal",
-      "extraction": {
-        "title": "Extración de documentos",
-        "description": "Extrae información crucial sobre documentos de las diferentes lonjas para luego generar automaticamente recepciones, albaranes , exportaciones personalizadas a softwares de terceros...",
-        "imageAlt": "Gestión de Producción"
-      },
-      "inventory": {
-        "title": "Control de Inventario",
-        "description": "Gestión inteligente de stock y almacenes. A través de mapas interactivos de almacenes con diferentes formas de registrar palets o cajas, incluyendo lectores de codigos de barras y QR.",
-        "imageAlt": "Control de Inventario"
-      },
-      "orders": {
-        "title": "Gestor de Pedidos Avanzado",
-        "description": "Visualiza y gestiona todos tus pedidos de forma centralizada. Analiza el rendimiento de ventas y optimiza la logística. Automatiza el envio de documentación a tus clientes y proveedores.",
-        "imageAlt": "Dashboard de Análisis"
-      }
+      "description": "Diseñado junto a compradores reales de estas zonas, no en base a supuestos."
     },
     "trustBadge": {
       "title": "Cumplimiento Legal",
-      "description": "Normativas internacionales"
+      "description": "Normativas de trazabilidad y etiquetado del sector pesquero"
+    },
+    "howItWorks": {
+      "title": "Así funciona, del muelle a la venta",
+      "description": "Tres pasos que ya sigues cada día, ahora conectados en una sola plataforma.",
+      "step1": {
+        "title": "Captura o lonja",
+        "description": "Registra la compra en lonja o la captura propia, con peso, especie y procedencia."
+      },
+      "step2": {
+        "title": "Producción y stock",
+        "description": "Transforma, etiqueta y almacena por lote, con caducidad y ubicación siempre visibles."
+      },
+      "step3": {
+        "title": "Venta y trazabilidad",
+        "description": "Genera el pedido y la documentación con la trazabilidad completa ya incluida."
+      }
+    },
+    "pricingPreview": {
+      "title": "Un plan para cada tamaño de empresa",
+      "description": "Precios claros, sin sorpresas. Consulta el detalle completo en la página de planes.",
+      "cta": "Ver planes",
+      "mostPopular": "Más popular",
+      "tiers": {
+        "starter": {
+          "name": "Esencial",
+          "audience": "Para almacenes y talleres que empiezan a digitalizar su operativa"
+        },
+        "pro": {
+          "name": "Profesional",
+          "audience": "Para empresas con producción, stock y ventas en varios puntos"
+        },
+        "enterprise": {
+          "name": "Empresas",
+          "audience": "Para grupos con varios centros, maquiladores y necesidades a medida"
+        }
+      }
     },
     "leadForm": {
-      "title": "¿Listo para transformar tu empresa?",
-      "description": "Solicita acceso anticipado y sé de los primeros en experimentar el futuro de la gestión pesquerapp.",
+      "title": "¿Listo para dejar de perseguir un lote en una hoja de cálculo?",
+      "description": "Solicita una demo y te enseñamos cómo funciona con datos de tu propia operativa.",
       "emailPlaceholder": "tu@email.com",
-      "submitIdle": "Solicitar acceso",
+      "submitIdle": "Solicitar demo",
       "submitLoading": "Enviando...",
       "successMessage": "Solicitud enviada. Nos pondremos en contacto contigo pronto.",
       "genericError": "No se pudo enviar la solicitud",
       "disclaimer": "Sin compromiso. Cancela cuando quieras."
     },
     "footer": {
-      "tagline": "La solución ERP más completa para la industria pesquera.",
-      "taglineLine2": "Gestiona tu empresa con tecnología de vanguardia.",
+      "tagline": "El ERP para la industria pesquera y de congelados.",
+      "taglineLine2": "Trazabilidad, stock y ventas en una sola plataforma.",
       "contactHeading": "Contacto",
       "copyrightSuffix": "Todos los derechos reservados.",
       "legalTerms": "Aviso Legal",

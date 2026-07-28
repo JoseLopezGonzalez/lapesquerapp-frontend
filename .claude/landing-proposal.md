@@ -17,7 +17,7 @@
 | 0 | Contexto + equipo de agentes | ✅ Completada 2026-07-27 | — |
 | 1 | Diagnóstico + comparativa + propuesta (este documento) | ✅ Completada 2026-07-27 | — |
 | A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | ✅ GAP-119 cerrado (2026-07-28, ⚠️ aprobado con observaciones ya resueltas) | S |
-| B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | 🔶 B1 (arquitectura) ✅ GAP-120 cerrado 2026-07-28. B2 (sistema visual) pendiente — ver §8 | L |
+| B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ✅ B1 (GAP-120) y B2 (GAP-121) cerrados 2026-07-28 — ver §8 | L |
 | C | Pricing + Legal + PT/EN | ⬜ Pendiente (páginas legales mínimas ya adelantadas en GAP-119, ver nota) | M |
 | D | Blog + GEO/AEO | ⬜ Pendiente | M |
 | E | Analítica + cadencia trimestral continua | ⬜ Pendiente | S |
@@ -429,6 +429,50 @@ servidor de desarrollo real (no solo lectura de código) en los tres escenarios 
 Pendiente real heredado: verificación visual humana en navegador todavía no hecha (ni en
 GAP-119 ni en este). **Próximo paso: GAP de B2 (sistema visual monocromo + bento + assets)
 vía `gap-discovery`, sobre esta base ya componentizada.**
+
+### B2 — Decisiones confirmadas (2026-07-28, ronda previa a `gap-discovery`)
+
+Ronda de preguntas de clarificación específica de B2 (sistema visual), posterior al cierre de
+B1. Vinculante para el/los GAP(s) de B2 salvo que Jose las cambie explícitamente — mismo
+estatus que el resto de esta tabla.
+
+| Dimensión | Decisión |
+|---|---|
+| **Imágenes reales actuales** (`home-mockup.png`, `mockup-label.png`, `mockup-ia-2.png`, `mockup-store.png`, `mockup-orders.png`) — hoy muestran la UI real en `sky-500`, no monocroma | No se tocan ni se reutilizan en B2. B2 monta el layout con placeholders explícitos marcados `[PLACEHOLDER: captura real — vista X]` (Tipo 1, según `landing-context.md` §7b). Un GAP corto de seguimiento captura de nuevo en tenant demo/seed y aplica el tratamiento visual (recorte, sombra, aislamiento) de §7b. |
+| **`IntegratedLonjas`** (logos reales de lonjas ya integradas, sin riesgo de honestidad — a diferencia de los testimonios) | Se mantiene en B2, restyleada al sistema monocromo. No sigue el mismo destino que los testimonios (esos sí quedan fuera). |
+| **Dark mode** | La landing soporta claro/oscuro vía los tokens OKLCH ya existentes (`--background`/`--foreground`/`--primary`/`--muted`/`--border`), igual que el resto de la app — no se fija a un único modo. |
+| **`framer-motion` scroll-reveal** (§4.1/§4.9, librería ya instalada) | Entra en el alcance de B2 — scroll-reveal básico con intención en los bloques bento, no diferido a un GAP posterior. |
+
+### B2 — Estructura de home confirmada (segunda ronda, 2026-07-28)
+
+Ronda de preguntas sobre la estructura real de página (comparando los 7 componentes de B1
+contra el home ideal de §4.2). Vinculante igual que el resto de esta tabla.
+
+| Dimensión | Decisión |
+|---|---|
+| **Hero** | Un único CTA + un único mockup central estilizado (placeholder Tipo 1) — se eliminan el segundo CTA y las 3 tarjetas flotantes, siguiendo estrictamente la recomendación CRO de §4.2. |
+| **`ModulesBento`** | Cada una de las 5 tarjetas añade su placeholder Tipo 3 (prompts ya redactados en §5) además del icono monocromo — no se queda solo en icono. |
+| **`HowItWorks` (nuevo)** | Se crea en B2: 3 pasos (captura/lonja → producción/stock → venta), copy nuevo de `landing-content-writer` en el mismo ciclo. |
+| **`ProductShowcase`** | Se retira como sección independiente. Decisión de Jose delegada al criterio del equipo: mantener 2 veces el mismo producto (bento + showcase apilado) contradice el objetivo de página limpia tipo Apple con "un elemento visual dominante por sección" (§4.2); sus 4 capturas actuales quedaban cubiertas por los mismos 5 mockups del bento. Se elimina el archivo, no se migra contenido 1:1. |
+| **`PricingPreview` (nuevo)** | Se crea en B2: nombre de cada nivel + a quién va dirigido, sin cifras, CTA a `/pricing`. Como `/pricing` no existe hasta Fase C, el CTA apunta temporalmente al ancla del formulario de leads (`#lead-form` o equivalente) — señalado en el GAP como cambio de destino pendiente para cuando exista la página real. |
+| **Orden final de secciones** | Hero → `ModulesBento` → `HowItWorks` → `IntegratedLonjas` → `TrustBadge` → `PricingPreview` → `LeadCaptureForm` → `Footer`. |
+
+### B2 — cerrado (GAP-121, 2026-07-28)
+
+`.claude/gaps/closed/GAP-121-landing-fase-b2-sistema-visual.md` — ✅ APROBADO, 9/10. Implementado:
+sistema 100% monocromo (tokens OKLCH, cero `sky-*`), Hero simplificado a 1 CTA + 1 mockup
+(placeholder Tipo 2), `ModulesBento` con placeholder Tipo 3 por tarjeta (los 5 prompts de §5),
+2 secciones nuevas (`HowItWorks`, `PricingPreview` sin cifras), `ProductShowcase` eliminado
+(evita duplicar el mismo producto dos veces en la página), `IntegratedLonjas`/`TrustBadge`/
+`Footer`/`LeadCaptureForm` restyleados (footer y CTA final reutilizan el token `--invert` ya
+existente para una banda de alto contraste en ambos temas), `ScrollReveal` con `framer-motion`
+respetando `prefers-reduced-motion`, copy reescrito nombrando problemas reales del sector.
+Verificado con servidor de desarrollo real (`curl`): cero clases `sky-*`, cero cifras/
+certificaciones inventadas, cero regresión sobre GAP-119 (lógica de leads) ni GAP-120 (legal,
+sitemap, robots, routing de tenant/dominio raíz). Pendiente real heredado: verificación visual
+humana en navegador todavía no hecha (ninguno de los 3 GAPs de landing la ha tenido) — este es
+el primer GAP que cambia lo que el usuario *ve* de verdad, recomendado antes de encargar el GAP
+de assets de seguimiento (sustituir los 6 placeholders Tipo 2/Tipo 3 por los assets finales).
 
 ### Riesgo técnico señalado para B1 (no una decisión, un aviso para `gap-discovery`)
 

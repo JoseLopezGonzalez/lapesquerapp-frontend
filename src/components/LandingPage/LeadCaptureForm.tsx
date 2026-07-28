@@ -39,11 +39,13 @@ export default function LeadCaptureForm() {
   };
 
   return (
-    <section className="bg-sky-500 py-16 sm:py-24">
+    <section id="lead-form" className="bg-invert py-16 sm:py-24">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl tracking-tight text-white sm:text-4xl">{t('title')}</h2>
-          <p className="text-md mt-4 text-sky-100">{t('description')}</p>
+          <h2 className="text-invert-foreground text-3xl tracking-tight sm:text-4xl">
+            {t('title')}
+          </h2>
+          <p className="text-invert-foreground/70 text-md mt-4">{t('description')}</p>
           <form
             onSubmit={handleSubmit(onSubmitLead)}
             className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
@@ -54,7 +56,7 @@ export default function LeadCaptureForm() {
                 <Input
                   type="email"
                   placeholder={t('emailPlaceholder')}
-                  className="border-white/20 bg-white/10 text-white placeholder:text-white/70"
+                  className="border-invert-foreground/20 bg-invert-foreground/10 text-invert-foreground placeholder:text-invert-foreground/70"
                   disabled={isSubmittingLead}
                   aria-invalid={!!errors.email}
                   {...register('email')}
@@ -80,7 +82,7 @@ export default function LeadCaptureForm() {
               </Button>
             </div>
           </form>
-          <p className="mt-10 text-sm text-sky-200">{t('disclaimer')}</p>
+          <p className="text-invert-foreground/70 mt-10 text-sm">{t('disclaimer')}</p>
         </div>
       </div>
     </section>

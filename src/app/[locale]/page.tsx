@@ -3,9 +3,10 @@ import { getTranslations } from 'next-intl/server';
 import { appName, metadataBaseUrl } from '@/configs/branding';
 import Hero from '@/components/LandingPage/Hero';
 import ModulesBento from '@/components/LandingPage/ModulesBento';
+import HowItWorks from '@/components/LandingPage/HowItWorks';
 import IntegratedLonjas from '@/components/LandingPage/IntegratedLonjas';
-import ProductShowcase from '@/components/LandingPage/ProductShowcase';
 import TrustBadge from '@/components/LandingPage/TrustBadge';
+import PricingPreview from '@/components/LandingPage/PricingPreview';
 import LeadCaptureForm from '@/components/LandingPage/LeadCaptureForm';
 import Footer from '@/components/LandingPage/Footer';
 
@@ -38,9 +39,10 @@ export default function LandingHomePage() {
       />
       <Hero />
       <ModulesBento />
+      <HowItWorks />
       <IntegratedLonjas />
-      <ProductShowcase />
       <TrustBadge />
+      <PricingPreview />
       <LeadCaptureForm />
       <Footer />
     </div>

@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
+import ScrollReveal from './ScrollReveal';
 
 const LOGOS = [
   {
@@ -33,14 +34,12 @@ export default async function IntegratedLonjas() {
       <div className="container mx-auto px-4">
         <div className="mx-auto flex max-w-3xl flex-col gap-8 text-center">
           <div>
-            <h2 className="text-3xl tracking-tight text-gray-900 sm:text-3xl dark:text-white">
-              {t('title')}
-            </h2>
-            <p className="text-md mt-4 text-gray-600 dark:text-gray-300">{t('description')}</p>
+            <h2 className="text-foreground text-3xl tracking-tight sm:text-3xl">{t('title')}</h2>
+            <p className="text-muted-foreground text-md mt-4">{t('description')}</p>
           </div>
-          <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-5">
+          <ScrollReveal className="grid w-full grid-cols-2 gap-4 sm:grid-cols-5">
             {LOGOS.map((logo) => (
-              <div key={logo.src} className="flex items-center justify-center">
+              <div key={logo.src} className="flex items-center justify-center grayscale">
                 <Image
                   src={logo.src}
                   width={1000}
@@ -50,7 +49,7 @@ export default async function IntegratedLonjas() {
                 />
               </div>
             ))}
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>
