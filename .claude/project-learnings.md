@@ -2,8 +2,8 @@
 
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
-> Last updated: 2026-07-28
-> Total entries: 36
+> Last updated: 2026-07-29
+> Total entries: 37
 
 ## How this file works
 
@@ -148,6 +148,32 @@ Every entry has:
 - **Status:** Aplicado en el cierre de GAP-123 (7 rondas intercaladas es/pt/en sobre
   `/pricing` y `/blog/etiquetado-normativa-pesca`). Aplicable a `landing-auditor` y a cualquier
   `gap-auditor` que audite un GAP bajo `src/app/[locale]/`.
+
+### PL-033
+- **Date:** 2026-07-29
+- **Source:** Jose, navegación de prueba manual del módulo Order (tabs desktop)
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** `TabsContent` de Radix (`@/components/ui/tabs`) desmonta por defecto el contenido
+  de cualquier pestaña inactiva salvo que se pase `forceMount` — no existe ninguna instancia de
+  `forceMount` en `OrderTabsDesktop.tsx`. Esto significa que cualquier estado local no persistido
+  dentro de una sección del tab (texto escrito en un campo, una selección en curso, cualquier
+  `useState`/borrador de formulario que no viva en `useOrderContext()`, en TanStack Query cache,
+  o en el propio backend) se pierde por completo al cambiar de pestaña y volver — el componente
+  se remonta desde cero con su estado inicial. El bug es invisible en revisión de código estática
+  porque no produce ningún error de tipos ni de lint: solo se manifiesta interactuando realmente
+  con la UI (escribir, cambiar de tab, volver). **Regla:** cualquier auditoría de UI o UX sobre
+  una sección renderizada dentro de un `TabsContent` debe verificar si esa sección contiene
+  estado local no persistido (borradores de texto, selecciones intermedias, pasos de un wizard)
+  y, si lo tiene, confirmar que existe una mitigación: (a) `forceMount` + ocultar vía CSS en vez
+  de desmontar, (b) elevar el estado a un contexto/store que sobreviva al desmontaje de la
+  pestaña, o (c) un aviso explícito de cambios sin guardar antes de permitir cambiar de tab.
+  Ausencia de cualquiera de las tres se considera un hallazgo válido.
+- **Found in:** `src/components/Admin/OrdersManager/Order/components/OrderTabsDesktop.tsx:178-186`
+  (ningún `TabsContent` de las secciones del pedido usa `forceMount`).
+- **Status:** Follow-up pendiente — evaluar GAP para las secciones del editor de pedidos que
+  contienen entrada de texto libre (notas, comentarios) antes de que el usuario pierda más
+  input sin darse cuenta.
 
 ---
 

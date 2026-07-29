@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   History,
   Paperclip,
+  Ship,
   type LucideIcon,
 } from 'lucide-react';
 import OrderDetails from '../OrderDetails';
@@ -24,6 +25,7 @@ import OrderDetails from '../OrderDetails';
 const OrderPallets = lazy(() => import('../OrderPallets'));
 const OrderDocuments = lazy(() => import('../OrderDocuments'));
 const OrderExport = lazy(() => import('../OrderExport'));
+const OrderMaritimeExport = lazy(() => import('../OrderMaritimeExport'));
 const OrderLabels = lazy(() => import('../OrderLabels'));
 const OrderMap = lazy(() => import('../OrderMap'));
 const OrderProduction = lazy(() => import('../OrderProduction'));
@@ -169,5 +171,13 @@ export const SECTIONS_CONFIG: OrderSectionConfig[] = [
     lazy: true,
     icon: Paperclip,
     mobileDefaultSublabel: 'Archivos adjuntos',
+  },
+  {
+    id: 'maritime',
+    title: 'Exportación marítima',
+    component: OrderMaritimeExport,
+    lazy: true,
+    icon: Ship,
+    mobileDefaultSublabel: 'Buque, contenedores y documentación',
   },
 ];

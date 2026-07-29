@@ -15,7 +15,7 @@ function getFallback(activeSection: string): ReactNode {
       </div>
     );
   }
-  if (['export', 'pallets'].includes(activeSection)) {
+  if (['export', 'pallets', 'maritime'].includes(activeSection)) {
     return (
       <div className="flex min-h-0 w-full flex-1 items-center justify-center">
         <Skeleton className="h-64 w-full rounded-lg" />
@@ -33,6 +33,7 @@ interface OrderSectionContentMobileProps {
   activeSection: string;
   palletsReadOnly?: boolean;
   canViewCostData?: boolean;
+  readOnly?: boolean;
 }
 
 /**
@@ -42,6 +43,7 @@ export default function OrderSectionContentMobile({
   activeSection,
   palletsReadOnly = false,
   canViewCostData = true,
+  readOnly = false,
 }: OrderSectionContentMobileProps) {
   const section = SECTIONS_CONFIG.find((s) => s.id === activeSection);
   if (!section) return null;
@@ -62,7 +64,9 @@ export default function OrderSectionContentMobile({
   const componentProps =
     activeSection === 'pallets'
       ? { readOnly: palletsReadOnly, canViewCostData }
-      : { canViewCostData };
+      : activeSection === 'maritime'
+        ? { readOnly, canViewCostData }
+        : { canViewCostData };
 
   return (
     <div className={SECTION_CONTAINER_CLASS}>

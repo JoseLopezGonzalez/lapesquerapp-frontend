@@ -12,7 +12,7 @@ export interface OrderPayload {
 /** Order data from API */
 export interface Order {
   id: number | string;
-  orderType?: 'standard' | 'autoventa';
+  orderType?: 'standard' | 'autoventa' | 'maritime_export';
   invoiced?: boolean;
   revenuePerKg?: number | null;
   totalCost?: number | null;
@@ -23,7 +23,55 @@ export interface Order {
   auxiliaryLines?: AuxiliaryOrderLine[];
   auxiliarySubtotal?: number | null;
   auxiliaryTotal?: number | null;
+  maritimeShippingDetail?: MaritimeShippingDetail | null;
+  maritimeContainers?: MaritimeContainer[];
   [key: string]: unknown;
+}
+
+/** Datos de envío marítimo (buque, viaje, documentación) — recurso 1:1 por pedido */
+export interface MaritimeShippingDetail {
+  id: number | string;
+  orderId: number | string;
+  vesselName: string | null;
+  voyageNumber: string | null;
+  exportInvoiceNumber: string | null;
+  swbNumber: string | null;
+  loadingPort: string | null;
+  dischargePort: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Payload de reemplazo completo (PUT) para los datos de envío marítimo */
+export interface MaritimeShippingDetailPayload {
+  vesselName?: string | null;
+  voyageNumber?: string | null;
+  exportInvoiceNumber?: string | null;
+  swbNumber?: string | null;
+  loadingPort?: string | null;
+  dischargePort?: string | null;
+}
+
+/** Contenedor marítimo — recurso 1:N por pedido */
+export interface MaritimeContainer {
+  id: number | string;
+  orderId: number | string;
+  containerNumber: string;
+  sealNumber: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Payload de creación de contenedor marítimo */
+export interface MaritimeContainerCreatePayload {
+  containerNumber: string;
+  sealNumber?: string | null;
+}
+
+/** Payload de actualización parcial de contenedor marítimo */
+export interface MaritimeContainerUpdatePayload {
+  containerNumber?: string;
+  sealNumber?: string | null;
 }
 
 /** Order planned product detail payload */

@@ -141,6 +141,12 @@ const OrderCard = ({ order, onClick, disabled, isSelected = false }: OrderCardPr
                     Autoventa
                   </span>
                 )}
+                {(order?.orderType === 'maritime_export' ||
+                  order?.order_type === 'maritime_export') && (
+                  <span className="inline-flex items-center rounded-full border border-cyan-400/50 bg-cyan-500/15 px-2 py-0.5 text-[11px] font-medium text-cyan-700 dark:border-cyan-500/50 dark:text-cyan-300">
+                    Marítimo
+                  </span>
+                )}
                 {order?.offerId && (
                   <span className="inline-flex items-center rounded-full border border-blue-400/50 bg-blue-500/15 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:border-blue-500/50 dark:text-blue-300">
                     Desde oferta

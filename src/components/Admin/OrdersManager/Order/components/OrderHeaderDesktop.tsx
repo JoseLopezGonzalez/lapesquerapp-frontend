@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Printer, Bookmark } from 'lucide-react';
+import { Printer, Bookmark, Ship } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import StatusBadge from '../../StatusBadge';
@@ -63,6 +63,12 @@ export default function OrderHeaderDesktop({
             <Badge variant="outline" aria-label="Tipo de pedido: Autoventa">
               Autoventa
               <Bookmark data-icon="inline-end" />
+            </Badge>
+          )}
+          {(order?.orderType ?? order?.order_type) === 'maritime_export' && (
+            <Badge variant="outline" aria-label="Tipo de pedido: Exportación marítima">
+              Exportación marítima
+              <Ship data-icon="inline-end" />
             </Badge>
           )}
         </div>

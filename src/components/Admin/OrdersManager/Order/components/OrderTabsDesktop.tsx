@@ -26,6 +26,7 @@ const TAB_LABELS: Record<string, string> = {
   map: 'Ruta',
   incident: 'Incidencia',
   'customer-history': 'Histórico',
+  maritime: 'Exportación marítima',
 };
 
 interface OrderTabsDesktopProps {
@@ -34,6 +35,7 @@ interface OrderTabsDesktopProps {
   blockedTabIds?: string[];
   palletsReadOnly?: boolean;
   canViewCostData?: boolean;
+  readOnly?: boolean;
 }
 
 /**
@@ -45,6 +47,7 @@ export default function OrderTabsDesktop({
   blockedTabIds = [],
   palletsReadOnly = false,
   canViewCostData = true,
+  readOnly = false,
 }: OrderTabsDesktopProps) {
   // Secciones bloqueadas para comercial cuando el pedido está en curso
   const allowedSections = SECTIONS_CONFIG.filter((section) => !blockedTabIds.includes(section.id));
@@ -167,7 +170,9 @@ export default function OrderTabsDesktop({
               const componentProps =
                 section.id === 'pallets'
                   ? { readOnly: palletsReadOnly, canViewCostData }
-                  : { canViewCostData };
+                  : section.id === 'maritime'
+                    ? { readOnly, canViewCostData }
+                    : { canViewCostData };
 
               return (
                 <TabsContent key={section.id} value={section.id} className={tabClass}>

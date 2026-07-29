@@ -99,6 +99,7 @@ interface DefaultValues {
 const ORDER_TYPE_OPTIONS: FormFieldOption[] = [
   { value: 'standard', label: 'Pedido estándar' },
   { value: 'autoventa', label: 'Autoventa' },
+  { value: 'maritime_export', label: 'Exportación marítima' },
 ];
 
 const INVOICED_OPTIONS: FormFieldOption[] = [
@@ -430,9 +431,12 @@ export function useOrderFormConfig({ orderData }: { orderData?: OrderData | null
 
   const defaultValues = useMemo<DefaultValues>(() => {
     if (!orderData) return initialDefaultValues;
+    const rawOrderType = orderData.orderType ?? orderData.order_type;
     return {
       orderType:
-        (orderData.orderType ?? orderData.order_type) === 'autoventa' ? 'autoventa' : 'standard',
+        rawOrderType === 'autoventa' || rawOrderType === 'maritime_export'
+          ? rawOrderType
+          : 'standard',
       entryDate: parseDate(orderData.entryDate),
       loadDate: parseDate(orderData.loadDate),
       salesperson: `${orderData.salesperson?.id || ''}`,

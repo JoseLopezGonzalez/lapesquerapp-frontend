@@ -118,8 +118,12 @@ const OrderContent = ({
   );
 
   const blockedTabIds = useMemo(
-    () => [...commercialInProgressBlockedTabIds, ...(!canViewCostData ? ['analysis'] : [])],
-    [commercialInProgressBlockedTabIds, canViewCostData]
+    () => [
+      ...commercialInProgressBlockedTabIds,
+      ...(!canViewCostData ? ['analysis'] : []),
+      ...(order?.orderType !== 'maritime_export' ? ['maritime'] : []),
+    ],
+    [commercialInProgressBlockedTabIds, canViewCostData, order?.orderType]
   );
 
   const palletsReadOnly = isOrderPalletsReadOnly({
@@ -348,6 +352,7 @@ const OrderContent = ({
               activeSection={activeSection}
               palletsReadOnly={palletsReadOnly}
               canViewCostData={canViewCostData}
+              readOnly={readOnly}
             />
           </div>
         )
@@ -371,6 +376,7 @@ const OrderContent = ({
                 blockedTabIds={blockedTabIds as never[]}
                 palletsReadOnly={palletsReadOnly}
                 canViewCostData={canViewCostData}
+                readOnly={readOnly}
               />
             </div>
           </CardContent>

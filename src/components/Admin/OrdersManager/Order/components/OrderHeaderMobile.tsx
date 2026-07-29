@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Pencil, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Pencil, ShoppingBag, Ship } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import StatusBadge from '../../StatusBadge';
@@ -88,6 +88,15 @@ export default function OrderHeaderMobile({
             >
               <ShoppingBag className="h-3 w-3" aria-hidden />
               Autoventa
+            </span>
+          )}
+          {(order?.orderType ?? order?.order_type) === 'maritime_export' && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-white/15 px-2 py-0.5 text-[10px] font-medium text-white"
+              aria-label="Tipo de pedido: Exportación marítima"
+            >
+              <Ship className="h-3 w-3" aria-hidden />
+              Marítimo
             </span>
           )}
           {order?.offerId ? (

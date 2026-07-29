@@ -358,6 +358,28 @@ export const orderAttachmentKeys = {
     ] as const,
 };
 
+export const orderMaritimeShippingDetailKeys = {
+  detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
+    [
+      'orders',
+      'maritime-shipping-detail',
+      tenantId ?? 'unknown',
+      orderId == null ? 'unknown' : String(orderId),
+    ] as const,
+};
+
+export const orderMaritimeContainerKeys = {
+  listPrefix: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
+    [
+      'orders',
+      'maritime-containers',
+      tenantId ?? 'unknown',
+      orderId == null ? 'unknown' : String(orderId),
+    ] as const,
+  list: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
+    [...orderMaritimeContainerKeys.listPrefix(tenantId, orderId), 'list'] as const,
+};
+
 export const externalProcessorListKeys = {
   listPrefix: (tenantId: string | null | undefined) =>
     ['external-processors', 'list', tenantId ?? 'unknown'] as const,

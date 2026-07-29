@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const orderEditSchema = z
   .object({
-    orderType: z.enum(['standard', 'autoventa']).default('standard'),
+    orderType: z.enum(['standard', 'autoventa', 'maritime_export']).default('standard'),
     entryDate: z
       .date({ required_error: 'La fecha de entrada es obligatoria' })
       .nullable()
