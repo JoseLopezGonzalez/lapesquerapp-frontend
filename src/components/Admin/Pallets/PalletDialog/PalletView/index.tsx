@@ -39,6 +39,8 @@ import {
   Euro,
   Images,
   Hash,
+  Filter,
+  X,
 } from 'lucide-react';
 import { PiShrimp } from 'react-icons/pi';
 
@@ -95,6 +97,7 @@ import { usePrintElement } from '@/hooks/usePrintElement';
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 import SummaryPieChart from './SummaryPieChart';
 import PalletImagesTab from './PalletImagesTab';
+import { BoxTableColumnFilter, type RangeFilterValue } from './BoxTableColumnFilter';
 import { notify } from '@/lib/notifications';
 import { deletePalletTimeline, downloadPalletExpeditionLabel } from '@/services/palletService';
 import { getProductionByLot } from '@/services/productionService';
@@ -354,6 +357,26 @@ export default function PalletView({
   const [oldProductId, setOldProductId] = useState<number | string>('');
   const [newProductId, setNewProductId] = useState<number | string>('');
 
+  // Filtros de cabecera estilo Excel (solo tab "Todas") — solo afectan qué filas se muestran,
+  // nunca las cajas reales del palet.
+  const [boxFilters, setBoxFilters] = useState<{
+    product: Set<string>;
+    lot: Set<string>;
+    gs1128: string;
+    netWeight: RangeFilterValue;
+    cost: RangeFilterValue;
+  }>({
+    product: new Set(),
+    lot: new Set(),
+    gs1128: '',
+    netWeight: { min: '', max: '' },
+    cost: { min: '', max: '' },
+  });
+
+  // Selección de filas para acciones masivas (borrado y edición vía tab "Acciones Masivas")
+  const [selectedBoxIds, setSelectedBoxIds] = useState<(number | string)[]>([]);
+  const [deleteSelectedBoxesConfirmOpen, setDeleteSelectedBoxesConfirmOpen] = useState(false);
+
   useEffect(() => {
     if (addBoxesTab === 'lector' && scannerInputRef.current) {
       scannerInputRef.current.focus();
@@ -556,6 +579,100 @@ export default function PalletView({
       available: availableBoxes,
       inProduction: Array.from(productionGroups.values()),
     };
+  };
+
+  // Valores únicos para los dropdowns de filtro (derivados de todas las cajas, no solo
+  // las visibles tras otros filtros — evita que las opciones "desaparezcan" al filtrar).
+  const allBoxProductNames = useMemo(
+    () =>
+      (temporalPallet?.boxes ?? [])
+        .map((box) => box.product?.name)
+        .filter((name): name is string => Boolean(name)),
+    [temporalPallet?.boxes]
+  );
+  const allBoxLots = useMemo(
+    () => (temporalPallet?.boxes ?? []).map((box) => box.lot).filter((lot): lot is string => Boolean(lot)),
+    [temporalPallet?.boxes]
+  );
+
+  const getBoxCostForFilter = (box: PalletBox): number | null => {
+    if (box.traceableCostPerKg != null) return parseFloat(String(box.traceableCostPerKg));
+    if (box.manualCostPerKg != null) return parseFloat(String(box.manualCostPerKg));
+    return null;
+  };
+
+  // Filtro de cabecera estilo Excel — solo aplica a la tab "Todas". Es puramente de
+  // presentación: nunca muta temporalPallet.boxes, solo decide qué filas se ven.
+  const filteredAllBoxes = useMemo(() => {
+    if (!temporalPallet?.boxes) return [];
+    return temporalPallet.boxes.filter((box) => {
+      if (boxFilters.product.size > 0 && !boxFilters.product.has(box.product?.name ?? '')) {
+        return false;
+      }
+      if (boxFilters.lot.size > 0 && !boxFilters.lot.has(box.lot ?? '')) {
+        return false;
+      }
+      if (
+        boxFilters.gs1128.trim() !== '' &&
+        !(box.gs1128 ?? '').toLowerCase().includes(boxFilters.gs1128.trim().toLowerCase())
+      ) {
+        return false;
+      }
+      const netWeight = parseFloat(String(box.netWeight ?? 0));
+      if (boxFilters.netWeight.min !== '' && netWeight < parseFloat(boxFilters.netWeight.min)) {
+        return false;
+      }
+      if (boxFilters.netWeight.max !== '' && netWeight > parseFloat(boxFilters.netWeight.max)) {
+        return false;
+      }
+      if (canEditCost && (boxFilters.cost.min !== '' || boxFilters.cost.max !== '')) {
+        const cost = getBoxCostForFilter(box);
+        if (boxFilters.cost.min !== '' && (cost === null || cost < parseFloat(boxFilters.cost.min))) {
+          return false;
+        }
+        if (boxFilters.cost.max !== '' && (cost === null || cost > parseFloat(boxFilters.cost.max))) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [temporalPallet?.boxes, boxFilters, canEditCost]);
+
+  // Selección de filas — solo cajas disponibles (no en producción) y visibles tras el filtro.
+  const filteredAvailableBoxIds = useMemo(
+    () => filteredAllBoxes.filter((box) => isBoxAvailable(box)).map((box) => box.id),
+    [filteredAllBoxes]
+  );
+  const allFilteredAvailableBoxesSelected =
+    filteredAvailableBoxIds.length > 0 &&
+    filteredAvailableBoxIds.every((id) => selectedBoxIds.includes(id));
+  const someFilteredAvailableBoxesSelected = filteredAvailableBoxIds.some((id) =>
+    selectedBoxIds.includes(id)
+  );
+
+  const handleToggleSelectAllBoxes = () => {
+    if (allFilteredAvailableBoxesSelected) {
+      setSelectedBoxIds((prev) => prev.filter((id) => !filteredAvailableBoxIds.includes(id)));
+    } else {
+      setSelectedBoxIds((prev) => Array.from(new Set([...prev, ...filteredAvailableBoxIds])));
+    }
+  };
+
+  const handleToggleSelectBox = (boxId: number | string) => {
+    setSelectedBoxIds((prev) =>
+      prev.includes(boxId) ? prev.filter((id) => id !== boxId) : [...prev, boxId]
+    );
+  };
+
+  const handleOnClickDeleteSelectedBoxes = () => {
+    if (isReadOnly || selectedBoxIds.length === 0) return;
+    setDeleteSelectedBoxesConfirmOpen(true);
+  };
+
+  const handleConfirmDeleteSelectedBoxes = () => {
+    editPallet.box.deleteMultiple(selectedBoxIds);
+    setSelectedBoxIds([]);
+    setDeleteSelectedBoxesConfirmOpen(false);
   };
 
   return (
@@ -1515,22 +1632,132 @@ export default function PalletView({
                                 value="todas"
                                 className="mt-4 min-h-0 flex-1 data-[state=inactive]:hidden"
                               >
+                                {selectedBoxIds.length > 0 && (
+                                  <div className="bg-primary/5 border-primary/30 mb-3 flex flex-shrink-0 items-center justify-between rounded-lg border px-4 py-2">
+                                    <span className="text-sm font-medium">
+                                      {selectedBoxIds.length}{' '}
+                                      {selectedBoxIds.length === 1
+                                        ? 'caja seleccionada'
+                                        : 'cajas seleccionadas'}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setMainTab('acciones-masivas')}
+                                        disabled={isReadOnly}
+                                      >
+                                        <Layers className="h-4 w-4" /> Editar seleccionadas
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={handleOnClickDeleteSelectedBoxes}
+                                        disabled={isReadOnly}
+                                      >
+                                        <Trash2 className="h-4 w-4" /> Eliminar seleccionadas
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => setSelectedBoxIds([])}
+                                        title="Cancelar selección"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
                                 <div className="flex h-full flex-col overflow-hidden rounded-lg border">
                                   <div className="max-h-[calc(90vh-300px)] flex-1 overflow-y-auto">
                                     <Table>
                                       <TableHeader className="bg-background sticky top-0 z-10">
                                         <TableRow>
-                                          <TableHead className="min-w-[200px]">Artículo</TableHead>
-                                          <TableHead className="w-[170px] min-w-[170px]">
-                                            Lote
+                                          <TableHead className="w-[36px]">
+                                            <Checkbox
+                                              checked={
+                                                allFilteredAvailableBoxesSelected
+                                                  ? true
+                                                  : someFilteredAvailableBoxesSelected
+                                                    ? 'indeterminate'
+                                                    : false
+                                              }
+                                              onCheckedChange={handleToggleSelectAllBoxes}
+                                              disabled={isReadOnly || filteredAvailableBoxIds.length === 0}
+                                              aria-label="Seleccionar todas las cajas visibles"
+                                            />
                                           </TableHead>
-                                          <TableHead className="min-w-[150px]">GS1 128</TableHead>
+                                          <TableHead className="min-w-[200px]">
+                                            <div className="flex items-center gap-1">
+                                              Artículo
+                                              <BoxTableColumnFilter
+                                                label="Artículo"
+                                                mode="list"
+                                                options={allBoxProductNames}
+                                                value={boxFilters.product}
+                                                onChange={(value) =>
+                                                  setBoxFilters((prev) => ({ ...prev, product: value }))
+                                                }
+                                              />
+                                            </div>
+                                          </TableHead>
+                                          <TableHead className="w-[170px] min-w-[170px]">
+                                            <div className="flex items-center gap-1">
+                                              Lote
+                                              <BoxTableColumnFilter
+                                                label="Lote"
+                                                mode="list"
+                                                options={allBoxLots}
+                                                value={boxFilters.lot}
+                                                onChange={(value) =>
+                                                  setBoxFilters((prev) => ({ ...prev, lot: value }))
+                                                }
+                                              />
+                                            </div>
+                                          </TableHead>
+                                          <TableHead className="min-w-[150px]">
+                                            <div className="flex items-center gap-1">
+                                              GS1 128
+                                              <BoxTableColumnFilter
+                                                label="GS1 128"
+                                                mode="text"
+                                                value={boxFilters.gs1128}
+                                                onChange={(value) =>
+                                                  setBoxFilters((prev) => ({ ...prev, gs1128: value }))
+                                                }
+                                                placeholder="Contiene..."
+                                              />
+                                            </div>
+                                          </TableHead>
                                           <TableHead className="w-[100px] min-w-[100px]">
-                                            Peso Neto
+                                            <div className="flex items-center gap-1">
+                                              Peso Neto
+                                              <BoxTableColumnFilter
+                                                label="Peso Neto"
+                                                mode="range"
+                                                value={boxFilters.netWeight}
+                                                onChange={(value) =>
+                                                  setBoxFilters((prev) => ({ ...prev, netWeight: value }))
+                                                }
+                                                unit="kg"
+                                              />
+                                            </div>
                                           </TableHead>
                                           {canEditCost && (
                                             <TableHead className="w-[110px] text-right">
-                                              Coste/kg
+                                              <div className="flex items-center justify-end gap-1">
+                                                <BoxTableColumnFilter
+                                                  label="Coste/kg"
+                                                  mode="range"
+                                                  value={boxFilters.cost}
+                                                  onChange={(value) =>
+                                                    setBoxFilters((prev) => ({ ...prev, cost: value }))
+                                                  }
+                                                  unit="€"
+                                                />
+                                                Coste/kg
+                                              </div>
                                             </TableHead>
                                           )}
                                           <TableHead className="w-[100px]">Acciones</TableHead>
@@ -1540,7 +1767,7 @@ export default function PalletView({
                                         {temporalPallet.boxes.length === 0 ? (
                                           <TableRow>
                                             <TableCell
-                                              colSpan={canEditCost ? 6 : 5}
+                                              colSpan={canEditCost ? 7 : 6}
                                               className="p-0"
                                             >
                                               <div className="py-12">
@@ -1557,16 +1784,45 @@ export default function PalletView({
                                               </div>
                                             </TableCell>
                                           </TableRow>
+                                        ) : filteredAllBoxes.length === 0 ? (
+                                          <TableRow>
+                                            <TableCell
+                                              colSpan={canEditCost ? 7 : 6}
+                                              className="p-0"
+                                            >
+                                              <div className="py-12">
+                                                <EmptyState
+                                                  icon={
+                                                    <Filter
+                                                      className="text-muted-foreground h-12 w-12"
+                                                      strokeWidth={1.5}
+                                                    />
+                                                  }
+                                                  title="Ningún resultado con estos filtros"
+                                                  description="Ajusta o quita los filtros de columna para ver más cajas."
+                                                />
+                                              </div>
+                                            </TableCell>
+                                          </TableRow>
                                         ) : (
-                                          temporalPallet.boxes.map((box) => {
+                                          filteredAllBoxes.map((box) => {
                                             const boxAvailable = isBoxAvailable(box);
                                             const productionInfo = getBoxProductionInfo(box);
+                                            const isBoxSelected = selectedBoxIds.includes(box.id);
 
                                             return (
                                               <TableRow
                                                 key={box.id}
-                                                className={`cursor-default ${box?.new === true ? 'bg-foreground-50' : ''} ${!boxAvailable ? 'bg-orange-50/50' : ''}`}
+                                                className={`cursor-default ${box?.new === true ? 'bg-foreground-50' : ''} ${!boxAvailable ? 'bg-orange-50/50' : ''} ${isBoxSelected ? 'bg-primary/5' : ''}`}
                                               >
+                                                <TableCell>
+                                                  <Checkbox
+                                                    checked={isBoxSelected}
+                                                    onCheckedChange={() => handleToggleSelectBox(box.id)}
+                                                    disabled={isReadOnly || !boxAvailable}
+                                                    aria-label={`Seleccionar caja ${box.id}`}
+                                                  />
+                                                </TableCell>
                                                 <TableCell>
                                                   <div className="flex items-center gap-2">
                                                     {box.product?.name}
@@ -1860,6 +2116,24 @@ export default function PalletView({
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                          {selectedBoxIds.length > 0 && (
+                            <div className="bg-primary/5 border-primary/30 flex items-center justify-between rounded-lg border px-3 py-2">
+                              <span className="text-sm font-medium">
+                                {selectedBoxIds.length}{' '}
+                                {selectedBoxIds.length === 1
+                                  ? 'caja seleccionada'
+                                  : 'cajas seleccionadas'}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={() => setSelectedBoxIds([])}
+                              >
+                                Quitar selección
+                              </Button>
+                            </div>
+                          )}
                           <div className="space-y-2">
                             <Label>Selecciona la acción a realizar</Label>
                             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -2052,8 +2326,20 @@ export default function PalletView({
                               <Alert className="border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-500/60 dark:bg-blue-900/40 dark:text-blue-100">
                                 <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-300" />
                                 <AlertDescription className="text-sm text-blue-800 dark:text-blue-100">
-                                  Los cambios se aplicarán únicamente a las cajas disponibles (no en
-                                  producción).
+                                  {selectedBoxIds.length > 0 ? (
+                                    <>
+                                      Los cambios se aplicarán solo a las{' '}
+                                      <strong>
+                                        {selectedBoxIds.length}{' '}
+                                        {selectedBoxIds.length === 1
+                                          ? 'caja seleccionada'
+                                          : 'cajas seleccionadas'}
+                                      </strong>{' '}
+                                      (en la tab &quot;Todas&quot;).
+                                    </>
+                                  ) : (
+                                    'Los cambios se aplicarán a todas las cajas disponibles (no en producción).'
+                                  )}
                                 </AlertDescription>
                               </Alert>
 
@@ -2061,16 +2347,22 @@ export default function PalletView({
                                 <Button
                                   className="w-full"
                                   onClick={() => {
+                                    const targetBoxIds =
+                                      selectedBoxIds.length > 0 ? selectedBoxIds : null;
+
                                     if (bulkActionType === 'cost') {
                                       const costValue = parseFloat(bulkActionValue);
                                       if (isNaN(costValue) || costValue < 0) return;
-                                      editPallet.box.bulkEdit.setManualCostPerKg(null, costValue);
+                                      editPallet.box.bulkEdit.setManualCostPerKg(
+                                        targetBoxIds,
+                                        costValue
+                                      );
                                     } else if (bulkActionType === 'product') {
                                       if (!oldProductId || !newProductId) {
                                         return;
                                       }
                                       editPallet.box.bulkEdit.changeProduct(
-                                        null,
+                                        targetBoxIds,
                                         oldProductId,
                                         newProductId
                                       );
@@ -2081,12 +2373,12 @@ export default function PalletView({
 
                                       if (bulkActionType === 'lot') {
                                         editPallet.box.bulkEdit.changeLot(
-                                          null,
+                                          targetBoxIds,
                                           bulkActionValue.trim()
                                         );
                                       } else if (bulkActionType === 'weight') {
                                         editPallet.box.bulkEdit.changeNetWeight(
-                                          null,
+                                          targetBoxIds,
                                           parseFloat(bulkActionValue)
                                         );
                                       } else if (bulkActionType === 'weightAdd') {
@@ -2094,7 +2386,7 @@ export default function PalletView({
                                         const weightDifference =
                                           weightOperation === 'add' ? weightValue : -weightValue;
                                         editPallet.box.bulkEdit.addOrSubtractWeight(
-                                          null,
+                                          targetBoxIds,
                                           weightDifference
                                         );
                                       }
@@ -2105,6 +2397,7 @@ export default function PalletView({
                                     setOldProductId('');
                                     setNewProductId('');
                                     setWeightOperation('add');
+                                    setSelectedBoxIds([]);
                                   }}
                                   disabled={
                                     isReadOnly ||
@@ -2117,7 +2410,9 @@ export default function PalletView({
                                         : !bulkActionValue || bulkActionValue.trim() === '')
                                   }
                                 >
-                                  Aplicar Cambios
+                                  {selectedBoxIds.length > 0
+                                    ? `Aplicar a ${selectedBoxIds.length} seleccionadas`
+                                    : 'Aplicar Cambios'}
                                 </Button>
                               </div>
                             </>
@@ -2900,6 +3195,31 @@ export default function PalletView({
               onClick={handleConfirmDeleteAllBoxes}
             >
               Eliminar todas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Confirmación: eliminar cajas seleccionadas */}
+      <AlertDialog
+        open={deleteSelectedBoxesConfirmOpen}
+        onOpenChange={setDeleteSelectedBoxesConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar las cajas seleccionadas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se {selectedBoxIds.length === 1 ? 'eliminará 1 caja' : `eliminarán ${selectedBoxIds.length} cajas`}{' '}
+              del palet. Esta acción no se puede deshacer una vez guardado.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleConfirmDeleteSelectedBoxes}
+            >
+              Eliminar seleccionadas
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

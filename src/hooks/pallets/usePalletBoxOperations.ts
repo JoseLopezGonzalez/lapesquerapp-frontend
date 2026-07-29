@@ -46,6 +46,7 @@ export interface UsePalletBoxOperationsResult {
   ) => void;
   duplicateBox: (boxId: number | string) => void;
   deleteBox: (boxId: number | string) => void;
+  deleteBoxes: (boxIds: (number | string)[]) => void;
   editBox: EditBoxMethods;
   bulkEditBoxes: BulkEditBoxesMethods;
   editObservations: (observations: string) => void;
@@ -155,6 +156,36 @@ export function usePalletBoxOperations({
         : prev
     );
     notify.success({ title: 'Caja eliminada', description: 'La caja se ha quitado del palet.' });
+  };
+
+  const deleteBoxes = (boxIds: (number | string)[]) => {
+    if (!temporalPallet) return;
+    const boxesToDelete = temporalPallet.boxes.filter(
+      (box) => boxIds.includes(box.id) && box.isAvailable !== false
+    );
+
+    if (boxesToDelete.length === 0) {
+      notify.error({
+        title: 'Sin cajas para eliminar',
+        description:
+          'No hay cajas disponibles para eliminar. Solo se pueden quitar cajas que no estén en producción.',
+      });
+      return;
+    }
+
+    setTemporalPallet((prev) =>
+      prev
+        ? recalculatePalletStats({
+            ...prev,
+            boxes: prev.boxes.filter((box) => !boxesToDelete.some((b) => b.id === box.id)),
+          })
+        : prev
+    );
+
+    notify.success({
+      title: 'Cajas eliminadas',
+      description: `Se ${boxesToDelete.length === 1 ? 'ha quitado 1 caja' : `han quitado ${boxesToDelete.length} cajas`} del palet.`,
+    });
   };
 
   const editBox: EditBoxMethods = {
@@ -529,6 +560,7 @@ export function usePalletBoxOperations({
     addBox,
     duplicateBox,
     deleteBox,
+    deleteBoxes,
     editBox,
     bulkEditBoxes,
     editObservations,
