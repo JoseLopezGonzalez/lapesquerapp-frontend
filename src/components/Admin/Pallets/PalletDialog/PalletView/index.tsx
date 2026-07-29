@@ -581,18 +581,23 @@ export default function PalletView({
     };
   };
 
-  // Valores únicos para los dropdowns de filtro (derivados de todas las cajas, no solo
-  // las visibles tras otros filtros — evita que las opciones "desaparezcan" al filtrar).
+  // Cajas disponibles (no en producción) — base de los filtros y la selección. Solo tiene
+  // sentido filtrar/seleccionar aquí: las cajas en producción nunca son editables/borrables.
+  const { available: availableBoxesForFilters } = groupBoxesByProduction();
+
+  // Valores únicos para los dropdowns de filtro (derivados de todas las cajas disponibles,
+  // no solo las visibles tras otros filtros — evita que las opciones "desaparezcan" al filtrar).
   const allBoxProductNames = useMemo(
     () =>
-      (temporalPallet?.boxes ?? [])
+      availableBoxesForFilters
         .map((box) => box.product?.name)
         .filter((name): name is string => Boolean(name)),
-    [temporalPallet?.boxes]
+    [availableBoxesForFilters]
   );
   const allBoxLots = useMemo(
-    () => (temporalPallet?.boxes ?? []).map((box) => box.lot).filter((lot): lot is string => Boolean(lot)),
-    [temporalPallet?.boxes]
+    () =>
+      availableBoxesForFilters.map((box) => box.lot).filter((lot): lot is string => Boolean(lot)),
+    [availableBoxesForFilters]
   );
 
   const getBoxCostForFilter = (box: PalletBox): number | null => {
@@ -601,11 +606,10 @@ export default function PalletView({
     return null;
   };
 
-  // Filtro de cabecera estilo Excel — solo aplica a la tab "Todas". Es puramente de
+  // Filtro de cabecera estilo Excel — solo aplica a la tab "Disponibles". Es puramente de
   // presentación: nunca muta temporalPallet.boxes, solo decide qué filas se ven.
-  const filteredAllBoxes = useMemo(() => {
-    if (!temporalPallet?.boxes) return [];
-    return temporalPallet.boxes.filter((box) => {
+  const filteredAvailableBoxes = useMemo(() => {
+    return availableBoxesForFilters.filter((box) => {
       if (boxFilters.product.size > 0 && !boxFilters.product.has(box.product?.name ?? '')) {
         return false;
       }
@@ -636,12 +640,12 @@ export default function PalletView({
       }
       return true;
     });
-  }, [temporalPallet?.boxes, boxFilters, canEditCost]);
+  }, [availableBoxesForFilters, boxFilters, canEditCost]);
 
-  // Selección de filas — solo cajas disponibles (no en producción) y visibles tras el filtro.
+  // Selección de filas — todas las cajas mostradas aquí ya son disponibles por construcción.
   const filteredAvailableBoxIds = useMemo(
-    () => filteredAllBoxes.filter((box) => isBoxAvailable(box)).map((box) => box.id),
-    [filteredAllBoxes]
+    () => filteredAvailableBoxes.map((box) => box.id),
+    [filteredAvailableBoxes]
   );
   const allFilteredAvailableBoxesSelected =
     filteredAvailableBoxIds.length > 0 &&
@@ -1355,8 +1359,16 @@ export default function PalletView({
                               <TableRow
                                 key={box.id}
                                 onClick={() => handleOnClickBoxRow(box.id)}
-                                className="hover:bg-muted"
+                                className={`hover:bg-muted ${selectedBoxIds.includes(box.id) ? 'bg-primary/5' : ''}`}
                               >
+                                <TableCell onClick={(e) => e.stopPropagation()}>
+                                  <Checkbox
+                                    checked={selectedBoxIds.includes(box.id)}
+                                    onCheckedChange={() => handleToggleSelectBox(box.id)}
+                                    disabled={isReadOnly || !boxAvailable}
+                                    aria-label={`Seleccionar caja ${box.id}`}
+                                  />
+                                </TableCell>
                                 <TableCell>{box.product?.name}</TableCell>
                                 <TableCell>
                                   <Input
@@ -1463,8 +1475,16 @@ export default function PalletView({
                             <TableRow
                               key={box.id}
                               onClick={canEditBox ? () => handleOnClickBoxRow(box.id) : undefined}
-                              className={`${canEditBox ? 'hover:bg-muted cursor-text' : 'cursor-default'} ${box?.new === true ? 'bg-foreground-50' : ''} ${!boxAvailable ? 'bg-orange-50/30' : ''}`}
+                              className={`${canEditBox ? 'hover:bg-muted cursor-text' : 'cursor-default'} ${box?.new === true ? 'bg-foreground-50' : ''} ${!boxAvailable ? 'bg-orange-50/30' : ''} ${selectedBoxIds.includes(box.id) ? 'bg-primary/5' : ''}`}
                             >
+                              <TableCell onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
+                                  checked={selectedBoxIds.includes(box.id)}
+                                  onCheckedChange={() => handleToggleSelectBox(box.id)}
+                                  disabled={isReadOnly || !boxAvailable}
+                                  aria-label={`Seleccionar caja ${box.id}`}
+                                />
+                              </TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   {box.product?.name}
@@ -1632,132 +1652,22 @@ export default function PalletView({
                                 value="todas"
                                 className="mt-4 min-h-0 flex-1 data-[state=inactive]:hidden"
                               >
-                                {selectedBoxIds.length > 0 && (
-                                  <div className="bg-primary/5 border-primary/30 mb-3 flex flex-shrink-0 items-center justify-between rounded-lg border px-4 py-2">
-                                    <span className="text-sm font-medium">
-                                      {selectedBoxIds.length}{' '}
-                                      {selectedBoxIds.length === 1
-                                        ? 'caja seleccionada'
-                                        : 'cajas seleccionadas'}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => setMainTab('acciones-masivas')}
-                                        disabled={isReadOnly}
-                                      >
-                                        <Layers className="h-4 w-4" /> Editar seleccionadas
-                                      </Button>
-                                      <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={handleOnClickDeleteSelectedBoxes}
-                                        disabled={isReadOnly}
-                                      >
-                                        <Trash2 className="h-4 w-4" /> Eliminar seleccionadas
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={() => setSelectedBoxIds([])}
-                                        title="Cancelar selección"
-                                      >
-                                        <X className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                )}
                                 <div className="flex h-full flex-col overflow-hidden rounded-lg border">
                                   <div className="max-h-[calc(90vh-300px)] flex-1 overflow-y-auto">
                                     <Table>
                                       <TableHeader className="bg-background sticky top-0 z-10">
                                         <TableRow>
-                                          <TableHead className="w-[36px]">
-                                            <Checkbox
-                                              checked={
-                                                allFilteredAvailableBoxesSelected
-                                                  ? true
-                                                  : someFilteredAvailableBoxesSelected
-                                                    ? 'indeterminate'
-                                                    : false
-                                              }
-                                              onCheckedChange={handleToggleSelectAllBoxes}
-                                              disabled={isReadOnly || filteredAvailableBoxIds.length === 0}
-                                              aria-label="Seleccionar todas las cajas visibles"
-                                            />
-                                          </TableHead>
-                                          <TableHead className="min-w-[200px]">
-                                            <div className="flex items-center gap-1">
-                                              Artículo
-                                              <BoxTableColumnFilter
-                                                label="Artículo"
-                                                mode="list"
-                                                options={allBoxProductNames}
-                                                value={boxFilters.product}
-                                                onChange={(value) =>
-                                                  setBoxFilters((prev) => ({ ...prev, product: value }))
-                                                }
-                                              />
-                                            </div>
-                                          </TableHead>
+                                          <TableHead className="min-w-[200px]">Artículo</TableHead>
                                           <TableHead className="w-[170px] min-w-[170px]">
-                                            <div className="flex items-center gap-1">
-                                              Lote
-                                              <BoxTableColumnFilter
-                                                label="Lote"
-                                                mode="list"
-                                                options={allBoxLots}
-                                                value={boxFilters.lot}
-                                                onChange={(value) =>
-                                                  setBoxFilters((prev) => ({ ...prev, lot: value }))
-                                                }
-                                              />
-                                            </div>
+                                            Lote
                                           </TableHead>
-                                          <TableHead className="min-w-[150px]">
-                                            <div className="flex items-center gap-1">
-                                              GS1 128
-                                              <BoxTableColumnFilter
-                                                label="GS1 128"
-                                                mode="text"
-                                                value={boxFilters.gs1128}
-                                                onChange={(value) =>
-                                                  setBoxFilters((prev) => ({ ...prev, gs1128: value }))
-                                                }
-                                                placeholder="Contiene..."
-                                              />
-                                            </div>
-                                          </TableHead>
+                                          <TableHead className="min-w-[150px]">GS1 128</TableHead>
                                           <TableHead className="w-[100px] min-w-[100px]">
-                                            <div className="flex items-center gap-1">
-                                              Peso Neto
-                                              <BoxTableColumnFilter
-                                                label="Peso Neto"
-                                                mode="range"
-                                                value={boxFilters.netWeight}
-                                                onChange={(value) =>
-                                                  setBoxFilters((prev) => ({ ...prev, netWeight: value }))
-                                                }
-                                                unit="kg"
-                                              />
-                                            </div>
+                                            Peso Neto
                                           </TableHead>
                                           {canEditCost && (
                                             <TableHead className="w-[110px] text-right">
-                                              <div className="flex items-center justify-end gap-1">
-                                                <BoxTableColumnFilter
-                                                  label="Coste/kg"
-                                                  mode="range"
-                                                  value={boxFilters.cost}
-                                                  onChange={(value) =>
-                                                    setBoxFilters((prev) => ({ ...prev, cost: value }))
-                                                  }
-                                                  unit="€"
-                                                />
-                                                Coste/kg
-                                              </div>
+                                              Coste/kg
                                             </TableHead>
                                           )}
                                           <TableHead className="w-[100px]">Acciones</TableHead>
@@ -1767,7 +1677,7 @@ export default function PalletView({
                                         {temporalPallet.boxes.length === 0 ? (
                                           <TableRow>
                                             <TableCell
-                                              colSpan={canEditCost ? 7 : 6}
+                                              colSpan={canEditCost ? 6 : 5}
                                               className="p-0"
                                             >
                                               <div className="py-12">
@@ -1784,45 +1694,16 @@ export default function PalletView({
                                               </div>
                                             </TableCell>
                                           </TableRow>
-                                        ) : filteredAllBoxes.length === 0 ? (
-                                          <TableRow>
-                                            <TableCell
-                                              colSpan={canEditCost ? 7 : 6}
-                                              className="p-0"
-                                            >
-                                              <div className="py-12">
-                                                <EmptyState
-                                                  icon={
-                                                    <Filter
-                                                      className="text-muted-foreground h-12 w-12"
-                                                      strokeWidth={1.5}
-                                                    />
-                                                  }
-                                                  title="Ningún resultado con estos filtros"
-                                                  description="Ajusta o quita los filtros de columna para ver más cajas."
-                                                />
-                                              </div>
-                                            </TableCell>
-                                          </TableRow>
                                         ) : (
-                                          filteredAllBoxes.map((box) => {
+                                          temporalPallet.boxes.map((box) => {
                                             const boxAvailable = isBoxAvailable(box);
                                             const productionInfo = getBoxProductionInfo(box);
-                                            const isBoxSelected = selectedBoxIds.includes(box.id);
 
                                             return (
                                               <TableRow
                                                 key={box.id}
-                                                className={`cursor-default ${box?.new === true ? 'bg-foreground-50' : ''} ${!boxAvailable ? 'bg-orange-50/50' : ''} ${isBoxSelected ? 'bg-primary/5' : ''}`}
+                                                className={`cursor-default ${box?.new === true ? 'bg-foreground-50' : ''} ${!boxAvailable ? 'bg-orange-50/50' : ''}`}
                                               >
-                                                <TableCell>
-                                                  <Checkbox
-                                                    checked={isBoxSelected}
-                                                    onCheckedChange={() => handleToggleSelectBox(box.id)}
-                                                    disabled={isReadOnly || !boxAvailable}
-                                                    aria-label={`Seleccionar caja ${box.id}`}
-                                                  />
-                                                </TableCell>
                                                 <TableCell>
                                                   <div className="flex items-center gap-2">
                                                     {box.product?.name}
@@ -1930,32 +1811,173 @@ export default function PalletView({
                                 value="disponibles"
                                 className="mt-4 min-h-0 flex-1 data-[state=inactive]:hidden"
                               >
+                                {selectedBoxIds.length > 0 && (
+                                  <div className="bg-primary/5 border-primary/30 mb-3 flex flex-shrink-0 items-center justify-between rounded-lg border px-4 py-2">
+                                    <span className="text-sm font-medium">
+                                      {selectedBoxIds.length}{' '}
+                                      {selectedBoxIds.length === 1
+                                        ? 'caja seleccionada'
+                                        : 'cajas seleccionadas'}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setMainTab('acciones-masivas')}
+                                        disabled={isReadOnly}
+                                      >
+                                        <Layers className="h-4 w-4" /> Editar seleccionadas
+                                      </Button>
+                                      <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={handleOnClickDeleteSelectedBoxes}
+                                        disabled={isReadOnly}
+                                      >
+                                        <Trash2 className="h-4 w-4" /> Eliminar seleccionadas
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => setSelectedBoxIds([])}
+                                        title="Cancelar selección"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
                                 {available.length > 0 ? (
                                   <div className="flex h-full flex-col overflow-hidden rounded-lg border">
                                     <div className="max-h-[calc(90vh-300px)] flex-1 overflow-y-auto">
                                       <Table>
                                         <TableHeader className="bg-background sticky top-0 z-10">
                                           <TableRow>
+                                            <TableHead className="w-[36px]">
+                                              <Checkbox
+                                                checked={
+                                                  allFilteredAvailableBoxesSelected
+                                                    ? true
+                                                    : someFilteredAvailableBoxesSelected
+                                                      ? 'indeterminate'
+                                                      : false
+                                                }
+                                                onCheckedChange={handleToggleSelectAllBoxes}
+                                                disabled={
+                                                  isReadOnly || filteredAvailableBoxIds.length === 0
+                                                }
+                                                aria-label="Seleccionar todas las cajas visibles"
+                                              />
+                                            </TableHead>
                                             <TableHead className="min-w-[200px]">
-                                              Artículo
+                                              <div className="flex items-center gap-1">
+                                                Artículo
+                                                <BoxTableColumnFilter
+                                                  label="Artículo"
+                                                  mode="list"
+                                                  options={allBoxProductNames}
+                                                  value={boxFilters.product}
+                                                  onChange={(value) =>
+                                                    setBoxFilters((prev) => ({
+                                                      ...prev,
+                                                      product: value,
+                                                    }))
+                                                  }
+                                                />
+                                              </div>
                                             </TableHead>
                                             <TableHead className="w-[170px] min-w-[170px]">
-                                              Lote
+                                              <div className="flex items-center gap-1">
+                                                Lote
+                                                <BoxTableColumnFilter
+                                                  label="Lote"
+                                                  mode="list"
+                                                  options={allBoxLots}
+                                                  value={boxFilters.lot}
+                                                  onChange={(value) =>
+                                                    setBoxFilters((prev) => ({ ...prev, lot: value }))
+                                                  }
+                                                />
+                                              </div>
                                             </TableHead>
-                                            <TableHead className="min-w-[150px]">GS1 128</TableHead>
+                                            <TableHead className="min-w-[150px]">
+                                              <div className="flex items-center gap-1">
+                                                GS1 128
+                                                <BoxTableColumnFilter
+                                                  label="GS1 128"
+                                                  mode="text"
+                                                  value={boxFilters.gs1128}
+                                                  onChange={(value) =>
+                                                    setBoxFilters((prev) => ({
+                                                      ...prev,
+                                                      gs1128: value,
+                                                    }))
+                                                  }
+                                                  placeholder="Contiene..."
+                                                />
+                                              </div>
+                                            </TableHead>
                                             <TableHead className="w-[100px] min-w-[100px]">
-                                              Peso Neto
+                                              <div className="flex items-center gap-1">
+                                                Peso Neto
+                                                <BoxTableColumnFilter
+                                                  label="Peso Neto"
+                                                  mode="range"
+                                                  value={boxFilters.netWeight}
+                                                  onChange={(value) =>
+                                                    setBoxFilters((prev) => ({
+                                                      ...prev,
+                                                      netWeight: value,
+                                                    }))
+                                                  }
+                                                  unit="kg"
+                                                />
+                                              </div>
                                             </TableHead>
                                             {canEditCost && (
                                               <TableHead className="w-[110px] text-right">
-                                                Coste/kg
+                                                <div className="flex items-center justify-end gap-1">
+                                                  <BoxTableColumnFilter
+                                                    label="Coste/kg"
+                                                    mode="range"
+                                                    value={boxFilters.cost}
+                                                    onChange={(value) =>
+                                                      setBoxFilters((prev) => ({
+                                                        ...prev,
+                                                        cost: value,
+                                                      }))
+                                                    }
+                                                    unit="€"
+                                                  />
+                                                  Coste/kg
+                                                </div>
                                               </TableHead>
                                             )}
                                             <TableHead className="w-[100px]">Acciones</TableHead>
                                           </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                          {available.map((box) => renderBoxRow(box, true))}
+                                          {filteredAvailableBoxes.length === 0 ? (
+                                            <TableRow>
+                                              <TableCell colSpan={canEditCost ? 7 : 6} className="p-0">
+                                                <div className="py-12">
+                                                  <EmptyState
+                                                    icon={
+                                                      <Filter
+                                                        className="text-muted-foreground h-12 w-12"
+                                                        strokeWidth={1.5}
+                                                      />
+                                                    }
+                                                    title="Ningún resultado con estos filtros"
+                                                    description="Ajusta o quita los filtros de columna para ver más cajas."
+                                                  />
+                                                </div>
+                                              </TableCell>
+                                            </TableRow>
+                                          ) : (
+                                            filteredAvailableBoxes.map((box) => renderBoxRow(box, true))
+                                          )}
                                         </TableBody>
                                       </Table>
                                     </div>
@@ -2335,7 +2357,7 @@ export default function PalletView({
                                           ? 'caja seleccionada'
                                           : 'cajas seleccionadas'}
                                       </strong>{' '}
-                                      (en la tab &quot;Todas&quot;).
+                                      (en la tab &quot;Disponibles&quot;).
                                     </>
                                   ) : (
                                     'Los cambios se aplicarán a todas las cajas disponibles (no en producción).'
