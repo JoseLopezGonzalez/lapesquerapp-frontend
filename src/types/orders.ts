@@ -40,6 +40,9 @@ export interface MaritimeShippingDetail {
   swbNumber: string | null;
   loadingPort: string | null;
   dischargePort: string | null;
+  bookingNumber: string | null;
+  originCountry: string | null;
+  destinationCountry: string | null;
   customsBrokerId: number | string | null;
   customsBroker: CustomsBroker | null;
   ultimateConsigneeName: string | null;
@@ -56,6 +59,9 @@ export interface MaritimeShippingDetailPayload {
   swbNumber?: string | null;
   loadingPort?: string | null;
   dischargePort?: string | null;
+  bookingNumber?: string | null;
+  originCountry?: string | null;
+  destinationCountry?: string | null;
   customsBrokerId?: number | string | null;
   ultimateConsigneeName?: string | null;
   ultimateConsigneeAddress?: string | null;

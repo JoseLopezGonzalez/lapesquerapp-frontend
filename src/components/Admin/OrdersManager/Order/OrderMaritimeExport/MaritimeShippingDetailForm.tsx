@@ -32,18 +32,24 @@ const FIELDS: Array<{
   { name: 'vesselName', label: 'Buque', placeholder: 'Nombre del buque' },
   { name: 'voyageNumber', label: 'Nº de viaje', placeholder: 'ej. V-2026-045' },
   { name: 'exportInvoiceNumber', label: 'Factura de exportación', placeholder: 'ej. EXP-2026-0089' },
+  { name: 'bookingNumber', label: 'Nº de Booking', placeholder: 'ej. BK-2026-0042' },
   { name: 'swbNumber', label: 'Nº SWB', placeholder: 'ej. SWB-778899' },
   { name: 'loadingPort', label: 'Puerto de carga', placeholder: 'ej. Vigo' },
   { name: 'dischargePort', label: 'Puerto de descarga', placeholder: 'ej. Montevideo' },
+  { name: 'originCountry', label: 'País de origen', placeholder: 'ej. España' },
+  { name: 'destinationCountry', label: 'País de destino', placeholder: 'ej. Puerto Rico' },
 ];
 
 const EMPTY_VALUES: MaritimeShippingDetailFormData = {
   vesselName: '',
   voyageNumber: '',
   exportInvoiceNumber: '',
+  bookingNumber: '',
   swbNumber: '',
   loadingPort: '',
   dischargePort: '',
+  originCountry: '',
+  destinationCountry: '',
   customsBrokerId: null,
   ultimateConsigneeName: '',
   ultimateConsigneeAddress: '',
@@ -82,9 +88,12 @@ export default function MaritimeShippingDetailForm({
       vesselName: shippingDetail?.vesselName ?? '',
       voyageNumber: shippingDetail?.voyageNumber ?? '',
       exportInvoiceNumber: shippingDetail?.exportInvoiceNumber ?? '',
+      bookingNumber: shippingDetail?.bookingNumber ?? '',
       swbNumber: shippingDetail?.swbNumber ?? '',
       loadingPort: shippingDetail?.loadingPort ?? '',
       dischargePort: shippingDetail?.dischargePort ?? '',
+      originCountry: shippingDetail?.originCountry ?? '',
+      destinationCountry: shippingDetail?.destinationCountry ?? '',
       customsBrokerId: shippingDetail?.customsBrokerId ?? null,
       ultimateConsigneeName: shippingDetail?.ultimateConsigneeName ?? '',
       ultimateConsigneeAddress: shippingDetail?.ultimateConsigneeAddress ?? '',
@@ -92,14 +101,17 @@ export default function MaritimeShippingDetailForm({
   }, [isLoading, error, shippingDetail, isDirty, reset]);
 
   const onSubmit = handleSubmit((data) => {
-    // PUT de reemplazo completo — se envían siempre los 9 campos, nunca solo el que cambió.
+    // PUT de reemplazo completo — se envían siempre los 12 campos, nunca solo el que cambió.
     const payload = {
       vesselName: data.vesselName || null,
       voyageNumber: data.voyageNumber || null,
       exportInvoiceNumber: data.exportInvoiceNumber || null,
+      bookingNumber: data.bookingNumber || null,
       swbNumber: data.swbNumber || null,
       loadingPort: data.loadingPort || null,
       dischargePort: data.dischargePort || null,
+      originCountry: data.originCountry || null,
+      destinationCountry: data.destinationCountry || null,
       customsBrokerId: data.customsBrokerId || null,
       ultimateConsigneeName: data.ultimateConsigneeName || null,
       ultimateConsigneeAddress: data.ultimateConsigneeAddress || null,
@@ -119,8 +131,8 @@ export default function MaritimeShippingDetailForm({
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {Array.from({ length: FIELDS.length }).map((_, i) => (
               <div key={i} className="grid gap-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-10 w-full rounded-md" />
@@ -142,7 +154,7 @@ export default function MaritimeShippingDetailForm({
           </div>
         ) : (
           <form onSubmit={onSubmit} className="grid gap-4" noValidate>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {FIELDS.map((field) => {
                 const hasError = errors[field.name];
                 return (

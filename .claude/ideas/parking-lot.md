@@ -78,17 +78,17 @@ y lista para implementar; una idea aquí es solo una nota para no perderla.
 - **Módulo:** Ventas
 - **Descripción:** En `MaritimeShippingDetailForm.tsx` (pestaña "Exportación marítima" del pedido, GAP-126), el `Skeleton` de carga inicial solo reserva espacio para los 6 campos originales de buque/puerto — no incluye placeholder para el `Separator` + Combobox de agente de aduanas + 2 campos de consignatario final añadidos en GAP-126. Provoca un salto de layout (la Card crece de golpe) al terminar de cargar. Señalado como fricción no bloqueante en la Full UX Review de GAP-126.
 
-### IDEA-012 — Grid de 6 campos en "Datos de envío" (exportación marítima) sin variante mobile
-- **Fecha:** 2026-07-30
-- **Tipo:** Bug
-- **Módulo:** Ventas
-- **Descripción:** En `MaritimeShippingDetailForm.tsx`, los 6 campos originales de buque/puerto (heredados de GAP-124) siguen en `grid grid-cols-2` fijo sin variante `sm:` — mismo problema de fondo que el bloqueante ya corregido en GAP-126 para el bloque de consignatario, pero aquí con impacto menor porque los valores son cortos (p. ej. "Vigo", "V-2026-045"). Aplicar el mismo fix (`grid-cols-1 sm:grid-cols-2`). Relacionado con PL-035 (`project-learnings.md`).
-
 ---
 
 ## ✅ Promoted
 
 <!-- Las ideas promocionadas se mueven aquí con el enlace al GAP resultante -->
+
+### IDEA-012 — Grid de 6 campos en "Datos de envío" (exportación marítima) sin variante mobile
+- **Resuelta en:** GAP-130 (2026-07-30) — como efecto colateral al extender el mismo `FIELDS.map()`
+  con 3 campos nuevos (`bookingNumber`/`originCountry`/`destinationCountry`), se aplicó el mismo
+  fix `grid-cols-1 sm:grid-cols-2` ya validado en GAP-126, en vez de dejar crecer un grid ya
+  conocido como no-responsive.
 
 ---
 
