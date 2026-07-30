@@ -151,6 +151,7 @@ const catalogConfig: Record<string, any> = {
           hideOnMobile: true,
         },
         { name: 'boxGtin', label: 'GTIN Caja', type: 'text', path: 'boxGtin', hideOnMobile: true },
+        { name: 'hsCode', label: 'HS Code', type: 'text', path: 'hsCode', hideOnMobile: true },
         {
           name: 'palletGtin',
           label: 'GTIN Palet',
@@ -240,6 +241,19 @@ const catalogConfig: Record<string, any> = {
           },
         },
         cols: { sm: 4, md: 3, lg: 3, xl: 3 },
+      },
+      {
+        name: 'hsCode',
+        label: 'Código arancelario (HS Code)',
+        type: 'text',
+        placeholder: 'ej. 0307520000',
+        validation: {
+          pattern: {
+            value: '/^[0-9]{6,10}$/',
+            message: 'Debe contener entre 6 y 10 dígitos',
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
       },
       {
         name: 'a3erp_code',
