@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react';
 import {
   HomeIcon,
   TruckIcon,
@@ -31,9 +32,19 @@ import {
   CalendarClock,
   MapPinned,
   Tags,
+  Landmark,
 } from 'lucide-react';
 
-export const navigationConfig = [
+export interface NavigationItem {
+  name: string;
+  icon?: ComponentType<{ className?: string }>;
+  href?: string;
+  allowedRoles: string[];
+  requiredFeature?: string;
+  childrens?: NavigationItem[];
+}
+
+export const navigationConfig: NavigationItem[] = [
   /* Solo operario: acceso desde dashboard (/operator) */
   {
     name: 'Inicio',
@@ -240,6 +251,12 @@ export const navigationConfig = [
     href: '/admin/incoterms',
   },
   {
+    name: 'Agentes de aduanas',
+    icon: Landmark,
+    allowedRoles: ['administrador', 'direccion', 'tecnico'],
+    href: '/admin/customs-brokers',
+  },
+  {
     name: 'Productos Auxiliares',
     icon: PackageOpen,
     allowedRoles: ['administrador', 'direccion', 'tecnico'],
@@ -373,7 +390,7 @@ export const navigationConfig = [
   },
 ];
 
-export const navigationManagerConfig = [
+export const navigationManagerConfig: NavigationItem[] = [
   {
     name: 'Gestor de pedidos',
     icon: PencilSquareIcon,

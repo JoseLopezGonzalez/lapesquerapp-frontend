@@ -1,15 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { Combobox } from '@/components/Shadcn/Combobox';
 import { Save, Loader2, RefreshCw } from 'lucide-react';
 import { useOrderMaritimeShippingDetail } from '@/hooks/orders/useOrderMaritimeShippingDetail';
+import { useCustomsBrokerOptions } from '@/hooks/useCustomsBrokerOptions';
 import {
   maritimeShippingDetailSchema,
   type MaritimeShippingDetailFormData,
@@ -40,6 +44,9 @@ const EMPTY_VALUES: MaritimeShippingDetailFormData = {
   swbNumber: '',
   loadingPort: '',
   dischargePort: '',
+  customsBrokerId: null,
+  ultimateConsigneeName: '',
+  ultimateConsigneeAddress: '',
 };
 
 export default function MaritimeShippingDetailForm({
@@ -48,11 +55,18 @@ export default function MaritimeShippingDetailForm({
 }: MaritimeShippingDetailFormProps) {
   const { shippingDetail, isLoading, error, refetch, upsertMutation } =
     useOrderMaritimeShippingDetail(orderId);
+  const { options: customsBrokerOptionsRaw, isLoading: customsBrokersLoading } =
+    useCustomsBrokerOptions();
+  const customsBrokerOptions = customsBrokerOptionsRaw.map((broker) => ({
+    value: broker.id,
+    label: broker.name,
+  }));
 
   const {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isDirty },
   } = useForm<MaritimeShippingDetailFormData>({
     resolver: zodResolver(maritimeShippingDetailSchema),
@@ -71,11 +85,14 @@ export default function MaritimeShippingDetailForm({
       swbNumber: shippingDetail?.swbNumber ?? '',
       loadingPort: shippingDetail?.loadingPort ?? '',
       dischargePort: shippingDetail?.dischargePort ?? '',
+      customsBrokerId: shippingDetail?.customsBrokerId ?? null,
+      ultimateConsigneeName: shippingDetail?.ultimateConsigneeName ?? '',
+      ultimateConsigneeAddress: shippingDetail?.ultimateConsigneeAddress ?? '',
     });
   }, [isLoading, error, shippingDetail, isDirty, reset]);
 
   const onSubmit = handleSubmit((data) => {
-    // PUT de reemplazo completo — se envían siempre los 6 campos, nunca solo el que cambió.
+    // PUT de reemplazo completo — se envían siempre los 9 campos, nunca solo el que cambió.
     const payload = {
       vesselName: data.vesselName || null,
       voyageNumber: data.voyageNumber || null,
@@ -83,6 +100,9 @@ export default function MaritimeShippingDetailForm({
       swbNumber: data.swbNumber || null,
       loadingPort: data.loadingPort || null,
       dischargePort: data.dischargePort || null,
+      customsBrokerId: data.customsBrokerId || null,
+      ultimateConsigneeName: data.ultimateConsigneeName || null,
+      ultimateConsigneeAddress: data.ultimateConsigneeAddress || null,
     };
     upsertMutation.mutate(payload, {
       // Marca los valores recién guardados como el nuevo estado "limpio" — así el formulario deja
@@ -140,6 +160,69 @@ export default function MaritimeShippingDetailForm({
                 );
               })}
             </div>
+
+            <Separator />
+
+            <div className="grid gap-3">
+              <p className="text-muted-foreground text-xs font-medium">
+                Consignatario y agente de aduanas
+              </p>
+              <div className="grid gap-2">
+                <Label htmlFor="customsBrokerId">Agente de aduanas</Label>
+                <Controller
+                  name="customsBrokerId"
+                  control={control}
+                  render={({ field }) => (
+                    <Combobox
+                      options={customsBrokerOptions}
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      loading={customsBrokersLoading}
+                      disabled={readOnly || upsertMutation.isPending}
+                      placeholder="Seleccionar agente de aduanas..."
+                      searchPlaceholder="Buscar agente..."
+                      notFoundMessage="No se encontraron agentes de aduanas"
+                      className="h-11 w-full"
+                    />
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="ultimateConsigneeName">Nombre del consignatario final</Label>
+                  <Input
+                    id="ultimateConsigneeName"
+                    placeholder="Dejar en blanco para usar los datos del cliente del pedido"
+                    disabled={readOnly || upsertMutation.isPending}
+                    aria-invalid={!!errors.ultimateConsigneeName}
+                    {...register('ultimateConsigneeName')}
+                  />
+                  {errors.ultimateConsigneeName && (
+                    <p className="pt-1 text-xs text-red-400">
+                      * {errors.ultimateConsigneeName.message}
+                    </p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="ultimateConsigneeAddress">
+                    Dirección del consignatario final
+                  </Label>
+                  <Textarea
+                    id="ultimateConsigneeAddress"
+                    placeholder="Dejar en blanco para usar la dirección de envío del pedido"
+                    disabled={readOnly || upsertMutation.isPending}
+                    aria-invalid={!!errors.ultimateConsigneeAddress}
+                    {...register('ultimateConsigneeAddress')}
+                  />
+                  {errors.ultimateConsigneeAddress && (
+                    <p className="pt-1 text-xs text-red-400">
+                      * {errors.ultimateConsigneeAddress.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {!readOnly && (
               <div className="flex justify-end">
                 <Button type="submit" disabled={!isDirty || upsertMutation.isPending}>

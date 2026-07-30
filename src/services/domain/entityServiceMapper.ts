@@ -70,6 +70,7 @@ import { punchService } from './punches/punchService';
 import { externalUserService } from './external-users/externalUserService';
 import { externalProcessorService } from './external-processors/externalProcessorService';
 import { supplierLiquidationDomainService } from './supplier-liquidations/supplierLiquidationDomainService';
+import { customsBrokerService } from './customs-brokers/customsBrokerService';
 
 /**
  * Mapa de nombres de entidades a servicios de dominio
@@ -111,6 +112,7 @@ const entityServiceMap: Record<string, DomainService> = {
   'external-processors': externalProcessorService,
   'field-operators': fieldOperatorAdminService,
   'supplier-liquidations': supplierLiquidationDomainService,
+  'customs-brokers': customsBrokerService,
 };
 
 /**

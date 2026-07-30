@@ -479,6 +479,109 @@ const adminConfig: Record<string, any> = {
     ],
   },
 
+  /* Customs Brokers (Agentes de aduanas) */
+  'customs-brokers': {
+    title: 'Agentes de aduanas',
+    description: 'Gestiona, edita y consulta agentes de aduanas (Intermediate Consignee).',
+    emptyState: {
+      title: 'No existen agentes de aduanas según los filtros',
+      description: 'Ajusta los filtros o crea un nuevo agente de aduanas.',
+    },
+    endpoint: 'customs-brokers',
+    viewRoute: '/admin/customs-brokers/:id',
+    deleteEndpoint: 'customs-brokers/:id',
+    hideBulkDelete: true,
+    filtersGroup: {
+      search: {
+        label: 'Buscar',
+        filters: [
+          {
+            name: 'id',
+            label: 'Id',
+            type: 'search',
+            placeholder: 'Buscar por id',
+          },
+        ],
+      },
+      groups: [
+        {
+          name: 'generals',
+          label: 'Generales',
+          filters: [
+            {
+              name: 'name',
+              label: 'Nombre',
+              type: 'text',
+              placeholder: 'Buscar por nombre',
+            },
+          ],
+        },
+      ],
+    },
+    table: {
+      headers: [
+        { name: 'id', label: 'ID', type: 'id', path: 'id' },
+        { name: 'name', label: 'Nombre', type: 'text', path: 'name' },
+        { name: 'address', label: 'Dirección', type: 'text', path: 'address', hideOnMobile: true },
+        { name: 'phone', label: 'Teléfono', type: 'text', path: 'phone', hideOnMobile: true },
+        { name: 'email', label: 'Email', type: 'text', path: 'email', hideOnMobile: true },
+      ],
+    },
+    createForm: {
+      title: 'Nuevo Agente de Aduanas',
+      endpoint: 'customs-brokers',
+      method: 'POST',
+      successMessage: 'Agente de aduanas creado con éxito',
+      errorMessage: 'Error al crear el agente de aduanas',
+    },
+    editForm: {
+      title: 'Editar Agente de Aduanas',
+      endpoint: 'customs-brokers',
+      method: 'PATCH',
+      successMessage: 'Agente de aduanas actualizado con éxito',
+      errorMessage: 'Error al actualizar el agente de aduanas',
+    },
+    fields: [
+      {
+        name: 'name',
+        label: 'Nombre',
+        type: 'text',
+        validation: {
+          required: 'El nombre es obligatorio',
+          minLength: { value: 3, message: 'Debe tener al menos 3 caracteres' },
+        },
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: 'address',
+        label: 'Dirección',
+        type: 'textarea',
+        placeholder: 'Dirección postal completa',
+        cols: { sm: 6, md: 6, lg: 6, xl: 6 },
+      },
+      {
+        name: 'phone',
+        label: 'Teléfono',
+        type: 'text',
+        placeholder: 'ej. +1 787-781-0000',
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+      },
+      {
+        name: 'email',
+        label: 'Email',
+        type: 'email',
+        placeholder: 'ej. contacto@agente.com',
+        validation: {
+          pattern: {
+            value: '/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/',
+            message: 'Formato de email no válido',
+          },
+        },
+        cols: { sm: 6, md: 6, lg: 3, xl: 3 },
+      },
+    ],
+  },
+
   /* Products */
   employees: {
     hideCreateButton: false,

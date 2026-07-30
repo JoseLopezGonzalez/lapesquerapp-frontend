@@ -2,8 +2,8 @@
 
 > This file is maintained exclusively by the system-learner agent.
 > Do not edit manually unless correcting an error.
-> Last updated: 2026-07-29
-> Total entries: 37
+> Last updated: 2026-07-30
+> Total entries: 39
 
 ## How this file works
 
@@ -174,6 +174,67 @@ Every entry has:
 - **Status:** Follow-up pendiente — evaluar GAP para las secciones del editor de pedidos que
   contienen entrada de texto libre (notas, comentarios) antes de que el usuario pierda más
   input sin darse cuenta.
+
+### PL-034
+- **Date:** 2026-07-30
+- **Source:** gap-auditor, primera pasada de auditoría de GAP-125 (catálogo `CustomsBroker`) —
+  PL CANDIDATE señalado en el propio GAP cerrado
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** En `src/components/Admin/Entity/EntityClient/index.js`, `isSelectable` y
+  `canBulkDelete` son `true` por defecto salvo que el config declare `hideBulkDelete: true`. Si
+  el service de dominio del catálogo (registrado en `src/services/domain/entityServiceMapper.ts`)
+  no implementa `deleteMultiple`, `EntityClient` igualmente renderiza casillas de selección +
+  botón "Eliminar seleccionados" que, al pulsarse, llama a `entityService.deleteMultiple(...)` y
+  falla en silencio con un toast genérico ("Hubo un error al intentar eliminar los elementos.")
+  — nada avisa al implementador de que falta el flag; no es un error de tipos ni de lint, solo
+  se manifiesta interactuando con la UI. **Regla:** cualquier GAP/implementación que registre un
+  catálogo nuevo (o modifique uno existente) vía `EntityClient` (`src/configs/entities/*.ts`)
+  debe verificar explícitamente la pareja `deleteMultiple` (service) ↔ `hideBulkDelete` (config)
+  antes de darlo por cerrado: si el service no implementa `deleteMultiple`, el bloque de config
+  DEBE declarar `hideBulkDelete: true`. Cualquier auditoría (`gap-auditor`, `code-audit-agent`) de
+  un catálogo `EntityClient` nuevo o modificado debe comprobar este par explícitamente como parte
+  del checklist, no asumir que la ausencia de errores de build lo cubre.
+- **Found in:** `src/configs/entities/entitiesConfig.admin.ts`, bloque `customs-brokers`
+  (GAP-125, primera pasada — sin `hideBulkDelete: true` pese a que `customsBrokerService.ts` no
+  implementa `deleteMultiple`). Precedente ya correcto en el mismo codebase:
+  `src/configs/entities/entitiesConfig.crm.ts:317` (`prospect-categories`).
+- **Status:** Corregido en GAP-125 (segunda pasada, fix de 1 línea). Aplicar preventivamente en
+  cualquier catálogo `EntityClient` nuevo o existente sin `deleteMultiple`.
+
+### PL-035
+- **Date:** 2026-07-30
+- **Source:** ux-reviewer (Full UX Review) durante GAP-126 (Combobox de agente de aduanas +
+  campos de consignatario final) — PL CANDIDATE señalado en el propio GAP cerrado
+- **Category:** AUDIT_RULE
+- **Confidence:** HIGH
+- **Entry:** Un `grid grid-cols-N` fijo (N>1) sin variante mobile es un patrón de riesgo
+  recurrente al extender formularios ya existentes. GAP-124 ya tenía este problema latente en
+  sus 6 campos originales (invisible entonces porque los valores son cortos: nº de buque,
+  puertos…); GAP-126 lo reintrodujo de forma más grave al añadir un campo de contenido largo
+  (dirección postal completa + placeholder largo), comprimiendo cada columna a ~165px en un
+  viewport de ~375px. El proyecto ya tiene el patrón correcto documentado EN CÓDIGO
+  (`isMobile ? 'grid-cols-1' : ...` en `OrderEditSheet/index.tsx:829`) pero no como regla
+  explícita y buscable en `.claude/rules/` ni en `design-context.md`. **Regla para
+  implementación:** todo `grid grid-cols-N` (N>1) dentro de un formulario debe usar
+  `grid-cols-1 sm:grid-cols-N` (o el equivalente `isMobile ? 'grid-cols-1' : ...`) salvo que el
+  contenido de las columnas sea garantizadamente corto (badges, números de pocos dígitos,
+  códigos cortos) — la variante CSS (`sm:grid-cols-N`) y la variante JS (`isMobile ?`) son
+  ambas válidas según `design-context.md` § Forms. **Regla para auditoría:** este hallazgo solo
+  se detectó porque el `ux-reviewer` simuló el viewport mobile durante la Full UX Review — el
+  checklist técnico/visual estándar del `gap-auditor` no cubre explícitamente la responsividad
+  de grids en formularios. Cualquier `gap-auditor` (Full o Light) debe incluir como ítem de
+  checklist explícito: grep de `grid-cols-\d` (o `grid grid-cols-`) en el archivo modificado y
+  verificar que cada uno tiene variante mobile (`grid-cols-1` base + breakpoint, o `isMobile ?`)
+  — sin depender de que el GAP califique para Full UX Review para detectarlo.
+- **Found in:** `src/components/Admin/OrdersManager/Order/OrderMaritimeExport/MaritimeShippingDetailForm.tsx:145`
+  (grid de los 6 campos originales de GAP-124, riesgo latente sin corregir aún) y el bloque de
+  consignatario final añadido en GAP-126 (bloqueante, corregido durante la Full UX Review con
+  `grid-cols-1 gap-3 sm:grid-cols-2`). Patrón correcto de referencia:
+  `src/components/Admin/OrdersManager/Order/OrderEditSheet/index.tsx:829`.
+- **Status:** Corregido en el bloque nuevo de GAP-126. Pendiente en el grid de los 6 campos
+  originales (`FIELDS.map`, línea 145) — señalado como observación no bloqueante en el mismo
+  GAP, candidato a resolver en la próxima pasada de pulido de ese archivo.
 
 ---
 

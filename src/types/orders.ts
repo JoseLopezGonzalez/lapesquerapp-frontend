@@ -4,6 +4,8 @@
  * without pulling in the fetching layer.
  */
 
+import type { CustomsBroker } from './catalog';
+
 /** Order payload for create/update */
 export interface OrderPayload {
   [key: string]: unknown;
@@ -38,6 +40,10 @@ export interface MaritimeShippingDetail {
   swbNumber: string | null;
   loadingPort: string | null;
   dischargePort: string | null;
+  customsBrokerId: number | string | null;
+  customsBroker: CustomsBroker | null;
+  ultimateConsigneeName: string | null;
+  ultimateConsigneeAddress: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -50,6 +56,9 @@ export interface MaritimeShippingDetailPayload {
   swbNumber?: string | null;
   loadingPort?: string | null;
   dischargePort?: string | null;
+  customsBrokerId?: number | string | null;
+  ultimateConsigneeName?: string | null;
+  ultimateConsigneeAddress?: string | null;
 }
 
 /** Contenedor marítimo — recurso 1:N por pedido */

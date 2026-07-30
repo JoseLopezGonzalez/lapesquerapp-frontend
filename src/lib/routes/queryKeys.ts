@@ -406,6 +406,11 @@ export const externalProcessorOptionKeys = {
     ['external-processors', 'options', tenantId ?? 'unknown'] as const,
 };
 
+export const customsBrokerOptionKeys = {
+  list: (tenantId: string | null | undefined) =>
+    ['customs-brokers', 'options', tenantId ?? 'unknown'] as const,
+};
+
 export const fuelQueryKeys = {
   spainAverageDiesel: () => ['fuel', 'spain-average-diesel'] as const,
 };

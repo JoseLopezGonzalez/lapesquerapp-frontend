@@ -114,3 +114,21 @@ export interface AuxiliaryProductOption {
   unit: string;
   defaultPrice?: number | string | null;
 }
+
+/** Customs broker (agente de aduanas / Intermediate Consignee) — catálogo reutilizable entre pedidos de exportación marítima */
+export interface CustomsBroker {
+  id: number | string;
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+/** Customs broker option — shape returned by /customs-brokers/options (array plano, sin envolver en value/label) */
+export interface CustomsBrokerOption {
+  id: number | string;
+  name: string;
+}
