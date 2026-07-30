@@ -7,13 +7,25 @@ const TRANSPORT_IMAGES: Record<string, string> = {
 };
 
 const DEFAULT_IMAGE = '/images/transports/trailer.png';
+const MARITIME_CONTAINER_IMAGE = '/images/transports/container-40.png';
+const MARITIME_CONTAINER_EIMSKIP_IMAGE = '/images/transports/container-40-eimskip.png';
 
 /**
- * Obtiene la ruta de la imagen del transporte según el nombre
+ * Obtiene la ruta de la imagen del transporte según el nombre y el tipo de pedido.
+ * Un pedido `maritime_export` siempre se representa con un contenedor de 40 pies
+ * (nunca con el trailer normal), con una variante propia cuando el transporte es Eimskip.
  */
-export function getTransportImage(transportName: string | null | undefined): string {
-  if (!transportName || typeof transportName !== 'string') return DEFAULT_IMAGE;
-  const name = transportName.toLowerCase();
+export function getTransportImage(
+  transportName: string | null | undefined,
+  orderType?: string | null
+): string {
+  const name = typeof transportName === 'string' ? transportName.toLowerCase() : '';
+
+  if (orderType === 'maritime_export') {
+    return name.includes('eimskip') ? MARITIME_CONTAINER_EIMSKIP_IMAGE : MARITIME_CONTAINER_IMAGE;
+  }
+
+  if (!name) return DEFAULT_IMAGE;
   for (const [key, value] of Object.entries(TRANSPORT_IMAGES)) {
     if (name.includes(key)) return value;
   }

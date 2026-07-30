@@ -27,7 +27,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Container, Loader2, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { Loader2, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { PiShippingContainer } from 'react-icons/pi';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { useOrderMaritimeContainers } from '@/hooks/orders/useOrderMaritimeContainers';
 import {
@@ -139,7 +140,7 @@ export default function MaritimeContainersList({
                 className="flex items-center justify-between gap-3 rounded-lg border p-3"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <Container className="text-muted-foreground size-5 shrink-0" />
+                  <PiShippingContainer className="text-muted-foreground size-5 shrink-0" />
                   <div className="min-w-0">
                     <p className="min-w-0 truncate text-sm font-medium">
                       {container.containerNumber}

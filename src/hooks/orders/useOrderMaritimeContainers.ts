@@ -8,7 +8,11 @@ import {
   ApiError,
   getErrorMessage,
 } from '@/services/domain/orders/orderMaritimeContainerService';
-import type { MaritimeContainerCreatePayload, MaritimeContainerUpdatePayload } from '@/types/orders';
+import type {
+  MaritimeContainer,
+  MaritimeContainerCreatePayload,
+  MaritimeContainerUpdatePayload,
+} from '@/types/orders';
 import { notify } from '@/lib/notifications';
 
 export function useOrderMaritimeContainers(
@@ -21,7 +25,6 @@ export function useOrderMaritimeContainers(
 
   const isValid = !!orderId;
   const listKey = orderMaritimeContainerKeys.list(tenantId, orderId);
-  const prefixKey = orderMaritimeContainerKeys.listPrefix(tenantId, orderId);
 
   const {
     data: containers,
@@ -35,8 +38,11 @@ export function useOrderMaritimeContainers(
     staleTime: 60 * 1000,
   });
 
-  const invalidateAll = () => {
-    queryClient.invalidateQueries({ queryKey: prefixKey });
+  // Invalida solo el detalle del pedido (embebe maritimeContainers para otras vistas). La propia
+  // lista se actualiza con setQueryData a partir de la respuesta del backend, sin esperar a un
+  // refetch en segundo plano — así el elemento afectado aparece/desaparece/cambia al instante,
+  // no tras el hueco del round-trip de invalidateQueries.
+  const invalidateOrderDetail = () => {
     queryClient.invalidateQueries({ queryKey: orderKeys.detail(tenantId, orderId) });
   };
 
@@ -46,8 +52,9 @@ export function useOrderMaritimeContainers(
   const createMutation = useMutation({
     mutationFn: (payload: MaritimeContainerCreatePayload) =>
       orderMaritimeContainerService.create(orderId!, payload),
-    onSuccess: () => {
-      invalidateAll();
+    onSuccess: (newContainer) => {
+      queryClient.setQueryData<MaritimeContainer[]>(listKey, (old) => [...(old ?? []), newContainer]);
+      invalidateOrderDetail();
       notify.success('Contenedor añadido correctamente');
     },
     onError: (err: unknown) => notify.error(getErrMsg(err, 'Error al añadir el contenedor')),
@@ -61,8 +68,13 @@ export function useOrderMaritimeContainers(
       containerId: number | string;
       payload: MaritimeContainerUpdatePayload;
     }) => orderMaritimeContainerService.update(orderId!, containerId, payload),
-    onSuccess: () => {
-      invalidateAll();
+    onSuccess: (updatedContainer) => {
+      queryClient.setQueryData<MaritimeContainer[]>(listKey, (old) =>
+        (old ?? []).map((container) =>
+          container.id === updatedContainer.id ? updatedContainer : container
+        )
+      );
+      invalidateOrderDetail();
       notify.success('Contenedor actualizado correctamente');
     },
     onError: (err: unknown) => notify.error(getErrMsg(err, 'Error al actualizar el contenedor')),
@@ -71,8 +83,11 @@ export function useOrderMaritimeContainers(
   const deleteMutation = useMutation({
     mutationFn: (containerId: number | string) =>
       orderMaritimeContainerService.delete(orderId!, containerId),
-    onSuccess: () => {
-      invalidateAll();
+    onSuccess: (_data, containerId) => {
+      queryClient.setQueryData<MaritimeContainer[]>(listKey, (old) =>
+        (old ?? []).filter((container) => container.id !== containerId)
+      );
+      invalidateOrderDetail();
       notify.success('Contenedor eliminado correctamente');
     },
     onError: (err: unknown) => notify.error(getErrMsg(err, 'Error al eliminar el contenedor')),

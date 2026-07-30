@@ -213,10 +213,11 @@ const OrderContent = ({
   );
 
   const transportImage = useMemo(() => {
-    return order?.transport
-      ? getTransportImage((order.transport as Record<string, unknown>).name as string)
-      : '/images/transports/trailer.png';
-  }, [order?.transport]);
+    const transportName = order?.transport
+      ? ((order.transport as Record<string, unknown>).name as string)
+      : null;
+    return getTransportImage(transportName, order?.orderType);
+  }, [order]);
 
   const handleOnClickPrint = useCallback(async () => {
     exportDocument('order-sheet', 'pdf', 'Hoja de pedido');
