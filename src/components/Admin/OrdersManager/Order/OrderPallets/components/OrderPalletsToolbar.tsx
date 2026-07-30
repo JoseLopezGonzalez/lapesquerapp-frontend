@@ -12,15 +12,20 @@ import {
   Tag,
   X,
 } from 'lucide-react';
+import { PiShippingContainer } from 'react-icons/pi';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { MOBILE_SAFE_AREAS } from '@/lib/design-tokens-mobile';
+import type { MaritimeContainer } from '@/types/orders';
 
 interface OrderPalletsToolbarProps {
   isMobile: boolean;
@@ -41,6 +46,9 @@ interface OrderPalletsToolbarProps {
   isUnlinkingSelected?: boolean;
   isDeletingSelected?: boolean;
   readOnly?: boolean;
+  maritimeContainers?: MaritimeContainer[];
+  onAssignSelectedToContainer?: (containerId: number | string) => void;
+  isAssigningToContainer?: boolean;
 }
 
 const OrderPalletsToolbar = ({
@@ -62,12 +70,17 @@ const OrderPalletsToolbar = ({
   isUnlinkingSelected = false,
   isDeletingSelected = false,
   readOnly = false,
+  maritimeContainers = [],
+  onAssignSelectedToContainer,
+  isAssigningToContainer = false,
 }: OrderPalletsToolbarProps) => {
   const canUnlinkAll = !readOnly && pallets && pallets.length > 0;
   const isSelectionMode = selectedPalletCount > 0;
   const canPrintExpeditionSelected = canPrintExpeditionLabels && isSelectionMode;
   const canManageSelected = !readOnly && isSelectionMode;
-  const isBulkActionBusy = isUnlinkingSelected || isDeletingSelected;
+  const canAssignToContainer =
+    canManageSelected && maritimeContainers.length > 0 && !!onAssignSelectedToContainer;
+  const isBulkActionBusy = isUnlinkingSelected || isDeletingSelected || isAssigningToContainer;
 
   if (isMobile) {
     if (readOnly && !canPrintExpeditionSelected) return null;
@@ -126,6 +139,28 @@ const OrderPalletsToolbar = ({
                     <Tag />
                     Imprimir etiqueta ({selectedPalletCount})
                   </DropdownMenuItem>
+                  {canAssignToContainer && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger disabled={isAssigningToContainer}>
+                          <PiShippingContainer />
+                          Asignar a contenedor
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                          {maritimeContainers.map((container) => (
+                            <DropdownMenuItem
+                              key={container.id}
+                              onClick={() => onAssignSelectedToContainer?.(container.id)}
+                              disabled={isAssigningToContainer}
+                            >
+                              {container.containerNumber}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuSub>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={onUnlinkSelected} disabled={isBulkActionBusy}>
                     {isUnlinkingSelected ? (
@@ -222,7 +257,7 @@ const OrderPalletsToolbar = ({
   }
 
   return (
-    <CardHeader className="flex flex-row items-center justify-between">
+    <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
       <div>
         <CardTitle className="text-lg font-medium">
           {isSelectionMode
@@ -235,7 +270,7 @@ const OrderPalletsToolbar = ({
             : 'Modifica los palets del pedido'}
         </CardDescription>
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {canPrintExpeditionSelected && (
           <Button
             variant="outline"
@@ -261,6 +296,36 @@ const OrderPalletsToolbar = ({
               <Tag />
               Imprimir etiqueta
             </Button>
+            {canAssignToContainer && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" disabled={isBulkActionBusy}>
+                    {isAssigningToContainer ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        Asignando...
+                      </>
+                    ) : (
+                      <>
+                        <PiShippingContainer />
+                        Asignar a contenedor
+                      </>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {maritimeContainers.map((container) => (
+                    <DropdownMenuItem
+                      key={container.id}
+                      onClick={() => onAssignSelectedToContainer?.(container.id)}
+                      disabled={isAssigningToContainer}
+                    >
+                      {container.containerNumber}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             <Button variant="outline" onClick={onUnlinkSelected} disabled={isBulkActionBusy}>
               {isUnlinkingSelected ? (
                 <>

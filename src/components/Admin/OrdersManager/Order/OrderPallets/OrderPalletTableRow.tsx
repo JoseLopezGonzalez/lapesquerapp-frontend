@@ -41,6 +41,8 @@ interface OrderPalletTableRowProps {
   unlinkingPalletId?: number | string | null;
   readOnly?: boolean;
   canViewCostData?: boolean;
+  showContainerColumn?: boolean;
+  containerLabel?: string | null;
 }
 
 export default function OrderPalletTableRow({
@@ -57,6 +59,8 @@ export default function OrderPalletTableRow({
   unlinkingPalletId,
   readOnly = false,
   canViewCostData = true,
+  showContainerColumn = false,
+  containerLabel,
 }: OrderPalletTableRowProps) {
   const productNames =
     pallet.productsNames && Array.isArray(pallet.productsNames) && pallet.productsNames.length > 0
@@ -92,6 +96,11 @@ export default function OrderPalletTableRow({
       <TableCell className="max-w-[200px] truncate px-4 py-3" title={observations}>
         {observations || '-'}
       </TableCell>
+      {showContainerColumn && (
+        <TableCell className="px-4 py-3">
+          {containerLabel ?? <span className="text-muted-foreground">Sin asignar</span>}
+        </TableCell>
+      )}
       <TableCell className="px-4 py-3 text-right">{pallet.numberOfBoxes || 0}</TableCell>
       <TableCell className="px-4 py-3 text-right text-nowrap">
         {formatDecimalWeight(pallet.netWeight || 0)}

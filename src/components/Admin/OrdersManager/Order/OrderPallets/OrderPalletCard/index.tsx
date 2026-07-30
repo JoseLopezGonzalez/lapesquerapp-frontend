@@ -68,6 +68,7 @@ interface OrderPalletCardProps {
   isUnlinking?: boolean;
   readOnly?: boolean;
   canViewCostData?: boolean;
+  containerLabel?: string | null;
 }
 
 export default function OrderPalletCard({
@@ -85,6 +86,7 @@ export default function OrderPalletCard({
   isUnlinking = false,
   readOnly = false,
   canViewCostData = true,
+  containerLabel,
 }: OrderPalletCardProps) {
   // Los palets vinculados al pedido NO tienen productsSummary (solo los resultados de búsqueda lo tienen)
   // Calcular desde boxes o usar productsNames como fallback
@@ -301,6 +303,15 @@ export default function OrderPalletCard({
             <div className="text-muted-foreground mb-1 text-xs font-medium">Observaciones:</div>
             <div className="text-foreground bg-muted/50 max-w-xs rounded-md p-2 text-sm break-words">
               {pallet.observations}
+            </div>
+          </div>
+        )}
+
+        {containerLabel !== undefined && (
+          <div className="mb-3">
+            <div className="text-muted-foreground mb-1 text-xs font-medium">Contenedor:</div>
+            <div className="text-foreground text-sm">
+              {containerLabel ?? <span className="text-muted-foreground">Sin asignar</span>}
             </div>
           </div>
         )}

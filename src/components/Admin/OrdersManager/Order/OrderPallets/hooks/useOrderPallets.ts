@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useOrderContext } from '@/context/OrderContext';
 import { useSession } from 'next-auth/react';
 import { useStoresOptions } from '@/hooks/useStoresOptions';
@@ -15,6 +16,10 @@ import { roundToTwoDecimals } from '../utils/roundToTwoDecimals';
 import type { PalletState } from '@/hooks/pallets/palletHelpers';
 import type { SearchPalletCardData } from '../SearchPalletCard';
 import type { ConfirmActionDialogAction } from '../dialogs/ConfirmActionDialog';
+import { orderMaritimeContainerService } from '@/services/domain/orders/orderMaritimeContainerService';
+import { orderMaritimeContainerKeys } from '@/lib/routes/queryKeys';
+import { getCurrentTenant } from '@/lib/utils/getCurrentTenant';
+import type { MaritimeContainer } from '@/types/orders';
 
 interface PaginationMeta {
   current_page: number;
@@ -59,7 +64,11 @@ export function useOrderPallets() {
     onUnlinkPallet,
     onLinkPallets,
     onUnlinkAllPallets,
+    reload,
   } = useOrderContext();
+  const maritimeContainers = (order?.maritimeContainers ?? []) as MaritimeContainer[];
+  const queryClient = useQueryClient();
+  const tenantId = typeof window !== 'undefined' ? getCurrentTenant() : null;
   const plannedProductDetails = rawPlannedProductDetails as unknown as PlannedProductDetailLike[];
   const { data: session } = useSession();
   const rawRole = session?.user?.role;
@@ -97,6 +106,9 @@ export function useOrderPallets() {
   const [isBulkPalletLabelDialogOpen, setIsBulkPalletLabelDialogOpen] = useState(false);
   const [isDeletingSelected, setIsDeletingSelected] = useState(false);
   const [isUnlinkingSelected, setIsUnlinkingSelected] = useState(false);
+  const [isAssigningToContainer, setIsAssigningToContainer] = useState(false);
+  const [pendingContainerId, setPendingContainerId] = useState<number | string | null>(null);
+  const [pendingReassignCount, setPendingReassignCount] = useState(0);
 
   const [isCreateFromForecastDialogOpen, setIsCreateFromForecastDialogOpen] = useState(false);
   const [createFromForecastLot, setCreateFromForecastLot] = useState('');
@@ -306,6 +318,70 @@ export function useOrderPallets() {
     setIsConfirmDialogOpen(true);
   }, [selectedLinkedPalletIds]);
 
+  const executeAssignToContainer = useCallback(
+    async (containerId: number | string) => {
+      if (!order?.id) return;
+      setIsAssigningToContainer(true);
+      try {
+        await orderMaritimeContainerService.assignPalletsToContainer(
+          order.id,
+          containerId,
+          selectedLinkedPalletIds
+        );
+        await Promise.all([
+          reload(),
+          // MaritimeContainersList.tsx lee el contador de palets desde su propia query
+          // (orderMaritimeContainerKeys, staleTime 60s), independiente de orderKeys.detail que
+          // refresca reload() — sin esto, el contador quedaría obsoleto hasta que expire el cache.
+          queryClient.invalidateQueries({
+            queryKey: orderMaritimeContainerKeys.listPrefix(tenantId, order.id),
+          }),
+        ]);
+        notify.success({
+          title:
+            selectedLinkedPalletIds.length === 1
+              ? 'Palet asignado al contenedor correctamente'
+              : `${selectedLinkedPalletIds.length} palets asignados al contenedor correctamente`,
+        });
+        setSelectedLinkedPalletIds([]);
+      } catch (error) {
+        console.error('Error al asignar palets al contenedor:', error);
+        const msg = getErrorMessageFrom(error, 'No se pudieron asignar los palets al contenedor.');
+        notify.error({ title: 'Error al asignar al contenedor', description: msg });
+      } finally {
+        setIsAssigningToContainer(false);
+      }
+    },
+    [order?.id, selectedLinkedPalletIds, reload, queryClient, tenantId]
+  );
+
+  const handleAssignSelectedPalletsToContainer = useCallback(
+    (containerId: number | string) => {
+      if (selectedLinkedPalletIds.length === 0) {
+        notify.error({ title: 'Selecciona al menos un palet' });
+        return;
+      }
+      const selectedPalletsData = (pallets || []).filter((p) =>
+        selectedLinkedPalletIds.includes(p.id)
+      );
+      const reassignCount = selectedPalletsData.filter((p) => {
+        const currentContainerId = (p as { orderMaritimeContainerId?: number | string | null })
+          .orderMaritimeContainerId;
+        return currentContainerId != null && String(currentContainerId) !== String(containerId);
+      }).length;
+
+      if (reassignCount > 0) {
+        setPendingContainerId(containerId);
+        setPendingReassignCount(reassignCount);
+        setConfirmAction('assignToContainer');
+        setIsConfirmDialogOpen(true);
+        return;
+      }
+      executeAssignToContainer(containerId);
+    },
+    [selectedLinkedPalletIds, pallets, executeAssignToContainer]
+  );
+
   const handleClonePallet = useCallback(
     async (palletId: number | string) => {
       try {
@@ -412,10 +488,14 @@ export function useOrderPallets() {
         } finally {
           setIsDeletingSelected(false);
         }
+      } else if (confirmAction === 'assignToContainer') {
+        if (pendingContainerId !== null) await executeAssignToContainer(pendingContainerId);
       }
       setIsConfirmDialogOpen(false);
       setConfirmAction(null);
       setConfirmPalletId(null);
+      setPendingContainerId(null);
+      setPendingReassignCount(0);
     } catch (error) {
       console.error('Error al ejecutar la acción:', error);
       const msg = getErrorMessageFrom(error, 'No se pudo ejecutar la acción. Intente de nuevo.');
@@ -430,6 +510,8 @@ export function useOrderPallets() {
     onDeletePallet,
     onUnlinkPallet,
     onUnlinkAllPallets,
+    pendingContainerId,
+    executeAssignToContainer,
   ]);
 
   const handleCancelAction = useCallback(() => {
@@ -437,6 +519,8 @@ export function useOrderPallets() {
     setConfirmAction(null);
     setConfirmPalletId(null);
     setUnlinkingPalletId(null);
+    setPendingContainerId(null);
+    setPendingReassignCount(0);
   }, []);
 
   const handleOpenLinkPalletsDialog = useCallback(async () => {
@@ -838,6 +922,10 @@ export function useOrderPallets() {
   return {
     pallets,
     order,
+    maritimeContainers,
+    isAssigningToContainer,
+    pendingContainerId,
+    pendingReassignCount,
     storeOptions,
     storesLoading,
     isPalletDialogOpen,
@@ -898,6 +986,7 @@ export function useOrderPallets() {
     handleCloseBulkPalletLabelDialog,
     handleUnlinkSelectedPallets,
     handleDeleteSelectedPallets,
+    handleAssignSelectedPalletsToContainer,
     handleClonePallet,
     handleConfirmAction,
     handleCancelAction,

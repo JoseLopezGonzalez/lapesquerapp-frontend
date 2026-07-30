@@ -67,6 +67,8 @@ export interface MaritimeContainer {
   orderId: number | string;
   containerNumber: string;
   sealNumber: string | null;
+  /** Solo presente cuando la relación `pallets` viene cargada (p. ej. detalle del pedido) */
+  palletIds?: (number | string)[] | null;
   createdAt: string;
   updatedAt: string;
 }

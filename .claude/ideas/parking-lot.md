@@ -72,6 +72,18 @@ y lista para implementar; una idea aquí es solo una nota para no perderla.
 - **Módulo:** Global
 - **Descripción:** En entidades con campo/atributo de estado activo, al abrir la edición no se carga correctamente el estado actual; al pulsar guardar se pierde y la instancia pasa al estado opuesto o se desactiva.
 
+### IDEA-011 — Skeleton de "Datos de envío" (exportación marítima) no refleja el bloque de consignatario/agente de aduanas
+- **Fecha:** 2026-07-30
+- **Tipo:** Mejora
+- **Módulo:** Ventas
+- **Descripción:** En `MaritimeShippingDetailForm.tsx` (pestaña "Exportación marítima" del pedido, GAP-126), el `Skeleton` de carga inicial solo reserva espacio para los 6 campos originales de buque/puerto — no incluye placeholder para el `Separator` + Combobox de agente de aduanas + 2 campos de consignatario final añadidos en GAP-126. Provoca un salto de layout (la Card crece de golpe) al terminar de cargar. Señalado como fricción no bloqueante en la Full UX Review de GAP-126.
+
+### IDEA-012 — Grid de 6 campos en "Datos de envío" (exportación marítima) sin variante mobile
+- **Fecha:** 2026-07-30
+- **Tipo:** Bug
+- **Módulo:** Ventas
+- **Descripción:** En `MaritimeShippingDetailForm.tsx`, los 6 campos originales de buque/puerto (heredados de GAP-124) siguen en `grid grid-cols-2` fijo sin variante `sm:` — mismo problema de fondo que el bloqueante ya corregido en GAP-126 para el bloque de consignatario, pero aquí con impacto menor porque los valores son cortos (p. ej. "Vigo", "V-2026-045"). Aplicar el mismo fix (`grid-cols-1 sm:grid-cols-2`). Relacionado con PL-035 (`project-learnings.md`).
+
 ---
 
 ## ✅ Promoted

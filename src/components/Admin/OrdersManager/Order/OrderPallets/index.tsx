@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,6 +26,10 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
   const {
     pallets,
     order,
+    maritimeContainers,
+    isAssigningToContainer,
+    pendingContainerId,
+    pendingReassignCount,
     storeOptions,
     storesLoading,
     isPalletDialogOpen,
@@ -85,6 +90,7 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
     handleCloseBulkPalletLabelDialog,
     handleUnlinkSelectedPallets,
     handleDeleteSelectedPallets,
+    handleAssignSelectedPalletsToContainer,
     handleClonePallet,
     handleConfirmAction,
     handleCancelAction,
@@ -102,6 +108,26 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
     handleCloseCreateFromForecastDialog,
     handleCreatePalletFromForecast,
   } = api;
+
+  const showContainerColumn = order?.orderType === 'maritime_export';
+  const containerNumberByPalletId = useMemo(() => {
+    const map = new Map<string, string>();
+    if (!showContainerColumn) return map;
+    const containerNumberById = new Map(
+      maritimeContainers.map((container) => [String(container.id), container.containerNumber])
+    );
+    (pallets || []).forEach((pallet) => {
+      const containerId = (pallet as { orderMaritimeContainerId?: number | string | null })
+        .orderMaritimeContainerId;
+      if (containerId == null) return;
+      const containerNumber = containerNumberById.get(String(containerId));
+      if (containerNumber) map.set(String(pallet.id), containerNumber);
+    });
+    return map;
+  }, [showContainerColumn, maritimeContainers, pallets]);
+  const pendingContainerNumber = maritimeContainers.find(
+    (container) => String(container.id) === String(pendingContainerId)
+  )?.containerNumber;
 
   if (!mounted) return null;
 
@@ -126,6 +152,8 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
               onToggleSelection={handleToggleLinkedPalletSelection}
               isCloning={isCloning}
               unlinkingPalletId={unlinkingPalletId}
+              showContainerColumn={showContainerColumn}
+              containerNumberByPalletId={containerNumberByPalletId}
             />
           ) : (
             <ScrollArea className="min-h-0 flex-1">
@@ -146,6 +174,8 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
                   onToggleSelection={handleToggleLinkedPalletSelection}
                   isCloning={isCloning}
                   unlinkingPalletId={unlinkingPalletId}
+                  showContainerColumn={showContainerColumn}
+                  containerNumberByPalletId={containerNumberByPalletId}
                 />
               </div>
             </ScrollArea>
@@ -169,6 +199,9 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
             onCancelSelection={handleDeselectAllLinkedPallets}
             isUnlinkingSelected={isUnlinkingSelected}
             isDeletingSelected={isDeletingSelected}
+            maritimeContainers={maritimeContainers}
+            onAssignSelectedToContainer={handleAssignSelectedPalletsToContainer}
+            isAssigningToContainer={isAssigningToContainer}
           />
         </div>
       ) : (
@@ -192,6 +225,9 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
             onCancelSelection={handleDeselectAllLinkedPallets}
             isUnlinkingSelected={isUnlinkingSelected}
             isDeletingSelected={isDeletingSelected}
+            maritimeContainers={maritimeContainers}
+            onAssignSelectedToContainer={handleAssignSelectedPalletsToContainer}
+            isAssigningToContainer={isAssigningToContainer}
           />
           <CardContent className="flex-1 overflow-auto">
             <OrderPalletsContent
@@ -212,6 +248,8 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
               onDeselectAll={handleDeselectAllLinkedPallets}
               isCloning={isCloning}
               unlinkingPalletId={unlinkingPalletId}
+              showContainerColumn={showContainerColumn}
+              containerNumberByPalletId={containerNumberByPalletId}
             />
           </CardContent>
         </Card>
@@ -261,7 +299,9 @@ const OrderPallets = ({ readOnly = false, canViewCostData = true }: OrderPallets
         isUnlinking={unlinkingPalletId !== null || isUnlinkingAll}
         unlinkAllCount={confirmAction === 'unlinkAll' ? pallets.length : undefined}
         selectedCount={selectedLinkedPalletIds.length}
-        isProcessing={isDeletingSelected || isUnlinkingSelected}
+        isProcessing={isDeletingSelected || isUnlinkingSelected || isAssigningToContainer}
+        targetContainerNumber={pendingContainerNumber}
+        reassignCount={pendingReassignCount}
       />
 
       {/* Bulk PalletLabelDialog (etiqueta no-expedición sobre la selección) */}

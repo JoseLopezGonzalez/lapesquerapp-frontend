@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/Utilities/EmptyState';
 import {
   Dialog,
@@ -29,8 +30,15 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Loader2, Pencil, Plus, RefreshCw, Trash2 } from 'lucide-react';
 import { PiShippingContainer } from 'react-icons/pi';
+import { BsFileEarmarkPdf } from 'react-icons/bs';
+import { useSession } from 'next-auth/react';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { useOrderMaritimeContainers } from '@/hooks/orders/useOrderMaritimeContainers';
+import {
+  orderMaritimeContainerService,
+  getErrorMessage,
+} from '@/services/domain/orders/orderMaritimeContainerService';
+import { notify } from '@/lib/notifications';
 import {
   maritimeContainerSchema,
   type MaritimeContainerFormData,
@@ -49,9 +57,16 @@ export default function MaritimeContainersList({
   const { containers, isLoading, error, refetch, createMutation, updateMutation, deleteMutation } =
     useOrderMaritimeContainers(orderId);
   const { isMobile } = useIsMobileSafe();
+  const { data: session } = useSession();
+  const rawRole = session?.user?.role;
+  const roles = Array.isArray(rawRole) ? rawRole : rawRole ? [rawRole] : [];
+  const canDownloadPackingList = !roles.includes('comercial');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingContainer, setEditingContainer] = useState<MaritimeContainer | null>(null);
   const [deletingContainer, setDeletingContainer] = useState<MaritimeContainer | null>(null);
+  const [downloadingContainerId, setDownloadingContainerId] = useState<number | string | null>(
+    null
+  );
 
   const {
     register,
@@ -91,6 +106,26 @@ export default function MaritimeContainersList({
     if (!deletingContainer) return;
     await deleteMutation.mutateAsync(deletingContainer.id);
     setDeletingContainer(null);
+  };
+
+  const handleDownloadPackingList = async (container: MaritimeContainer) => {
+    if (!orderId) return;
+    setDownloadingContainerId(container.id);
+    try {
+      await orderMaritimeContainerService.downloadExportPackingList(
+        orderId,
+        container.id,
+        `Export-Packing-List-${container.containerNumber}`
+      );
+    } catch (error) {
+      notify.error({
+        title: 'Error al descargar el Export Packing List',
+        description:
+          getErrorMessage(error as Record<string, unknown>) || 'No se pudo generar el documento.',
+      });
+    } finally {
+      setDownloadingContainerId(null);
+    }
   };
 
   return (
@@ -149,29 +184,59 @@ export default function MaritimeContainersList({
                       {container.sealNumber ? `Precinto: ${container.sealNumber}` : 'Sin precinto'}
                     </p>
                   </div>
+                  <Badge variant="outline" className="shrink-0">
+                    {container.palletIds?.length ?? 0}{' '}
+                    {(container.palletIds?.length ?? 0) === 1 ? 'palet' : 'palets'}
+                  </Badge>
                 </div>
-                {!readOnly && (
-                  <div className="flex shrink-0 gap-1">
+                <div className="flex shrink-0 items-center gap-1">
+                  {canDownloadPackingList && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      aria-label="Editar contenedor"
-                      onClick={() => openEditDialog(container)}
+                      aria-label={`Descargar Export Packing List de ${container.containerNumber}`}
+                      title={
+                        container.palletIds?.length === 0
+                          ? 'Asigna al menos un palet a este contenedor para generar el documento'
+                          : 'Descargar Export Packing List'
+                      }
+                      disabled={
+                        container.palletIds?.length === 0 ||
+                        downloadingContainerId === container.id
+                      }
+                      onClick={() => handleDownloadPackingList(container)}
                     >
-                      <Pencil className="size-4" />
+                      {downloadingContainerId === container.id ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <BsFileEarmarkPdf className="size-4" />
+                      )}
                     </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Eliminar contenedor"
-                      onClick={() => setDeletingContainer(container)}
-                    >
-                      <Trash2 className="text-destructive size-4" />
-                    </Button>
-                  </div>
-                )}
+                  )}
+                  {!readOnly && (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Editar contenedor"
+                        onClick={() => openEditDialog(container)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Eliminar contenedor"
+                        onClick={() => setDeletingContainer(container)}
+                      >
+                        <Trash2 className="text-destructive size-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>

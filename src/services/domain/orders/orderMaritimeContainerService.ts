@@ -1,7 +1,7 @@
 import { API_URL_V2 } from '@/configs/config';
 import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { apiRequest, ApiError, getErrorMessage } from '@/lib/api/apiHelpers';
-import { deleteEntityGeneric } from '@/services/generic/entityService';
+import { deleteEntityGeneric, downloadFileGeneric } from '@/services/generic/entityService';
 import type {
   MaritimeContainer,
   MaritimeContainerCreatePayload,
@@ -55,5 +55,31 @@ export const orderMaritimeContainerService = {
   async delete(orderId: number | string, containerId: number | string): Promise<void> {
     const token = await getAuthToken();
     await deleteEntityGeneric(`${endpoint(orderId)}/${containerId}`, undefined, token);
+  },
+
+  async assignPalletsToContainer(
+    orderId: number | string,
+    containerId: number | string,
+    palletIds: (number | string)[]
+  ): Promise<MaritimeContainer> {
+    const token = await getAuthToken();
+    const response: { data: MaritimeContainer } = await apiRequest(
+      `${endpoint(orderId)}/${containerId}/pallets`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ palletIds }),
+      }
+    );
+    return response.data;
+  },
+
+  async downloadExportPackingList(
+    orderId: number | string,
+    containerId: number | string,
+    fileName: string
+  ): Promise<boolean> {
+    const url = `${API_URL_V2}orders/${orderId}/maritime-containers/${containerId}/pdf/export-packing-list`;
+    return downloadFileGeneric(url, fileName, 'pdf');
   },
 };

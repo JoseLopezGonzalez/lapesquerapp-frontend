@@ -44,6 +44,9 @@ interface OrderPalletsContentProps {
   onDeselectAll?: () => void;
   isCloning?: boolean;
   unlinkingPalletId?: number | string | null;
+  /** Solo se muestra la columna/dato de contenedor cuando el pedido es `maritime_export` */
+  showContainerColumn?: boolean;
+  containerNumberByPalletId?: Map<string, string>;
 }
 
 const OrderPalletsContent = ({
@@ -64,6 +67,8 @@ const OrderPalletsContent = ({
   onDeselectAll,
   isCloning,
   unlinkingPalletId,
+  showContainerColumn = false,
+  containerNumberByPalletId,
 }: OrderPalletsContentProps) => {
   if (pallets.length === 0) {
     return (
@@ -99,6 +104,11 @@ const OrderPalletsContent = ({
             onToggleSelection={onToggleSelection}
             isCloning={isCloning}
             isUnlinking={unlinkingPalletId === pallet.id}
+            containerLabel={
+              showContainerColumn
+                ? (containerNumberByPalletId?.get(String(pallet.id)) ?? null)
+                : undefined
+            }
           />
         ))}
       </div>
@@ -130,6 +140,7 @@ const OrderPalletsContent = ({
             <TableHead>Productos</TableHead>
             <TableHead>Lotes</TableHead>
             <TableHead>Observaciones</TableHead>
+            {showContainerColumn && <TableHead>Contenedor</TableHead>}
             <TableHead className="text-right">Cajas</TableHead>
             <TableHead className="text-right">Peso Neto</TableHead>
             {canViewCostData && (
@@ -158,6 +169,12 @@ const OrderPalletsContent = ({
               onToggleSelection={onToggleSelection}
               isCloning={isCloning}
               unlinkingPalletId={unlinkingPalletId}
+              showContainerColumn={showContainerColumn}
+              containerLabel={
+                showContainerColumn
+                  ? (containerNumberByPalletId?.get(String(pallet.id)) ?? null)
+                  : undefined
+              }
             />
           ))}
         </TableBody>
