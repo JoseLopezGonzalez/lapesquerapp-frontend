@@ -27,7 +27,9 @@ export function getCostCatalog(token, params = {}) {
 
   return apiGet(`${API_URL_V2}cost-catalog`, token, normalizedParams, {
     transform: (data) => {
-      const catalog = data.data || data || [];
+      const payload = data.data || data || [];
+      // Laravel pagina el catálogo: payload es { current_page, data: [...], ... }, no un array directamente
+      const catalog = Array.isArray(payload) ? payload : payload.data || [];
       return {
         ...data,
         data: Array.isArray(catalog) ? catalog.map(normalizeCostCatalog) : [],
