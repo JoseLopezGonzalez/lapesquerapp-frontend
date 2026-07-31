@@ -116,7 +116,9 @@ export function deleteCostCatalogItem(catalogId, token) {
 export function getProductionCosts(token, params = {}) {
   return apiGet(`${API_URL_V2}production-costs`, token, params, {
     transform: (data) => {
-      const costs = data.data || data || [];
+      const payload = data.data || data || [];
+      // Laravel pagina los costes: payload es { current_page, data: [...], ... }, no un array directamente
+      const costs = Array.isArray(payload) ? payload : payload.data || [];
       return {
         ...data,
         data: Array.isArray(costs) ? costs.map(normalizeProductionCost) : [],
