@@ -1967,6 +1967,8 @@ export const barcos = [
     codVendiduria: 'CF',
   },
   {
+    cod: '591',
+    codBrisapp: '218',
     barco: 'GAVIOTA',
     vendiduria: 'CONGELADOS FRIPERGA, S.L.',
     codVendiduria: 'CF',
