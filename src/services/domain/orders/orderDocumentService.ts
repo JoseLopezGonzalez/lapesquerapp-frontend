@@ -1,6 +1,8 @@
 import { API_URL_V2 } from '@/configs/config';
-import { getErrorMessage } from '@/lib/api/apiHelpers';
+import { apiPost, getErrorMessage } from '@/lib/api/apiHelpers';
+import { getAuthToken } from '@/lib/auth/getAuthToken';
 import { performActionGeneric, downloadFileGeneric } from '@/services/generic/entityService';
+import type { SendMaritimeExportDocumentsPayload } from '@/types/orders';
 
 function getOrderExportUrl(
   orderId: number | string,
@@ -64,5 +66,22 @@ export const orderDocumentService = {
     ).catch(catchSendError);
     const data = (await handleSendResponse(response)) as { data: unknown };
     return data.data;
+  },
+
+  /**
+   * Envío síncrono (puede tardar varios segundos: genera un PDF de Export Packing List
+   * por contenedor antes de enviar). Usa apiPost en vez de performActionGeneric para
+   * conservar el ApiError con .data.errors intacto y poder mapear errores 422 por campo.
+   */
+  async sendMaritimeExportDocuments(
+    orderId: number | string,
+    payload: SendMaritimeExportDocumentsPayload
+  ): Promise<{ message: string }> {
+    const token = await getAuthToken();
+    return apiPost(
+      `${API_URL_V2}orders/${orderId}/send-maritime-export-documents`,
+      token,
+      payload
+    );
   },
 };

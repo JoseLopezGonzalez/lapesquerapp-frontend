@@ -51,6 +51,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -93,6 +94,7 @@ import { formatDateHour } from '@/helpers/formats/dates/formatDates';
 import { usePallet, saveDiscountPreferences } from '@/hooks/usePallet';
 import { usePalletTimeline } from '@/hooks/usePalletTimeline';
 import type { PalletBox, PalletState } from '@/hooks/pallets/palletHelpers';
+import { STORAGE_KEYS, getStoredValue, setStoredValue } from '@/hooks/pallets/palletHelpers';
 import { usePrintElement } from '@/hooks/usePrintElement';
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 import SummaryPieChart from './SummaryPieChart';
@@ -377,6 +379,19 @@ export default function PalletView({
   const [selectedBoxIds, setSelectedBoxIds] = useState<(number | string)[]>([]);
   const [deleteSelectedBoxesConfirmOpen, setDeleteSelectedBoxesConfirmOpen] = useState(false);
 
+  // Conmutador de columna "Peso Bruto" — oculta por defecto para no sobrecargar la tabla,
+  // preferencia persistida en localStorage (no es un dato del palet).
+  const [showGrossWeightColumn, setShowGrossWeightColumn] = useState(false);
+
+  useEffect(() => {
+    setShowGrossWeightColumn(getStoredValue(STORAGE_KEYS.showGrossWeightColumn, false));
+  }, []);
+
+  const handleToggleShowGrossWeightColumn = (checked: boolean) => {
+    setShowGrossWeightColumn(checked);
+    setStoredValue(STORAGE_KEYS.showGrossWeightColumn, checked);
+  };
+
   useEffect(() => {
     if (addBoxesTab === 'lector' && scannerInputRef.current) {
       scannerInputRef.current.focus();
@@ -435,6 +450,20 @@ export default function PalletView({
       return;
     }
     editPallet.box.edit.netWeight(boxId, netWeight);
+  };
+
+  const handleOnChangeBoxGrossWeight = (boxId: number | string, grossWeight: number | string) => {
+    if (isReadOnly) return;
+    // Check if box is available before allowing edit
+    const box = temporalPallet?.boxes?.find((b) => b.id === boxId);
+    if (box && !isBoxAvailable(box)) {
+      notify.error({
+        title: 'Caja en uso',
+        description: `No se puede modificar el peso bruto de la caja #${boxId}: está siendo usada en producción.`,
+      });
+      return;
+    }
+    editPallet.box.edit.grossWeight(boxId, grossWeight);
   };
 
   const handleOnChangeBoxManualCost = (boxId: number | string, value: number | string) => {
@@ -631,10 +660,16 @@ export default function PalletView({
       }
       if (canEditCost && (boxFilters.cost.min !== '' || boxFilters.cost.max !== '')) {
         const cost = getBoxCostForFilter(box);
-        if (boxFilters.cost.min !== '' && (cost === null || cost < parseFloat(boxFilters.cost.min))) {
+        if (
+          boxFilters.cost.min !== '' &&
+          (cost === null || cost < parseFloat(boxFilters.cost.min))
+        ) {
           return false;
         }
-        if (boxFilters.cost.max !== '' && (cost === null || cost > parseFloat(boxFilters.cost.max))) {
+        if (
+          boxFilters.cost.max !== '' &&
+          (cost === null || cost > parseFloat(boxFilters.cost.max))
+        ) {
           return false;
         }
       }
@@ -1397,6 +1432,23 @@ export default function PalletView({
                                     disabled={isReadOnly || !boxAvailable}
                                   />
                                 </TableCell>
+                                {showGrossWeightColumn && (
+                                  <TableCell>
+                                    <Input
+                                      type="number"
+                                      defaultValue={box.grossWeight ?? box.netWeight}
+                                      onClick={(e) => e.stopPropagation()}
+                                      onChange={(e) => {
+                                        handleOnChangeBoxGrossWeight(
+                                          box.id,
+                                          parseFloat(e.target.value)
+                                        );
+                                      }}
+                                      className="w-full"
+                                      disabled={isReadOnly || !boxAvailable}
+                                    />
+                                  </TableCell>
+                                )}
                                 {canEditCost && (
                                   <TableCell onClick={(e) => e.stopPropagation()}>
                                     {box.traceableCostPerKg != null ? (
@@ -1512,6 +1564,9 @@ export default function PalletView({
                               <TableCell>{box.lot}</TableCell>
                               <TableCell>{box.gs1128}</TableCell>
                               <TableCell>{box.netWeight} kg</TableCell>
+                              {showGrossWeightColumn && (
+                                <TableCell>{box.grossWeight ?? box.netWeight} kg</TableCell>
+                              )}
                               {canEditCost && (
                                 <TableCell className="text-right text-sm">
                                   {box.traceableCostPerKg != null ? (
@@ -1595,31 +1650,46 @@ export default function PalletView({
                           <>
                             <div className="flex flex-shrink-0 items-center justify-between">
                               <h3 className="text-lg font-medium">Cajas en el Palet</h3>
-                              <div className="text-muted-foreground bg-muted/50 flex items-center rounded-full px-4 py-1 text-sm">
-                                <span>
+                              <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                  <Switch
+                                    id="show-gross-weight-column"
+                                    checked={showGrossWeightColumn}
+                                    onCheckedChange={handleToggleShowGrossWeightColumn}
+                                  />
+                                  <Label
+                                    htmlFor="show-gross-weight-column"
+                                    className="text-sm font-normal"
+                                  >
+                                    Mostrar peso bruto
+                                  </Label>
+                                </div>
+                                <div className="text-muted-foreground bg-muted/50 flex items-center rounded-full px-4 py-1 text-sm">
+                                  <span>
+                                    <span className="text-foreground font-medium">
+                                      {summaryData.numberOfBoxes}
+                                    </span>{' '}
+                                    cajas
+                                  </span>
+                                  <Separator orientation="vertical" className="mx-2 h-3" />
                                   <span className="text-foreground font-medium">
-                                    {summaryData.numberOfBoxes}
-                                  </span>{' '}
-                                  cajas
-                                </span>
-                                <Separator orientation="vertical" className="mx-2 h-3" />
-                                <span className="text-foreground font-medium">
-                                  {formatDecimalWeight(summaryData.netWeight)}
-                                </span>
-                                <Separator orientation="vertical" className="mx-2 h-3" />
-                                <span>
-                                  <span className="text-foreground font-medium">
-                                    {summaryData.totalProducts}
-                                  </span>{' '}
-                                  productos
-                                </span>
-                                <Separator orientation="vertical" className="mx-2 h-3" />
-                                <span>
-                                  <span className="text-foreground font-medium">
-                                    {summaryData.totalLots}
-                                  </span>{' '}
-                                  lotes
-                                </span>
+                                    {formatDecimalWeight(summaryData.netWeight)}
+                                  </span>
+                                  <Separator orientation="vertical" className="mx-2 h-3" />
+                                  <span>
+                                    <span className="text-foreground font-medium">
+                                      {summaryData.totalProducts}
+                                    </span>{' '}
+                                    productos
+                                  </span>
+                                  <Separator orientation="vertical" className="mx-2 h-3" />
+                                  <span>
+                                    <span className="text-foreground font-medium">
+                                      {summaryData.totalLots}
+                                    </span>{' '}
+                                    lotes
+                                  </span>
+                                </div>
                               </div>
                             </div>
 
@@ -1665,6 +1735,11 @@ export default function PalletView({
                                           <TableHead className="w-[100px] min-w-[100px]">
                                             Peso Neto
                                           </TableHead>
+                                          {showGrossWeightColumn && (
+                                            <TableHead className="w-[100px] min-w-[100px]">
+                                              Peso Bruto
+                                            </TableHead>
+                                          )}
                                           {canEditCost && (
                                             <TableHead className="w-[110px] text-right">
                                               Coste/kg
@@ -1677,7 +1752,10 @@ export default function PalletView({
                                         {temporalPallet.boxes.length === 0 ? (
                                           <TableRow>
                                             <TableCell
-                                              colSpan={canEditCost ? 6 : 5}
+                                              colSpan={
+                                                (canEditCost ? 6 : 5) +
+                                                (showGrossWeightColumn ? 1 : 0)
+                                              }
                                               className="p-0"
                                             >
                                               <div className="py-12">
@@ -1715,6 +1793,11 @@ export default function PalletView({
                                                 <TableCell>{box.lot}</TableCell>
                                                 <TableCell>{box.gs1128}</TableCell>
                                                 <TableCell>{box.netWeight} kg</TableCell>
+                                                {showGrossWeightColumn && (
+                                                  <TableCell>
+                                                    {box.grossWeight ?? box.netWeight} kg
+                                                  </TableCell>
+                                                )}
                                                 {canEditCost && (
                                                   <TableCell className="text-right text-sm">
                                                     {box.traceableCostPerKg != null ? (
@@ -1896,7 +1979,10 @@ export default function PalletView({
                                                   options={allBoxLots}
                                                   value={boxFilters.lot}
                                                   onChange={(value) =>
-                                                    setBoxFilters((prev) => ({ ...prev, lot: value }))
+                                                    setBoxFilters((prev) => ({
+                                                      ...prev,
+                                                      lot: value,
+                                                    }))
                                                   }
                                                 />
                                               </div>
@@ -1935,6 +2021,11 @@ export default function PalletView({
                                                 />
                                               </div>
                                             </TableHead>
+                                            {showGrossWeightColumn && (
+                                              <TableHead className="w-[100px] min-w-[100px]">
+                                                Peso Bruto
+                                              </TableHead>
+                                            )}
                                             {canEditCost && (
                                               <TableHead className="w-[110px] text-right">
                                                 <div className="flex items-center justify-end gap-1">
@@ -1960,7 +2051,13 @@ export default function PalletView({
                                         <TableBody>
                                           {filteredAvailableBoxes.length === 0 ? (
                                             <TableRow>
-                                              <TableCell colSpan={canEditCost ? 7 : 6} className="p-0">
+                                              <TableCell
+                                                colSpan={
+                                                  (canEditCost ? 7 : 6) +
+                                                  (showGrossWeightColumn ? 1 : 0)
+                                                }
+                                                className="p-0"
+                                              >
                                                 <div className="py-12">
                                                   <EmptyState
                                                     icon={
@@ -1976,7 +2073,9 @@ export default function PalletView({
                                               </TableCell>
                                             </TableRow>
                                           ) : (
-                                            filteredAvailableBoxes.map((box) => renderBoxRow(box, true))
+                                            filteredAvailableBoxes.map((box) =>
+                                              renderBoxRow(box, true)
+                                            )
                                           )}
                                         </TableBody>
                                       </Table>
@@ -2021,6 +2120,11 @@ export default function PalletView({
                                             <TableHead className="w-[100px] min-w-[100px]">
                                               Peso Neto
                                             </TableHead>
+                                            {showGrossWeightColumn && (
+                                              <TableHead className="w-[100px] min-w-[100px]">
+                                                Peso Bruto
+                                              </TableHead>
+                                            )}
                                           </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -2037,7 +2141,10 @@ export default function PalletView({
                                                 );
                                                 return (
                                                   <TableRow className="bg-orange-50/50 hover:bg-orange-50">
-                                                    <TableCell colSpan={4} className="py-2">
+                                                    <TableCell
+                                                      colSpan={showGrossWeightColumn ? 5 : 4}
+                                                      className="py-2"
+                                                    >
                                                       <div className="flex items-center gap-2 font-medium text-orange-900">
                                                         <Factory className="h-4 w-4" />
                                                         <span>
@@ -2093,6 +2200,11 @@ export default function PalletView({
                                                     <TableCell>{box.lot}</TableCell>
                                                     <TableCell>{box.gs1128}</TableCell>
                                                     <TableCell>{box.netWeight} kg</TableCell>
+                                                    {showGrossWeightColumn && (
+                                                      <TableCell>
+                                                        {box.grossWeight ?? box.netWeight} kg
+                                                      </TableCell>
+                                                    )}
                                                   </TableRow>
                                                 );
                                               })}
@@ -2198,6 +2310,21 @@ export default function PalletView({
                               >
                                 <Plus className="h-5 w-5" />
                                 <span>Sumar/Restar Peso</span>
+                              </Button>
+                              <Button
+                                variant={
+                                  bulkActionType === 'grossWeightTare' ? 'default' : 'outline'
+                                }
+                                onClick={() => {
+                                  setBulkActionType('grossWeightTare');
+                                  setBulkActionValue('');
+                                }}
+                                size="sm"
+                                className="flex h-8 items-center justify-center gap-2 px-3 text-xs"
+                                disabled={isReadOnly}
+                              >
+                                <Box className="h-5 w-5" />
+                                <span>Tara de Caja</span>
                               </Button>
                               <Button
                                 variant={bulkActionType === 'product' ? 'default' : 'outline'}
@@ -2314,6 +2441,24 @@ export default function PalletView({
                                     />
                                   </div>
                                 </>
+                              ) : bulkActionType === 'grossWeightTare' ? (
+                                <div className="space-y-3">
+                                  <div className="space-y-2">
+                                    <Label>Tara de caja (kg)</Label>
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={bulkActionValue}
+                                      onChange={(e) => setBulkActionValue(e.target.value)}
+                                      placeholder="0.00"
+                                      disabled={isReadOnly}
+                                    />
+                                  </div>
+                                  <p className="text-muted-foreground text-xs">
+                                    El peso bruto se calculará como peso neto + tara (cartón,
+                                    envases y plásticos incluidos) para cada caja.
+                                  </p>
+                                </div>
                               ) : (
                                 <div className="space-y-2">
                                   <Label>
@@ -2388,6 +2533,13 @@ export default function PalletView({
                                         oldProductId,
                                         newProductId
                                       );
+                                    } else if (bulkActionType === 'grossWeightTare') {
+                                      const tareValue = parseFloat(bulkActionValue);
+                                      if (isNaN(tareValue) || tareValue < 0) return;
+                                      editPallet.box.bulkEdit.setGrossWeightFromTare(
+                                        targetBoxIds,
+                                        tareValue
+                                      );
                                     } else {
                                       if (!bulkActionValue || bulkActionValue.trim() === '') {
                                         return;
@@ -2429,7 +2581,11 @@ export default function PalletView({
                                         parseFloat(bulkActionValue) < 0
                                       : bulkActionType === 'product'
                                         ? !oldProductId || !newProductId
-                                        : !bulkActionValue || bulkActionValue.trim() === '')
+                                        : bulkActionType === 'grossWeightTare'
+                                          ? bulkActionValue === '' ||
+                                            isNaN(parseFloat(bulkActionValue)) ||
+                                            parseFloat(bulkActionValue) < 0
+                                          : !bulkActionValue || bulkActionValue.trim() === '')
                                   }
                                 >
                                   {selectedBoxIds.length > 0
@@ -2478,6 +2634,10 @@ export default function PalletView({
                               todas las cajas disponibles
                             </li>
                             <li>
+                              <strong>Tara de Caja:</strong> Calcula el peso bruto (neto + tara) de
+                              todas las cajas disponibles
+                            </li>
+                            <li>
                               <strong>Cambiar Producto:</strong> Cambia un producto por otro en
                               todas las cajas disponibles que tengan ese producto
                             </li>
@@ -2510,13 +2670,21 @@ export default function PalletView({
                                 <TableHead className="w-[170px] min-w-[170px]">Lote</TableHead>
                                 <TableHead className="min-w-[150px]">GS1 128</TableHead>
                                 <TableHead className="w-[100px] min-w-[100px]">Peso Neto</TableHead>
+                                {showGrossWeightColumn && (
+                                  <TableHead className="w-[100px] min-w-[100px]">
+                                    Peso Bruto
+                                  </TableHead>
+                                )}
                                 <TableHead className="min-w-[150px]">Estado</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {temporalPallet.boxes.length === 0 ? (
                                 <TableRow>
-                                  <TableCell colSpan={5} className="p-0">
+                                  <TableCell
+                                    colSpan={showGrossWeightColumn ? 6 : 5}
+                                    className="p-0"
+                                  >
                                     <div className="py-12">
                                       <EmptyState
                                         icon={
@@ -2552,6 +2720,9 @@ export default function PalletView({
                                       <TableCell>{box.lot}</TableCell>
                                       <TableCell>{box.gs1128}</TableCell>
                                       <TableCell>{box.netWeight} kg</TableCell>
+                                      {showGrossWeightColumn && (
+                                        <TableCell>{box.grossWeight ?? box.netWeight} kg</TableCell>
+                                      )}
                                       {canEditCost && (
                                         <TableCell className="text-right text-sm">
                                           {box.traceableCostPerKg != null ? (
@@ -3008,6 +3179,7 @@ export default function PalletView({
                                   <TableHead>Lote</TableHead>
                                   <TableHead>GS1 128</TableHead>
                                   <TableHead>Peso Neto</TableHead>
+                                  {showGrossWeightColumn && <TableHead>Peso Bruto</TableHead>}
                                   <TableHead>Estado</TableHead>
                                   <TableHead className="w-[100px]">Acciones</TableHead>
                                 </TableRow>
@@ -3034,6 +3206,9 @@ export default function PalletView({
                                       <TableCell>{box.lot}</TableCell>
                                       <TableCell>{box.gs1128}</TableCell>
                                       <TableCell>{box.netWeight} kg</TableCell>
+                                      {showGrossWeightColumn && (
+                                        <TableCell>{box.grossWeight ?? box.netWeight} kg</TableCell>
+                                      )}
                                       <TableCell>
                                         {!boxAvailable && productionInfo ? (
                                           <TooltipProvider>
@@ -3231,7 +3406,10 @@ export default function PalletView({
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar las cajas seleccionadas?</AlertDialogTitle>
             <AlertDialogDescription>
-              Se {selectedBoxIds.length === 1 ? 'eliminará 1 caja' : `eliminarán ${selectedBoxIds.length} cajas`}{' '}
+              Se{' '}
+              {selectedBoxIds.length === 1
+                ? 'eliminará 1 caja'
+                : `eliminarán ${selectedBoxIds.length} cajas`}{' '}
               del palet. Esta acción no se puede deshacer una vez guardado.
             </AlertDialogDescription>
           </AlertDialogHeader>

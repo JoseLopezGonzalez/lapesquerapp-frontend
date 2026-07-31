@@ -21,6 +21,7 @@ export interface EditBoxMethods {
   product: (boxId: number | string, product: { id: number | string; name: string }) => void;
   lot: (boxId: number | string, lot: string) => void;
   netWeight: (boxId: number | string, netWeight: unknown) => void;
+  grossWeight: (boxId: number | string, grossWeight: unknown) => void;
   manualCostPerKg: (boxId: number | string, value: unknown) => void;
 }
 
@@ -34,6 +35,7 @@ export interface BulkEditBoxesMethods {
     newProductId: number | string
   ) => void;
   setManualCostPerKg: (boxIds: (number | string)[] | null, cost: number | null) => void;
+  setGrossWeightFromTare: (boxIds: (number | string)[] | null, tare: unknown) => void;
 }
 
 export interface UsePalletBoxOperationsResult {
@@ -230,6 +232,20 @@ export function usePalletBoxOperations({
                       gs1128: getGs1128(box.product!.id, box.lot, roundedWeight),
                     }
                   : box
+              ),
+            })
+          : prev
+      );
+    },
+    grossWeight: (boxId, grossWeight) => {
+      if (!temporalPallet) return;
+      const roundedWeight = roundToTwoDecimals(grossWeight);
+      setTemporalPallet((prev) =>
+        prev
+          ? recalculatePalletStats({
+              ...prev,
+              boxes: prev.boxes.map((box) =>
+                box.id === boxId ? { ...box, grossWeight: roundedWeight } : box
               ),
             })
           : prev
@@ -516,6 +532,49 @@ export function usePalletBoxOperations({
           cost != null
             ? `${cost} €/kg asignado a ${boxesToEdit.length} caja${boxesToEdit.length !== 1 ? 's' : ''}${skippedMsg}.`
             : `Coste manual eliminado de ${boxesToEdit.length} caja${boxesToEdit.length !== 1 ? 's' : ''}${skippedMsg}.`,
+      });
+    },
+
+    setGrossWeightFromTare: (boxIds, tare) => {
+      if (!temporalPallet) return;
+      const boxesToEdit = boxIds
+        ? temporalPallet.boxes.filter((box) => boxIds.includes(box.id) && box.isAvailable !== false)
+        : temporalPallet.boxes.filter((box) => box.isAvailable !== false);
+
+      if (boxesToEdit.length === 0) {
+        notify.error({
+          title: 'Sin cajas para editar',
+          description:
+            'No hay cajas disponibles para editar. Solo se pueden modificar cajas que no estén en producción.',
+        });
+        return;
+      }
+
+      const parsedTare = parseDecimalInput(tare);
+      if (isNaN(parsedTare) || parsedTare < 0) {
+        notify.error({
+          title: 'Tara no válida',
+          description: 'La tara de caja debe ser un número igual o mayor que cero.',
+        });
+        return;
+      }
+
+      setTemporalPallet((prev) => {
+        if (!prev) return prev;
+        const newBoxes = prev.boxes.map((box) => {
+          if (!boxesToEdit.some((b) => b.id === box.id)) return box;
+          const currentNetWeight = parseFloat(String(box.netWeight)) || 0;
+          return {
+            ...box,
+            grossWeight: roundToTwoDecimals(currentNetWeight + parsedTare),
+          };
+        });
+        return recalculatePalletStats({ ...prev, boxes: newBoxes });
+      });
+
+      notify.success({
+        title: 'Peso bruto calculado',
+        description: `Se ha calculado el peso bruto (neto + ${parsedTare} kg de tara) en ${boxesToEdit.length} ${boxesToEdit.length === 1 ? 'caja disponible' : 'cajas disponibles'}.`,
       });
     },
   };

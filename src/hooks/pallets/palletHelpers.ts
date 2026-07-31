@@ -61,6 +61,7 @@ export const STORAGE_KEYS = {
   showBoxTare: 'pallet_creation_showBoxTare',
   palletWeight: 'pallet_creation_palletWeight',
   boxTare: 'pallet_creation_boxTare',
+  showGrossWeightColumn: 'pallet_boxTable_showGrossWeight',
 };
 
 export const emptyPallet: PalletState = {

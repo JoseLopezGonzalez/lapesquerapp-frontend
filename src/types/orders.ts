@@ -91,6 +91,13 @@ export interface MaritimeContainerUpdatePayload {
   sealNumber?: string | null;
 }
 
+/** Payload de envío de documentación de exportación marítima al cliente (mensaje libre + adjuntos) */
+export interface SendMaritimeExportDocumentsPayload {
+  subject: string;
+  body: string;
+  attachmentIds?: number[];
+}
+
 /** Order planned product detail payload */
 export interface OrderPlannedProductDetailPayload {
   [key: string]: unknown;
