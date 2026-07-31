@@ -43,6 +43,8 @@ export const barcos = [
     codVendiduria: 'PI',
   },
   {
+    cod: '6',
+    codBrisapp: '221',
     barco: 'MANINO',
     vendiduria: 'CONGELADOS FRIPERGA, S.L.',
     codVendiduria: 'CF',
