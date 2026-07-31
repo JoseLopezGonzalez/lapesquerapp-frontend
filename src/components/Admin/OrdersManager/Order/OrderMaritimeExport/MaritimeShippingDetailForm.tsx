@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Combobox } from '@/components/Shadcn/Combobox';
 import { Save, Loader2, RefreshCw } from 'lucide-react';
 import { useOrderMaritimeShippingDetail } from '@/hooks/orders/useOrderMaritimeShippingDetail';
@@ -40,6 +41,14 @@ const FIELDS: Array<{
   { name: 'destinationCountry', label: 'País de destino', placeholder: 'ej. Puerto Rico' },
 ];
 
+const SHIPPING_LINE_NONE_VALUE = '__none__';
+
+const SHIPPING_LINE_OPTIONS: Array<{ value: 'maersk' | 'msc' | 'other'; label: string }> = [
+  { value: 'maersk', label: 'Maersk' },
+  { value: 'msc', label: 'MSC' },
+  { value: 'other', label: 'Otra' },
+];
+
 const EMPTY_VALUES: MaritimeShippingDetailFormData = {
   vesselName: '',
   voyageNumber: '',
@@ -53,6 +62,7 @@ const EMPTY_VALUES: MaritimeShippingDetailFormData = {
   customsBrokerId: null,
   ultimateConsigneeName: '',
   ultimateConsigneeAddress: '',
+  shippingLine: null,
 };
 
 export default function MaritimeShippingDetailForm({
@@ -97,11 +107,12 @@ export default function MaritimeShippingDetailForm({
       customsBrokerId: shippingDetail?.customsBrokerId ?? null,
       ultimateConsigneeName: shippingDetail?.ultimateConsigneeName ?? '',
       ultimateConsigneeAddress: shippingDetail?.ultimateConsigneeAddress ?? '',
+      shippingLine: shippingDetail?.shippingLine ?? null,
     });
   }, [isLoading, error, shippingDetail, isDirty, reset]);
 
   const onSubmit = handleSubmit((data) => {
-    // PUT de reemplazo completo — se envían siempre los 12 campos, nunca solo el que cambió.
+    // PUT de reemplazo completo — se envían siempre los 13 campos, nunca solo el que cambió.
     const payload = {
       vesselName: data.vesselName || null,
       voyageNumber: data.voyageNumber || null,
@@ -115,6 +126,7 @@ export default function MaritimeShippingDetailForm({
       customsBrokerId: data.customsBrokerId || null,
       ultimateConsigneeName: data.ultimateConsigneeName || null,
       ultimateConsigneeAddress: data.ultimateConsigneeAddress || null,
+      shippingLine: data.shippingLine || null,
     };
     upsertMutation.mutate(payload, {
       // Marca los valores recién guardados como el nuevo estado "limpio" — así el formulario deja
@@ -132,7 +144,7 @@ export default function MaritimeShippingDetailForm({
       <CardContent>
         {isLoading ? (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {Array.from({ length: FIELDS.length }).map((_, i) => (
+            {Array.from({ length: FIELDS.length + 1 }).map((_, i) => (
               <div key={i} className="grid gap-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-10 w-full rounded-md" />
@@ -171,6 +183,37 @@ export default function MaritimeShippingDetailForm({
                   </div>
                 );
               })}
+              <div className="grid gap-2">
+                <Label htmlFor="shippingLine">Naviera</Label>
+                <Controller
+                  name="shippingLine"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value ?? SHIPPING_LINE_NONE_VALUE}
+                      onValueChange={(value) =>
+                        field.onChange(value === SHIPPING_LINE_NONE_VALUE ? null : value)
+                      }
+                      disabled={readOnly || upsertMutation.isPending}
+                    >
+                      <SelectTrigger id="shippingLine" aria-invalid={!!errors.shippingLine}>
+                        <SelectValue placeholder="Seleccionar naviera..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={SHIPPING_LINE_NONE_VALUE}>Sin especificar</SelectItem>
+                        {SHIPPING_LINE_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.shippingLine && (
+                  <p className="pt-1 text-xs text-red-400">* {errors.shippingLine.message}</p>
+                )}
+              </div>
             </div>
 
             <Separator />

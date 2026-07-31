@@ -13,6 +13,7 @@ export const maritimeShippingDetailSchema = z.object({
   customsBrokerId: z.union([z.number(), z.string()]).nullable().optional(),
   ultimateConsigneeName: z.string().max(255, 'Máximo 255 caracteres').nullable().optional(),
   ultimateConsigneeAddress: z.string().max(255, 'Máximo 255 caracteres').nullable().optional(),
+  shippingLine: z.enum(['maersk', 'msc', 'other']).nullable().optional(),
 });
 
 export type MaritimeShippingDetailFormData = z.infer<typeof maritimeShippingDetailSchema>;

@@ -47,6 +47,8 @@ export interface MaritimeShippingDetail {
   customsBroker: CustomsBroker | null;
   ultimateConsigneeName: string | null;
   ultimateConsigneeAddress: string | null;
+  /** Naviera — determina si el email de exportación incluye enlace de seguimiento público por contenedor */
+  shippingLine: 'maersk' | 'msc' | 'other' | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -65,6 +67,7 @@ export interface MaritimeShippingDetailPayload {
   customsBrokerId?: number | string | null;
   ultimateConsigneeName?: string | null;
   ultimateConsigneeAddress?: string | null;
+  shippingLine?: 'maersk' | 'msc' | 'other' | null;
 }
 
 /** Contenedor marítimo — recurso 1:N por pedido */
