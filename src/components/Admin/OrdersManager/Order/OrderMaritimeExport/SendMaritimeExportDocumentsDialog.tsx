@@ -20,6 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
+import { useOrderContext } from '@/context/OrderContext';
 import { useOrderAttachments } from '@/hooks/orders/useOrderAttachments';
 import { useSendMaritimeExportDocuments } from '@/hooks/orders/useSendMaritimeExportDocuments';
 import { formatBytes, type OrderAttachment } from '@/services/domain/orders/orderAttachmentService';
@@ -43,11 +44,13 @@ export default function SendMaritimeExportDocumentsDialog({
   onOpenChange,
 }: SendMaritimeExportDocumentsDialogProps) {
   const { isMobile } = useIsMobileSafe();
+  const { order } = useOrderContext();
   const { attachments, isLoading: attachmentsLoading } = useOrderAttachments(orderId, {
     enabled: open,
   });
   const mutation = useSendMaritimeExportDocuments(orderId);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const defaultSubjectPlaceholder = `Pedido #${order?.id ?? orderId} despachado - Documentación adjunta`;
 
   const {
     register,
@@ -76,10 +79,12 @@ export default function SendMaritimeExportDocumentsDialog({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      const subject = data.subject.trim();
+      const body = data.body.trim();
       await notify.promise(
         mutation.mutateAsync({
-          subject: data.subject,
-          body: data.body,
+          ...(subject ? { subject } : {}),
+          ...(body ? { body } : {}),
           attachmentIds: selectedIds,
         }),
         {
@@ -114,7 +119,8 @@ export default function SendMaritimeExportDocumentsDialog({
             Enviar documentación al cliente
           </DialogTitle>
           <DialogDescription>
-            Redacta un mensaje libre para el cliente de este pedido. Se enviará en un único email.
+            El email incluye automáticamente los detalles del pedido. Asunto y notas son
+            opcionales y se enviará en un único email.
           </DialogDescription>
         </DialogHeader>
 
@@ -124,10 +130,10 @@ export default function SendMaritimeExportDocumentsDialog({
           noValidate
         >
           <div className="grid gap-2">
-            <Label htmlFor="subject">Asunto</Label>
+            <Label htmlFor="subject">Asunto (opcional)</Label>
             <Input
               id="subject"
-              placeholder="ej. Documentación de embarque - Pedido #BR26/377"
+              placeholder={defaultSubjectPlaceholder}
               disabled={mutation.isPending}
               aria-invalid={!!errors.subject}
               {...register('subject')}
@@ -138,11 +144,11 @@ export default function SendMaritimeExportDocumentsDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="body">Mensaje</Label>
+            <Label htmlFor="body">Notas adicionales (opcional)</Label>
             <Textarea
               id="body"
               rows={6}
-              placeholder="Escribe aquí el cuerpo del email..."
+              placeholder="Se mostrarán al final del email, antes de la despedida..."
               disabled={mutation.isPending}
               aria-invalid={!!errors.body}
               {...register('body')}

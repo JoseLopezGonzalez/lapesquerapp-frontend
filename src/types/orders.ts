@@ -96,8 +96,8 @@ export interface MaritimeContainerUpdatePayload {
 
 /** Payload de envío de documentación de exportación marítima al cliente (mensaje libre + adjuntos) */
 export interface SendMaritimeExportDocumentsPayload {
-  subject: string;
-  body: string;
+  subject?: string;
+  body?: string;
   attachmentIds?: number[];
 }
 
