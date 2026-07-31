@@ -51,7 +51,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -1650,47 +1649,48 @@ export default function PalletView({
                           <>
                             <div className="flex flex-shrink-0 items-center justify-between">
                               <h3 className="text-lg font-medium">Cajas en el Palet</h3>
-                              <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-2">
-                                  <Switch
-                                    id="show-gross-weight-column"
-                                    checked={showGrossWeightColumn}
-                                    onCheckedChange={handleToggleShowGrossWeightColumn}
-                                  />
-                                  <Label
-                                    htmlFor="show-gross-weight-column"
-                                    className="text-sm font-normal"
-                                  >
-                                    Mostrar peso bruto
-                                  </Label>
-                                </div>
-                                <div className="text-muted-foreground bg-muted/50 flex items-center rounded-full px-4 py-1 text-sm">
-                                  <span>
-                                    <span className="text-foreground font-medium">
-                                      {summaryData.numberOfBoxes}
-                                    </span>{' '}
-                                    cajas
-                                  </span>
-                                  <Separator orientation="vertical" className="mx-2 h-3" />
+                              <div className="text-muted-foreground bg-muted/50 flex items-center rounded-full px-4 py-1 text-sm">
+                                <span>
                                   <span className="text-foreground font-medium">
-                                    {formatDecimalWeight(summaryData.netWeight)}
-                                  </span>
-                                  <Separator orientation="vertical" className="mx-2 h-3" />
-                                  <span>
-                                    <span className="text-foreground font-medium">
-                                      {summaryData.totalProducts}
-                                    </span>{' '}
-                                    productos
-                                  </span>
-                                  <Separator orientation="vertical" className="mx-2 h-3" />
-                                  <span>
-                                    <span className="text-foreground font-medium">
-                                      {summaryData.totalLots}
-                                    </span>{' '}
-                                    lotes
-                                  </span>
-                                </div>
+                                    {summaryData.numberOfBoxes}
+                                  </span>{' '}
+                                  cajas
+                                </span>
+                                <Separator orientation="vertical" className="mx-2 h-3" />
+                                <span className="text-foreground font-medium">
+                                  {formatDecimalWeight(summaryData.netWeight)}
+                                </span>
+                                <Separator orientation="vertical" className="mx-2 h-3" />
+                                <span>
+                                  <span className="text-foreground font-medium">
+                                    {summaryData.totalProducts}
+                                  </span>{' '}
+                                  productos
+                                </span>
+                                <Separator orientation="vertical" className="mx-2 h-3" />
+                                <span>
+                                  <span className="text-foreground font-medium">
+                                    {summaryData.totalLots}
+                                  </span>{' '}
+                                  lotes
+                                </span>
                               </div>
+                            </div>
+
+                            <div className="flex flex-shrink-0 items-center gap-2">
+                              <Checkbox
+                                id="show-gross-weight-column"
+                                checked={showGrossWeightColumn}
+                                onCheckedChange={(checked) =>
+                                  handleToggleShowGrossWeightColumn(!!checked)
+                                }
+                              />
+                              <Label
+                                htmlFor="show-gross-weight-column"
+                                className="text-muted-foreground cursor-pointer text-sm font-normal"
+                              >
+                                Mostrar peso bruto en la tabla
+                              </Label>
                             </div>
 
                             <Tabs
