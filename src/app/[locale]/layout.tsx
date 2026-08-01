@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { MotionConfig } from 'framer-motion';
 import { routing } from '@/i18n/routing';
 import { appName, metadataBaseUrl } from '@/configs/branding';
 
@@ -44,7 +45,10 @@ export default async function LocaleLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
-      {children}
+      {/* reducedMotion="user": gestiona prefers-reduced-motion para todo motion.* del sitio
+          público a nivel de librería — ver GAP-135, fix del bug de ScrollReveal.tsx que
+          dependía de un useReducedMotion() manual y se quedaba en opacity:0 permanente. */}
+      <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </NextIntlClientProvider>
   );
 }

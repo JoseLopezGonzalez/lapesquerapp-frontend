@@ -7,12 +7,14 @@ import { Waves, Shield, Globe, ArrowUpRight } from 'lucide-react';
 import { appName, demoUrl } from '@/configs/branding';
 import AssetPlaceholder from './AssetPlaceholder';
 import ScrollReveal from './ScrollReveal';
+import LocaleSwitcher from './LocaleSwitcher';
 
 export default function Hero() {
   const t = useTranslations('Landing.hero');
 
   return (
     <section className="bg-background relative overflow-hidden">
+      <LocaleSwitcher className="absolute top-4 right-4 z-10 sm:top-6 sm:right-6" />
       <div className="text-foreground pointer-events-none absolute inset-0 opacity-[0.04]">
         <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           <path d="M0,50 Q25,30 50,50 T100,50 L100,100 L0,100 Z" fill="currentColor" />

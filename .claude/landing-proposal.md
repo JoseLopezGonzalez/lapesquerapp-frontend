@@ -1338,7 +1338,13 @@ retomarlo — ahora con más placeholders todavía por sustituir tras GAP-132/13
 ya no necesita asset, pero los tiles del bento y los 3 pasos de "Así funciona" sí).
 
 **Actualización 2026-08-01:** Jose pidió abrir el GAP de `ScrollReveal` de inmediato →
-`GAP-135-scrollreveal-reduced-motion-bug.md` (open).
+`GAP-135-scrollreveal-reduced-motion-bug.md`. **Implementado y cerrado** el mismo día:
+`MotionConfig reducedMotion="user"` en `src/app/[locale]/layout.tsx` +
+`ScrollReveal.tsx` simplificado. Verificado con Playwright real: el contenido ya no se
+queda nunca en `opacity: 0` — matiz honesto documentado en el propio GAP: sigue
+esperando a entrar en el viewport (comportamiento correcto de `whileInView`, no un
+bug), pero una vez ahí siempre llega a `opacity: 1` de forma fiable, con o sin
+reduced-motion. ✅ APROBADO (9/10).
 
 ---
 
@@ -1355,6 +1361,20 @@ confirmó la alternativa: selector de texto + icono `Globe` (nombres nativos, si
 traducir entre sí), sin construir una nav bar completa — colocado en el `Hero`
 (esquina superior derecha) y en el `Footer` (junto a Blog/Legal).
 
-Documentado y convertido en GAP → `GAP-136-locale-switcher.md` (open). No forma parte
-del lote GAP-132/133/134 (implementados) ni de GAP-135 (bug, prioridad alta) — es una
-feature nueva pequeña, prioridad media, independiente de los demás.
+Documentado y convertido en GAP → `GAP-136-locale-switcher.md`. **Implementado y
+cerrado** el mismo día: nuevo `LocaleSwitcher.tsx` (Client Component, `DropdownMenu`
+shadcn, sin banderas) añadido a `Hero.tsx` y `Footer.tsx`. Verificado con Playwright
+real navegando de verdad entre los 3 locales (`/es`→`/pt`→`/en`, contenido traducido
+confirmado, no solo la URL). ⚠️ APROBADO CON OBSERVACIONES (9/10) — hallazgo honesto: el
+selector solo es alcanzable desde la home, porque `/pricing`/`/blog`/`/legal/*` no
+comparten el `Footer` global (cada página compone su propio layout); coherente con el
+alcance acordado (Hero + Footer, sin nav bar completa), no una desviación.
+
+## 16. Estado de la sesión — todos los GAPs de esta ronda cerrados (2026-08-01)
+
+GAP-132, GAP-133, GAP-134, GAP-135 y GAP-136 — los 5 implementados, verificados con
+navegador real (Playwright + Chromium, desktop/mobile/dark mode/reduced-motion) y
+cerrados en `.claude/gaps/closed/`. Sin GAPs abiertos pendientes de esta ronda de
+refinamiento. Próximo paso a decisión de Jose: nueva ronda de ideas, retomar Fase E
+(analítica, nunca empezada), o el GAP de assets pendiente (sustituir los placeholders
+Tipo 1/2/3 acumulados por los finales).

@@ -3,6 +3,7 @@ import { Mail, Waves } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { Separator } from '@/components/ui/separator';
 import { appName, infoEmail } from '@/configs/branding';
+import LocaleSwitcher from './LocaleSwitcher';
 
 export default async function Footer() {
   const t = await getTranslations('Landing.footer');
@@ -38,7 +39,7 @@ export default async function Footer() {
           <p className="text-invert-foreground/70 text-sm">
             © {new Date().getFullYear()} {appName}. {t('copyrightSuffix')}
           </p>
-          <div className="flex gap-6">
+          <div className="flex items-center gap-6">
             <Link
               href="/blog"
               className="text-invert-foreground/70 hover:text-invert-foreground text-sm"
@@ -57,6 +58,7 @@ export default async function Footer() {
             >
               {t('legalPrivacy')}
             </Link>
+            <LocaleSwitcher className="border-invert-foreground/20 text-invert-foreground hover:bg-invert-foreground/10 bg-transparent" />
           </div>
         </div>
       </div>
