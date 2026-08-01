@@ -984,3 +984,72 @@ bloquea el cierre del GAP de layout/contenido).
 Sources:
 - [What Makes a Great SaaS Landing Page in 2026 — Framiq](https://framiq.app/blog/best-saas-landing-pages-2026)
 - [10 SaaS Landing Page Trends for 2026 — SaaSFrame](https://www.saasframe.io/blog/10-saas-landing-page-trends-for-2026-with-real-examples)
+
+### 12.5 Desarrollar "Cumplimiento Legal" — de badge vacío a sección con contenido real
+
+**Idea de Jose:** la sección de cumplimiento legal (`TrustBadge`) está vacía/sin
+desarrollar — casi sin contenido y sin sentido visual propio.
+
+**Estado actual del código** (`src/components/LandingPage/TrustBadge.tsx`, namespace
+`Landing.trustBadge`): un único icono (`FileText`) en círculo, un título ("Cumplimiento
+Legal") y una línea de descripción genérica ("Normativas de trazabilidad y etiquetado del
+sector pesquero"), centrado y solo en una franja `py-20` sin fondo diferenciado. Resto
+arqueológico casi seguro de la limpieza de Fase A/GAP-119: originalmente había 3 "trust
+badges" (ISO 27001, 99.9% disponibilidad, rating 4.9/5) — afirmaciones falsas que se
+eliminaron entonces; este es el único honesto que sobrevivió, pero nunca se desarrolló
+como sección real. Rompe además el ritmo visual de fondos alternos de la home: hoy hay 3
+secciones seguidas sin fondo diferenciado (`HowItWorks` → `IntegratedLonjas` →
+`TrustBadge`) antes de volver a `bg-muted/30` en `PricingPreview`.
+
+**Decisión (Jose confirmó y amplió esta propuesta, 2026-08-01):** convertir la sección en
+3 claims concretos que se publican ya (verificados directamente contra
+`.claude/product-catalog.md`, no son afirmaciones de negocio tipo SLA/rating que
+necesiten confirmación de Jose, son hechos ya reales en el código), más 2 claims
+adicionales que Jose quiere incluir pero **documentados explícitamente como deuda técnica
+bloqueante** — no se publican hasta que se compruebe y se garantice que lo prometido se
+cumple de verdad, mismo criterio de honestidad que rige el resto de la landing.
+
+**Claims que se publican ya:**
+1. **Etiquetado según el Reglamento UE 1379/2013** — nombre comercial y científico,
+   método de producción y zona de captura en cada etiqueta generada.
+2. **Trazabilidad completa por palet, caja y lote** — histórico de cada palet desde su
+   creación hasta la expedición.
+3. **Catálogo FAO/ASFIS integrado** — +13.700 especies para autocompletar nombre
+   científico y datos normativos al dar de alta un producto.
+
+**Claims añadidos por Jose — bloqueados como deuda técnica hasta verificación real:**
+4. **Código de barras GS1-128** — `product-catalog.md` (módulo Stock/Almacén) documenta
+   un bug de dominio real y ya conocido: el Application Identifier de precisión usado es
+   el incorrecto (3100/3200 en vez de 3102/3202), por lo que un lector GS1 estándar
+   externo decodifica el peso ×100. Publicar "compatible con lectores estándar" hoy sería
+   un claim falso en cuanto un cliente lo probara con su propio hardware. **No se activa
+   este claim en la sección hasta que el bug esté corregido** — requiere un GAP aparte
+   fuera del alcance de esta ronda de landing, en el módulo de Stock/Almacén (fix técnico
+   de dominio, no de landing).
+5. **Cumplimiento RGPD** — a diferencia de los otros 4, no es un hecho verificable solo
+   leyendo el código (existen `/legal/privacy` y `/legal/terms` desde Fase A/GAP-119,
+   pero eso no equivale a una auditoría real de cumplimiento RGPD del tratamiento de
+   datos). **No se activa este claim hasta que Jose confirme explícitamente que el
+   tratamiento de datos de la plataforma cumple RGPD de verdad** — mismo criterio que
+   cualquier otra afirmación legal/certificación en `landing-context.md §5`, no una
+   validación técnica sino una decisión/confirmación de Jose.
+
+**Tratamiento en la implementación:** los claims 4 y 5 se documentan en el propio GAP
+como backlog explícito con sus dos prerrequisitos (fix del bug GS1-128 fuera de landing;
+confirmación RGPD de Jose) — ninguno de los dos se renderiza en la sección hasta que su
+prerrequisito esté resuelto, para no repetir el mismo error que motivó limpiar los 3
+badges falsos en Fase A. Un GAP corto de seguimiento los añade cuando ambos estén
+listos, mismo patrón ya usado para testimonios (B2) y para las cifras de pricing.
+
+**Visual:** sustituir el badge centrado y solo por un bloque de 3 items en línea (icono +
+título corto + 1 línea cada uno — el icono sí tiene sentido aquí porque ningún item lleva
+ilustración que compita, mismo criterio ya fijado en §12.3), montado sobre `bg-muted/30`
+para romper el tramo de 3 secciones blancas seguidas y darle identidad propia como
+sección de confianza. Layout preparado para pasar a 5 items sin rediseño (grid de 3
+columnas en desktop se reparte a 2+3 o similar) el día que los claims 4 y 5 se activen.
+
+**Alcance estimado:** S — un componente (`TrustBadge.tsx`, posible rename a
+`LegalCompliance.tsx` ya que deja de ser un "badge" único — detalle de implementación, no
+bloqueante), copy nuevo en `landing.json` (`es`/`pt`/`en`) para los 3 claims activos.
+Los claims 4 y 5 no forman parte del alcance de código de este GAP — solo quedan
+documentados como backlog con sus prerrequisitos.
