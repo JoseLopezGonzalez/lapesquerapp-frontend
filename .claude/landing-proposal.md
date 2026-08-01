@@ -1115,14 +1115,83 @@ implementación):
 diferencia del bento, es contenido de refuerzo, no la pieza central de la página; mismo
 criterio de "icono sin ilustración compitiendo" ya usado en `TrustBadge`/`HowItWorks`
 originales), con 3 items cortos: **CRM comercial y ofertas**, **Liquidaciones a
-proveedores**, **Reparto y autoventa móvil**. Colocación propuesta: justo después de
-`ModulesBento` y antes de `HowItWorks` — continúa la narrativa de "esto es todo lo que
-cubre el producto" antes de pasar a explicar el flujo. No se solapa con los items de
+proveedores**, **Reparto y autoventa móvil**. No se solapa con los items de
 rentabilidad/documentación de `HowItWorks` (§12.4 paso 3) ni con los de `TrustBadge`
 (§12.5) porque son 3 módulos de producto distintos, no propiedades transversales.
+>
+> **⚠️ Superseded por §12.7:** en vez de sección aparte, este contenido se fusiona como el
+> tile de cierre solo-texto del bento asimétrico rediseñado en §12.7 — no se implementa
+> como componente independiente. Se deja el punto 2 tal cual aquí (histórico de la
+> decisión original) para trazabilidad del proceso, pero la implementación real es la de
+> §12.7.
 
 **Alcance estimado:** M — copy nuevo/reescrito en `landing.json` (`es`/`pt`/`en`,
 paridad de claves) para ~7 claves existentes + 1 sección nueva pequeña (3 items, sin
 imagen), un componente nuevo pequeño para la franja. No toca `ModulesBento` ni requiere
 assets nuevos tipo 3 — compatible con implementarse en el mismo GAP que §12.4/§12.5 o por
 separado, a decidir al agrupar la ronda completa.
+
+### 12.7 Bento real — grid asimétrico con jerarquía de tamaños + tile de cierre solo-texto
+
+**Idea de Jose:** el bento de módulos no es un bento de verdad — es un grid uniforme
+(todas las tarjetas del mismo tamaño), sin la asimetría tipo puzle característica de este
+patrón, e incluso podría tener algún tile sin ilustración, solo texto, para cerrar el
+bento.
+
+**Estado actual del código** (`src/components/LandingPage/ModulesBento.tsx`): `grid
+gap-4 sm:grid-cols-2 sm:gap-8 lg:grid-cols-5`, con las 5 tarjetas idénticas en tamaño
+(`h-full`, ilustración `aspect-square w-full` igual en las 5). Es un grid de features
+uniforme, no un bento — la característica que define a un bento y que hoy falta es
+justo la asimetría (tiles de distinto tamaño, jerarquía visual por peso espacial).
+
+**Investigación de mercado (2026):** confirma el diagnóstico y da la estructura estándar
+del patrón — un tile hero de 2×2 columnas/filas con el contenido más importante, uno o
+dos tiles secundarios de 2×1, y varios tiles pequeños 1×1, donde alguno de los pequeños
+puede ser puramente texto (métrica, tag, cita corta) en vez de ilustración — exactamente
+lo que propone Jose. Referencias del propio `landing-context.md §2` (Linear, Vercel, Arc,
+Raycast) ya usan esta jerarquía de tamaños, no un grid uniforme.
+
+**Decisión (Jose delegó el criterio al equipo, 2026-08-01 — "lo que recomiendes"):**
+
+**1. Grid asimétrico vía CSS Grid** (`col-span`/`row-span` variables en vez de
+`grid-cols-5` uniforme), con jerarquía de tamaños entre las 5 tarjetas de módulo
+existentes (no se añaden módulos nuevos — eso ya se descartó explícitamente en §12.6,
+opción A):
+- **Tile hero (2×2, mayor peso visual): "Compras y Ventas"** (el módulo Pedidos real).
+  Es el núcleo del producto según `product-catalog.md` ("difícil vender el producto sin
+  él": previsión, 17 documentos, rentabilidad, ruta) y hoy es paradójicamente la tarjeta
+  con el copy más flojo de las 5 — el tile grande le da más espacio de contenido y ayuda
+  directamente al hueco detectado en §12.6 (rentabilidad/documentación
+  infrarrepresentadas).
+- **1-2 tiles medianos (2×1):** Producción, Stock — los otros dos módulos que
+  `product-catalog.md` señala como de mayor inversión de desarrollo junto con Ventas.
+- **Tiles pequeños estándar (1×1):** IA, Etiquetas.
+- Distribución exacta de filas/columnas (cuántas columnas base, qué tile va en qué
+  posición) queda para implementación — a validar visualmente contra el resultado real,
+  mismo criterio ya usado en otras ideas de esta ronda (p.ej. §12.1 con el número de
+  logos del marquee).
+
+**2. Tile de cierre solo-texto — fusiona la franja de §12.6 aquí en vez de sección
+aparte.** Sin ilustración (contenido de refuerzo, no la pieza central del bento — mismo
+criterio de "icono/texto sin ilustración compitiendo" ya aplicado en `TrustBadge`),
+mostrando los 3 módulos reales que hoy no aparecen en ningún sitio de la landing: **CRM
+comercial y ofertas**, **Liquidaciones a proveedores**, **Reparto y autoventa móvil**
+(mismo contenido decidido en §12.6, ver nota de "superseded" ahí). Resuelve de una vez la
+petición de Jose de un tile solo-texto y el hueco de visibilidad de esos 3 módulos, sin
+montar una sección independiente adicional.
+
+**Mobile:** la asimetría es una técnica de desktop/tablet — en mobile todos los tiles se
+apilan a una columna en orden de prioridad (hero primero, tile de cierre al final), mismo
+criterio responsive que ya usa el resto de la home (`sm:grid-cols-2` actual).
+
+**Alcance estimado:** M — rediseño de layout de `ModulesBento.tsx` (grid asimétrico +
+tile de cierre nuevo, que absorbe el copy ya definido en §12.6 punto 2), ampliación de
+copy en `modules.sales` (Compras y Ventas) para aprovechar el espacio extra del tile
+hero, sin assets nuevos tipo 3 (las 5 ilustraciones ya estaban previstas, solo cambian de
+tamaño de contenedor). Compatible con agruparse en el mismo GAP que §12.6 dado que
+absorbe directamente su punto 2.
+
+Sources:
+- [Designing Bento Grids That Actually Work: A 2026 Practical Guide — SaaSFrame](https://www.saasframe.io/blog/designing-bento-grids-that-actually-work-a-2026-practical-guide)
+- [Bento Grid CSS Tutorial: Apple-Style Layout + Code (2026)](https://senorit.de/en/blog/bento-grid-design-trend-2025)
+- [Bento Grids Are Quietly Winning B2B SaaS Homepages in 2026](https://www.pravinkumar.co/blog/bento-grids-b2b-saas-homepage-design-trend-2026)
