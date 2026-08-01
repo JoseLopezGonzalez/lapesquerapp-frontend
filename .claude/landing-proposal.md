@@ -854,3 +854,62 @@ Sources:
 - [27 SaaS Pricing Pages That Actually Convert (Real Data, 2026)](https://www.925studios.co/blog/saas-pricing-page-examples-convert-2026)
 - [B2B SaaS Landing Pages: Strategy for More Demos (2026)](https://www.apexure.com/blog/b2b-saas-marketing-the-right-landing-page-strategy/)
 - [SaaS Pricing Page Best Practices in 2026 — Fungies.io](https://fungies.io/saas-pricing-page-best-practices-2026/)
+
+### 12.3 Suprimir el icono Lucide de las tarjetas del bento de módulos
+
+**Idea de Jose:** en los bento grids modernos lo que manda visualmente es la ilustración
+de cada tarjeta, no un icono — sobrecargar la tarjeta con un icono además de la
+ilustración le parece un error de jerarquía visual.
+
+**Estado actual del código** (`src/components/LandingPage/ModulesBento.tsx`): cada una
+de las 5 tarjetas (Producción, Stock, Ventas, IA, Etiquetas) lleva **dos** elementos
+visuales compitiendo — un icono Lucide (`Fish`/`Package`/`ShoppingCart`/`Sparkle`/
+`Ticket`) en un badge redondeado sobre el título, y debajo un `AssetPlaceholder` tipo 3
+(aspect-square, ancho completo) que sustituirá a la ilustración bento final. Orden actual
+por tarjeta: icono → título → descripción → ilustración.
+
+**Por qué el icono es redundante, no solo "de más":** el propio prompt base ya bloqueado
+en `landing-context.md §7b`/§5 para las ilustraciones tipo 3 incluye explícitamente
+*"thin clean white line-icon on a solid black rounded-square badge"* como parte del
+estilo de cada ilustración generada — es decir, el concepto de icono **ya está
+incorporado dentro de la ilustración** que sustituirá al placeholder. El badge de icono
+Lucide en el `CardHeader` es un vestigio de una versión anterior del bento (previa a que
+B2/GAP-121 añadiera las ilustraciones) que nunca se retiró al incorporar los
+`AssetPlaceholder`.
+
+**Investigación de mercado (2026):** confirma la lectura de Jose — la tendencia de bento
+grids para SaaS en 2026 se describe como un movimiento desde diseños "puramente basados
+en iconos minimalistas" hacia presentaciones visuales más dinámicas (mockups,
+ilustraciones, mezcla de medios), consistente con las referencias ya citadas en
+`landing-context.md §2` (Linear, Vercel, Arc, Raycast) que usan mockups de componente
+aislado como elemento dominante de cada tarjeta, sin icono adicional compitiendo.
+
+**Alcance de esta idea — solo `ModulesBento`, no otras secciones con icono:** se revisó
+si el mismo patrón (icono + ilustración duplicados) aparece en otras secciones y no es
+el caso. `HowItWorks.tsx` (3 pasos) y `TrustBadge.tsx` usan el icono Lucide como **único**
+elemento visual de su tarjeta — no acompañan a ninguna ilustración tipo 3, así que ahí el
+icono no es redundante y no se toca en esta idea.
+
+**Propuesta concreta:**
+- En `ModulesBento.tsx`, eliminar el `<div>` de badge de icono (`bg-muted mb-4 inline-flex
+  w-fit rounded-xl p-3` + el icono Lucide) de las 5 tarjetas, y el import de los 5 iconos
+  (`Fish`, `Package`, `ShoppingCart`, `Sparkle`, `Ticket`) ya no sería necesario en este
+  archivo.
+- `CardHeader` queda solo con `CardTitle`; el orden título → descripción → ilustración se
+  mantiene igual (ya coincide con la referencia visual bloqueada en
+  `landing-context.md §2`, no hace falta reordenar).
+- No se pierde el motivo del icono — sigue vivo dentro del prompt de cada ilustración
+  tipo 3 (§5), simplemente deja de estar duplicado fuera de ella.
+- Micro-ajuste opcional a valorar en implementación (no obligatorio): con el header más
+  limpio, el título de la tarjeta podría ganar algo de peso/tamaño para no dejar un hueco
+  visual demasiado plano donde estaba el icono — criterio de quien implemente, a validar
+  visualmente contra el resultado real.
+
+**Alcance estimado:** XS — un único componente (`ModulesBento.tsx`), sin tocar i18n
+(los iconos no eran contenido traducido), sin dependencias nuevas, sin afectar a
+`HowItWorks`/`TrustBadge`.
+
+Sources:
+- [Bento Grid UI Design Guide: Trends, Examples & Best Practices 2026 — Superfiles](https://superfiles.in/bento-grid-ui-design-trend.php)
+- [Designing Bento Grids That Actually Work: A 2026 Practical Guide — SaaSFrame](https://www.saasframe.io/blog/designing-bento-grids-that-actually-work-a-2026-practical-guide)
+- [Best Bento Grid Design Examples [2026] — Mockuuups Studio](https://mockuuups.studio/blog/post/best-bento-grid-design-examples/)
