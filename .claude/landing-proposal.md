@@ -1336,3 +1336,25 @@ sigue siendo la única fase numerada A–E sin empezar, y el GAP corto de assets
 (sustituir placeholders Tipo 2/3 por los finales) sigue disponible cuando Jose quiera
 retomarlo — ahora con más placeholders todavía por sustituir tras GAP-132/133 (marquee
 ya no necesita asset, pero los tiles del bento y los 3 pasos de "Así funciona" sí).
+
+**Actualización 2026-08-01:** Jose pidió abrir el GAP de `ScrollReveal` de inmediato →
+`GAP-135-scrollreveal-reduced-motion-bug.md` (open).
+
+---
+
+## 15. Postscript — selector de idioma (2026-08-01)
+
+Jose señaló, como observación final de esta ronda, que no hay ningún selector de idioma
+visible en la landing y preguntó por uno "moderno con banderas circulares". Análisis:
+confirmado que no existe ningún componente de este tipo en el proyecto, y que de hecho
+no hay ni `<nav>` en la home (hueco ya señalado desde Fase A, nunca cerrado). Se
+descartaron las banderas por dos motivos — son un anti-patrón de UX (representan país,
+no idioma; ambiguo para "English") y además son intrínsecamente de color, lo que
+chocaría con la paleta 100% monocroma ya bloqueada en `landing-context.md §2/§3`. Jose
+confirmó la alternativa: selector de texto + icono `Globe` (nombres nativos, sin
+traducir entre sí), sin construir una nav bar completa — colocado en el `Hero`
+(esquina superior derecha) y en el `Footer` (junto a Blog/Legal).
+
+Documentado y convertido en GAP → `GAP-136-locale-switcher.md` (open). No forma parte
+del lote GAP-132/133/134 (implementados) ni de GAP-135 (bug, prioridad alta) — es una
+feature nueva pequeña, prioridad media, independiente de los demás.
