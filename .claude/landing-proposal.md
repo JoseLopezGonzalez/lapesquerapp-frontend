@@ -692,3 +692,92 @@ migra el archivo a la convención `proxy.ts` nueva. **Si esto también ocurre en
 URLs sin prefijo de español (el idioma principal, sin prefijo por diseño) de pricing/legal/blog
 podrían estar rotas ahora mismo para visitantes reales** — recomendación: verificarlo cuanto
 antes en el dominio real, no solo en local.
+
+---
+
+## 12. Ronda de refinamiento continuo — {en curso, iniciada 2026-08-01}
+
+Formato distinto a las fases A–E: no es un rediseño estructurado por fases, sino una lista
+de mejoras puntuales que Jose va proponiendo una a una sobre la landing ya rediseñada
+(Fases A–D cerradas + trabajo de pricing de §11). Cada entrada documenta idea → estado
+actual del código → investigación de mercado (si aplica) → propuesta concreta. Se va
+acumulando hasta que Jose decida cerrar la ronda; entonces se convierte en uno o varios
+GAPs vía `gap-discovery` para implementación, igual que las fases anteriores.
+
+### 12.1 Marquee infinito de logos de lonjas integradas
+
+**Idea de Jose:** mostrar los logos de las lonjas que ya se anuncian como integración
+(`IntegratedLonjas`) de forma más moderna, como un "infinite logo marquee" (banda que se
+desplaza en scroll horizontal continuo), en vez de la grid estática actual.
+
+**Estado actual del código** (`src/components/LandingPage/IntegratedLonjas.tsx`):
+grid estática de 5 logos (`grid-cols-2` mobile / `grid-cols-5` desktop), cada uno en
+escala de grises (`grayscale`), con fade-in una sola vez al entrar en viewport vía
+`ScrollReveal` (ya existente, respeta `prefers-reduced-motion`). Assets ya en
+`public/images/landingPage/logos/*-bn.png` (versiones en blanco y negro ya preparadas
+para el sistema monocromo — Docapesca, Armadores Punta, Lonja Isla, Cofra Santo Cristo,
+Cofra). Sección restyleada en B2 (GAP-121) pero manteniendo el layout de grid original.
+
+**Investigación de mercado (2026):** el patrón dominante actual para "logo clouds" de
+SaaS (Vercel, Linear y la mayoría de referencias del sector) es una animación CSS pura
+por `transform: translateX` sobre GPU, no JavaScript ni librería de carrusel — el truco
+es duplicar la lista de logos (segunda copia marcada `aria-hidden="true"`) para que el
+bucle sea perfectamente continuo sin salto visible. Reglas de accesibilidad ya
+consolidadas como estándar: pausar la animación en `:hover`/`:focus-within` (para que se
+pueda inspeccionar un logo concreto), respetar `prefers-reduced-motion` (fallback a
+estático, igual que ya hace `ScrollReveal` en el resto de la página), y máscara de
+desvanecido (`mask-image` en gradiente) en ambos bordes para que los logos no aparezcan
+ni desaparezcan de golpe. Ver fuentes al final de esta entrada.
+
+**Propuesta concreta:**
+- Reemplazar el grid de `IntegratedLonjas.tsx` por una banda de marquee horizontal de una
+  sola fila: pista duplicada 2× (o 3× si 5 logos resultan visualmente escasos para llenar
+  el ancho sin que se note el bucle demasiado pronto — a decidir en implementación viendo
+  el resultado real), la copia duplicada con `aria-hidden="true"` para que un lector de
+  pantalla no repita cada logo dos veces.
+- Animación vía `@keyframes` CSS puro añadido a `src/app/globals.css` (mismo patrón ya
+  usado ahí para `shimmer`/`qr-scan-line`/etc. — no hace falta ninguna librería nueva,
+  ni siquiera `framer-motion`, que sí está instalado pero es innecesario para una
+  translación lineal constante).
+- `animation-play-state: paused` en `:hover` y `:focus-within` del contenedor.
+- Fallback estático (sin animación, logos visibles fijos) bajo
+  `@media (prefers-reduced-motion: reduce)` — mismo criterio que ya aplica `ScrollReveal`
+  en el resto de la landing (regla ya establecida en B2/GAP-121, no una excepción nueva).
+- Máscara de desvanecido en ambos extremos (`mask-image: linear-gradient(...)`) para que
+  los logos entren/salgan con fundido, no de golpe — visualmente coherente con el fondo
+  gris claro de la sección.
+- Mantener `grayscale` en cada logo (encaja con el sistema monocromo ya bloqueado en
+  `landing-context.md §2`); opcional a valorar en implementación: quitar el grayscale
+  solo en el logo bajo hover como micro-interacción con propósito (no obligatorio,
+  criterio de `landing-content-writer`/implementador al montarlo).
+- Mobile: aplica igual (banda horizontal, no requiere touch-drag al ser puramente
+  decorativa/no interactiva, a diferencia de un carrusel real); velocidad algo menor o
+  igual que desktop, a calibrar visualmente.
+- Copy (`t('title')`/`t('description')`, namespace `Landing.integratedLonjas`) no cambia
+  — solo cambia el layout de los logos, no el texto de la sección.
+
+**Por qué no usar `embla-carousel-react`/`embla-carousel-autoplay`** (ya están en
+`package.json`, cero coste de dependencia nueva): están pensados para carruseles
+interactivos con desplazamiento por el usuario (ya se usan en otras partes de la app
+para ese caso de uso), no para una banda decorativa de scroll continuo — montar esto con
+Embla añadiría JS/estado innecesario para un efecto que el patrón estándar del sector
+resuelve con CSS puro y mejor rendimiento (animación en GPU, sin re-render de React).
+Usar Embla aquí sería una sobre-ingeniería para el resultado buscado.
+
+**Alcance estimado:** XS — un componente (`IntegratedLonjas.tsx`) + un bloque de
+`@keyframes`/utilidades en `globals.css`. No toca i18n, no toca middleware, no añade
+dependencias. Candidato claro a agruparse con otras ideas cortas de esta ronda en un
+único GAP de "ronda de refinamiento" cuando Jose cierre la lista.
+
+**Pendiente a resolver en implementación (no bloqueante para aprobar la idea):** número
+de logos actual (5) es bajo para un marquee de una sola fila sin que el patrón de
+repetición se note rápido — el implementador debe verificar visualmente si con 5 logos
+(x2 o x3 duplicados) el efecto luce bien o si conviene esperar a tener más lonjas
+integradas antes de lanzar el marquee. Si aún no está claro, hay valorar el criterio de
+Jose sobre este punto (`AskUserQuestion` en el propio GAP, en vez de asumir).
+
+Sources:
+- [Infinite-Scrolling Logos In Flat HTML And Pure CSS — Smashing Magazine](https://www.smashingmagazine.com/2024/04/infinite-scrolling-logos-html-css/)
+- [Infinite Marquee Animation using Modern CSS — Medium](https://medium.com/design-bootcamp/infinite-marquee-animation-using-modern-css-0d11d11fcc10)
+- [Logo Cloud Marquee — Aceternity UI](https://ui.aceternity.com/blocks/logo-clouds/logo-cloud-marquee)
+- [Create a Modern Infinite Marquee in Pure CSS — Effect.Labs](https://effect-labs.com/en/pages/blog/marquee-infinite-scroll.html)
