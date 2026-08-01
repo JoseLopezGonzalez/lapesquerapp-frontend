@@ -913,3 +913,74 @@ Sources:
 - [Bento Grid UI Design Guide: Trends, Examples & Best Practices 2026 — Superfiles](https://superfiles.in/bento-grid-ui-design-trend.php)
 - [Designing Bento Grids That Actually Work: A 2026 Practical Guide — SaaSFrame](https://www.saasframe.io/blog/designing-bento-grids-that-actually-work-a-2026-practical-guide)
 - [Best Bento Grid Design Examples [2026] — Mockuuups Studio](https://mockuuups.studio/blog/post/best-bento-grid-design-examples/)
+
+### 12.4 Rehacer "Así funciona" — contenido inexacto y sección visualmente pobre
+
+**Idea de Jose:** la sección `HowItWorks` ("Así funciona") está mal pensada de principio
+a fin — visualmente es pobre, y el contenido dista de la realidad del uso de la app y del
+circuito real del sector.
+
+**Estado actual del código** (`src/components/LandingPage/HowItWorks.tsx`, namespace
+`Landing.howItWorks`): 3 columnas — círculo numerado + icono Lucide (`Fish`/`Boxes`/
+`ShoppingCart`) + título + descripción centrada, sin ninguna imagen ni conector visual
+entre pasos. Copy actual: (1) "Captura o lonja" — registra compra en lonja o captura
+propia; (2) "Producción y stock" — transforma, etiqueta y almacena por lote; (3) "Venta y
+trazabilidad" — genera pedido y documentación.
+
+**Por qué el contenido no refleja la realidad del producto** (contrastado contra
+`.claude/product-catalog.md`): el relato actual narra una cadena de suministro física
+lineal (captura → producción → venta) que asume que todo cliente tiene captura propia o
+compra en lonja y produce — pero el módulo que `product-catalog.md` marca como núcleo
+("difícil vender el producto sin él") es **Ventas/Pedidos**, no Producción: previsión,
+17 documentos legales/logísticos configurables, ruta de entrega, análisis de rentabilidad
+por pedido/palet. Una parte real de clientes (comercializadoras/distribuidores sin
+producción propia) no se reconoce en el paso 1 actual, y el diferenciador más fuerte del
+producto (el volumen de documentación/rentabilidad que genera un pedido) queda escondido
+detrás de la palabra genérica "trazabilidad" en el paso 3.
+
+**Investigación de mercado (2026):** confirma mantener el patrón de 3 pasos claros con
+lenguaje directo (sigue siendo el estándar dominante de "how it works" en SaaS), y refuerza
+apoyarlo con capturas reales de producto en vez de solo iconos — coherente con la tendencia
+2026 ya citada en `landing-context.md §4.1` de "mostrar el producto en 3-5 segundos" y con
+la nota de §12.3 sobre mezclar tipos de medio en vez de repetir siempre el mismo lenguaje
+visual (aquí, captura real en vez de otra ilustración IA como en el bento).
+
+**Decisión (Jose confirmó esta propuesta, 2026-08-01):**
+
+**Contenido nuevo — centrado en el Pedido como eje real del producto**, no en una
+metáfora de cadena de suministro física (cubre tanto al que produce como al que solo
+distribuye, sin perder vocabulario de sector):
+1. **El pedido, el centro de todo** — creas el pedido (cliente, productos previstos,
+   plazos); todo lo demás se conecta a partir de aquí.
+2. **Producción y stock reales** — ya sea transformando materia prima propia o de lonja
+   con trazabilidad de lote, o casando el pedido contra palets ya en almacén, el sistema
+   compara lo previsto con lo real automáticamente.
+3. **Documentación, envío y rentabilidad** — genera de un clic la documentación legal y
+   logística (CMR, packing list, etiquetas...), la ruta de entrega y el margen por
+   pedido, sin hojas de cálculo aparte.
+
+**Rediseño visual:**
+- Sustituir el icono Lucide de cada paso por una **captura real de la app (Tipo 1, según
+  `landing-context.md §7b`)** recortada y tratada visualmente (no una captura cruda
+  pegada) — a especificar en el GAP de implementación la vista/estado/breakpoint/tenant
+  demo exactos, pero como referencia de contenido: paso 1 → ficha/creación de pedido con
+  previsión; paso 2 → diagrama de producción o mapa de almacén con palets; paso 3 → un
+  documento generado (packing list/CMR) o el panel de rentabilidad.
+- Añadir una **línea conectora** detrás de los círculos numerados — horizontal en
+  desktop, vertical en mobile (stack actual) — para que se lea como un circuito/flujo
+  real, no como 3 tarjetas sueltas sin relación entre sí.
+- Mezcla de tipos de imagen deliberada frente al resto de la home: el bento de módulos
+  (§12.3) usa ilustración IA (Tipo 3), esta sección usa captura real (Tipo 1) — refuerza
+  la idea de "esto no es una promesa abstracta, es la app de verdad" en el bloque que
+  explica el flujo completo.
+
+**Alcance estimado:** M — reescritura de copy en `landing.json` (`es`/`pt`/`en`, paridad
+de claves, traducción de `landing-content-writer`), rediseño de layout de
+`HowItWorks.tsx` (línea conectora + slot de imagen por paso, usando el mismo patrón
+`AssetPlaceholder` ya existente clasificado Tipo 1), y un GAP de seguimiento para las 3
+capturas reales finales (mismo patrón ya usado para los assets pendientes de B2 — no
+bloquea el cierre del GAP de layout/contenido).
+
+Sources:
+- [What Makes a Great SaaS Landing Page in 2026 — Framiq](https://framiq.app/blog/best-saas-landing-pages-2026)
+- [10 SaaS Landing Page Trends for 2026 — SaaSFrame](https://www.saasframe.io/blog/10-saas-landing-page-trends-for-2026-with-real-examples)
