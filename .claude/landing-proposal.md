@@ -781,3 +781,76 @@ Sources:
 - [Infinite Marquee Animation using Modern CSS — Medium](https://medium.com/design-bootcamp/infinite-marquee-animation-using-modern-css-0d11d11fcc10)
 - [Logo Cloud Marquee — Aceternity UI](https://ui.aceternity.com/blocks/logo-clouds/logo-cloud-marquee)
 - [Create a Modern Infinite Marquee in Pure CSS — Effect.Labs](https://effect-labs.com/en/pages/blog/marquee-infinite-scroll.html)
+
+### 12.2 Enriquecer la sección de precios del home (sin fusionar `/pricing` dentro)
+
+**Idea de Jose:** la sección de precios que se ve en el home (`PricingPreview`) le parece
+demasiado simple/sin contenido comparada con lo que ya existe en `/pricing`, y propuso
+en primera instancia traer la sección de precios completa al home en vez de dejarla como
+página aparte.
+
+**Estado actual del código:**
+- `src/components/LandingPage/PricingPreview.tsx` (teaser del home, namespace
+  `Landing.pricingPreview`): 3 tarjetas con solo nombre + audiencia + un texto de precio
+  fijo tipo "Desde 149 €/mes" (`tiers.*.priceFrom`, string ya formateado) + un único CTA
+  "Ver planes" que enlaza a `/pricing`. Sin toggle mensual/anual, sin ni un solo feature
+  listado, sin addons.
+- `src/app/[locale]/pricing/page.tsx` (namespace `Pricing`): página completa —
+  `PricingToggle` mensual/anual real (con descuento anual), lista de features por nivel
+  (`tiers.*.features[]`), nota de límite de usuarios, bloque de "bloques adicionales"
+  (`addons[]`), bloque de "incluido en todos los planes" (`capability1..5`), FAQ de 4
+  preguntas (`Accordion`). Todo esto se construyó en el trabajo de §11 (cifras de
+  pricing) y no tiene equivalente en el teaser del home.
+- **Duplicación de origen de precio ya existente y relevante para esta idea:** el precio
+  vive hoy en dos formatos distintos sin relación entre sí — `Landing.pricingPreview.
+  tiers.*.priceFrom` como texto libre ("Desde 349 €/mes") y `Pricing.tiers.*.
+  priceMonthly`/`priceAnnual` como números crudos que alimentan el toggle real. Si Jose
+  cambia una cifra de precio hoy, hay que actualizarla a mano en dos sitios sin que nada
+  avise de la inconsistencia.
+
+**Investigación de mercado (2026):** la evidencia es consistente en un punto — las
+páginas de pricing dedicadas convierten sensiblemente mejor que meter todo el contenido
+de precios en el homepage (sirven a un visitante con intención de compra ya alta, sin la
+fricción del resto de secciones de la home), y ese es justo el motivo por el que
+`/pricing` ya existe como ruta propia con su propio SEO (`hreflang`/canonical) — es
+también la URL que citaría una IA generativa si alguien pregunta "cuánto cuesta un ERP
+para el sector pesquero". Al mismo tiempo, la recomendación específica para el bloque de
+precios *dentro* del home es clara: mostrar precio (al menos "desde X") y dejar claro de
+forma transparente en qué se diferencian los planes — no ocultar el precio, pero tampoco
+hace falta la profundidad completa de una pricing page dedicada.
+
+**Decisión (Jose confirmó esta propuesta, 2026-08-01):** no fusionar `/pricing` dentro
+del home ni eliminar la ruta — en su lugar, enriquecer `PricingPreview` para que deje de
+sentirse vacío, manteniendo `/pricing` como la página con la profundidad completa.
+
+**Propuesta concreta para `PricingPreview.tsx`:**
+- Añadir el toggle mensual/anual real reutilizando el componente ya existente
+  `PricingToggle`/`PricingPeriodLabel` (mismo patrón que `/pricing`, cero componente
+  nuevo) — hoy el teaser ni siquiera deja ver el ahorro anual.
+- Mostrar un subconjunto de features por nivel (3–4, no la lista completa) debajo del
+  precio de cada tarjeta — a decidir en implementación cuáles son los 3-4 más
+  representativos por tier (probablemente los primeros del array ya redactado en
+  `Pricing.tiers.*.features`, que ya está ordenado por relevancia).
+- Añadir una línea corta bajo las 3 tarjetas mencionando que hay bloques adicionales
+  disponibles (versión resumida de `Pricing.addonsTitle`/`addonsDescription`, sin listar
+  los 4 addons completos — esos se quedan en `/pricing`).
+- Mantener un único CTA por tarjeta hacia `/pricing` (`t('cta')`, ya existe) — el teaser
+  gana contenido pero sigue funcionando como puerta de entrada a la página completa, no
+  como sustituto.
+- **Resolver la duplicación de precio antes o durante la implementación:** decidir una
+  única fuente de verdad para el número de precio (recomendado: que `PricingPreview` lea
+  directamente `Pricing.tiers.*.priceMonthly`/`priceAnnual` en vez de mantener el string
+  separado `priceFrom`) para que actualizar un precio en el futuro sea un cambio en un
+  solo sitio, no dos namespaces a mano. Esto implica revisar si `priceFrom` se elimina de
+  `Landing.pricingPreview` en los 3 idiomas (`es`/`pt`/`en`) una vez deje de usarse.
+
+**Alcance estimado:** S — un componente (`PricingPreview.tsx`), sin tocar `/pricing`
+salvo quizás extraer alguna copy compartida, y edición de `landing.json` en `es`/`pt`/`en`
+para los nuevos textos cortos (paridad de claves, traducción de `landing-content-writer`
+igual que en fases anteriores). No toca middleware, no añade dependencias, reutiliza
+componentes ya existentes.
+
+Sources:
+- [27 SaaS Pricing Pages That Actually Convert (Real Data, 2026)](https://www.925studios.co/blog/saas-pricing-page-examples-convert-2026)
+- [B2B SaaS Landing Pages: Strategy for More Demos (2026)](https://www.apexure.com/blog/b2b-saas-marketing-the-right-landing-page-strategy/)
+- [SaaS Pricing Page Best Practices in 2026 — Fungies.io](https://fungies.io/saas-pricing-page-best-practices-2026/)
