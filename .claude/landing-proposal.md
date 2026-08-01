@@ -1238,17 +1238,22 @@ patrón exacto documentado arriba.
 
 ---
 
-## 13. Cierre de la ronda de refinamiento — pendiente de decisión de Jose
+## 13. Cierre de la ronda de refinamiento — GAPs abiertos, pendientes de implementación
 
-Las 8 ideas de §12.1 a §12.8 están documentadas y confirmadas. Cuando Jose decida cerrar
-esta ronda, el siguiente paso es agruparlas en uno o varios GAPs vía `gap-discovery` para
-implementación — mismo flujo que las Fases A–D. Posible agrupación por afinidad técnica
-(a validar con Jose al cerrar):
-- **GAP 1 — Bento y flujo de producto:** §12.3 (quitar iconos), §12.6 (diversificar
-  copy), §12.7 (bento asimétrico + tile de cierre, que ya absorbe el punto 2 de §12.6).
-- **GAP 2 — "Así funciona" + Cumplimiento legal:** §12.4 (rediseño HowItWorks), §12.5
-  (TrustBadge → Cumplimiento Legal, con los claims 4/5 documentados como backlog
-  bloqueado).
-- **GAP 3 — Piezas sueltas pequeñas:** §12.1 (marquee de logos), §12.2 (enriquecer
-  PricingPreview), §12.8 (quitar teléfono placeholder) — alcance XS/S cada una,
-  agrupables sin dependencias entre sí.
+Ronda cerrada por Jose el 2026-08-01. Las 8 ideas de §12.1 a §12.8 quedaron agrupadas en
+3 GAPs vía `gap-discovery`, ya escritos y en `.claude/gaps/open/` — pendientes de que
+Jose confirme cuándo se implementan (no se ha escrito código de producción todavía):
+
+- **`GAP-132-landing-bento-asimetrico-copy.md`** — §12.3 (quitar iconos), §12.6
+  (diversificar copy), §12.7 (bento asimétrico + tile de cierre, que ya absorbe el punto
+  2 de §12.6).
+- **`GAP-133-landing-how-it-works-cumplimiento-legal.md`** — §12.4 (rediseño
+  HowItWorks), §12.5 (TrustBadge → Cumplimiento Legal, con los claims 4/5 documentados
+  como backlog bloqueado, sin UI, solo comentario `// TODO` en código).
+- **`GAP-134-landing-marquee-pricing-footer.md`** — §12.1 (marquee de logos), §12.2
+  (enriquecer PricingPreview, incluida la unificación de fuente de precio con
+  `/pricing`), §12.8 (quitar teléfono placeholder del footer).
+
+Los 3 GAPs son independientes entre sí (sin dependencias de orden de implementación) y
+cada uno referencia de vuelta a su sección de este documento para el análisis completo,
+la investigación de mercado y las alternativas descartadas.
