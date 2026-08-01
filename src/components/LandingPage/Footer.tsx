@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Mail, Phone, Waves } from 'lucide-react';
+import { Mail, Waves } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { Separator } from '@/components/ui/separator';
 import { appName, infoEmail } from '@/configs/branding';
@@ -29,10 +29,6 @@ export default async function Footer() {
               <li className="text-invert-foreground/70 flex items-center gap-2 text-sm">
                 <Mail className="h-4 w-4" aria-hidden="true" />
                 <span>{infoEmail}</span>
-              </li>
-              <li className="text-invert-foreground/70 flex items-center gap-2 text-sm">
-                <Phone className="h-4 w-4" aria-hidden="true" />
-                <span>+34 900 123 456</span>
               </li>
             </ul>
           </div>

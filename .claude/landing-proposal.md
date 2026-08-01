@@ -12,15 +12,15 @@
 
 ## Estado de la iniciativa
 
-| Fase | Nombre | Estado | Tamaño |
-|---|---|---|---|
-| 0 | Contexto + equipo de agentes | ✅ Completada 2026-07-27 | — |
-| 1 | Diagnóstico + comparativa + propuesta (este documento) | ✅ Completada 2026-07-27 | — |
-| A | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots) | ✅ GAP-119 cerrado (2026-07-28, ⚠️ aprobado con observaciones ya resueltas) | S |
-| B | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ✅ B1 (GAP-120) y B2 (GAP-121) cerrados 2026-07-28 — ver §8 | L |
-| C | Pricing + Legal + PT/EN | ✅ GAP-122 cerrado 2026-07-28 — ver §9 | M |
-| D | Blog + GEO/AEO | ✅ GAP-123 cerrado 2026-07-28 (⚠️ aprobado con observaciones) — ver §10 | M |
-| E | Analítica + cadencia trimestral continua | ⬜ Pendiente | S |
+| Fase | Nombre                                                                  | Estado                                                                      | Tamaño |
+| ---- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------ |
+| 0    | Contexto + equipo de agentes                                            | ✅ Completada 2026-07-27                                                    | —      |
+| 1    | Diagnóstico + comparativa + propuesta (este documento)                  | ✅ Completada 2026-07-27                                                    | —      |
+| A    | Detener la sangría (CTAs rotos, claims falsos, sitemap/robots)          | ✅ GAP-119 cerrado (2026-07-28, ⚠️ aprobado con observaciones ya resueltas) | S      |
+| B    | Rediseño core de la home (componentización, sistema visual, `[locale]`) | ✅ B1 (GAP-120) y B2 (GAP-121) cerrados 2026-07-28 — ver §8                 | L      |
+| C    | Pricing + Legal + PT/EN                                                 | ✅ GAP-122 cerrado 2026-07-28 — ver §9                                      | M      |
+| D    | Blog + GEO/AEO                                                          | ✅ GAP-123 cerrado 2026-07-28 (⚠️ aprobado con observaciones) — ver §10     | M      |
+| E    | Analítica + cadencia trimestral continua                                | ⬜ Pendiente                                                                | S      |
 
 **Estado de la Fase A:** implementada y auditada. `.claude/gaps/closed/GAP-119-landing-fase-a-detener-sangria.md`
 cubre CTAs rotos, badges de confianza falsos, formulario de leads funcional (email vía
@@ -105,16 +105,16 @@ citarla ante quien busque un ERP para el sector pesquero.
 Referencias: Linear, Vercel, Stripe, Notion, Airtable (pricing y diseño);
 benchmarks de conversión de investigación de mercado 2026 sobre B2B SaaS.
 
-| Dimensión | PesquerApp hoy | Estándar 2026 | Propuesta |
-|---|---|---|---|
-| Hero | Mockup estático + 2 CTAs, uno roto | Producto legible en 3–5s; un solo CTA dominante (13.5% vs 10.5% de conversión frente a multi-CTA) | Bento hero con mockup real estilizado del dashboard + un único CTA "Ver demo" |
-| Prueba social | 5 logos sin contexto + rating no verificado (comentado en el propio código) | Casos reales, cifras verificables, vídeo o cita nominal | Testimonios reales que aporte Jose; sin rating hasta tener reseñas reales |
-| Pricing | Inexistente — solo "solicitar acceso" | Transparencia en tiers self-serve; "contactar ventas" reservado a enterprise | Página `/pricing`, 3 niveles + FAQ — cifras pendientes de confirmar con Jose |
-| SEO técnico | Sin sitemap/robots/JSON-LD, metadata genérica | `sitemap.ts` + `robots.ts` + JSON-LD desde Server Components | Los tres implementados; `Organization` + `SoftwareApplication` schema |
-| GEO/AEO | Sin blog, sin contenido citable | Respuesta directa en las primeras ~200 palabras; contenido estructurado para extracción por IA | Blog con clusters de nicho pesquero |
-| Multiidioma | Solo español, sin infraestructura | Segmento `[locale]`, `hreflang`, namespaces de traducción | `next-intl` + `[locale]` desde el día uno — ES/PT/EN |
-| Analítica | Ninguna (solo Speed Insights, que mide performance no conversión) | Cookieless o consent-gated — GA4 pierde ~44% del tráfico real por rechazos de consentimiento en estudios independientes | Analítica cookieless sin banner |
-| Performance imágenes | PNG 180–320KB, sin AVIF/WebP, sobre-dimensionadas | AVIF/WebP automático, dimensiones ajustadas al render real | `next.config.mjs images.formats` + auditoría de tamaños con `landing-auditor` |
+| Dimensión            | PesquerApp hoy                                                              | Estándar 2026                                                                                                           | Propuesta                                                                     |
+| -------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Hero                 | Mockup estático + 2 CTAs, uno roto                                          | Producto legible en 3–5s; un solo CTA dominante (13.5% vs 10.5% de conversión frente a multi-CTA)                       | Bento hero con mockup real estilizado del dashboard + un único CTA "Ver demo" |
+| Prueba social        | 5 logos sin contexto + rating no verificado (comentado en el propio código) | Casos reales, cifras verificables, vídeo o cita nominal                                                                 | Testimonios reales que aporte Jose; sin rating hasta tener reseñas reales     |
+| Pricing              | Inexistente — solo "solicitar acceso"                                       | Transparencia en tiers self-serve; "contactar ventas" reservado a enterprise                                            | Página `/pricing`, 3 niveles + FAQ — cifras pendientes de confirmar con Jose  |
+| SEO técnico          | Sin sitemap/robots/JSON-LD, metadata genérica                               | `sitemap.ts` + `robots.ts` + JSON-LD desde Server Components                                                            | Los tres implementados; `Organization` + `SoftwareApplication` schema         |
+| GEO/AEO              | Sin blog, sin contenido citable                                             | Respuesta directa en las primeras ~200 palabras; contenido estructurado para extracción por IA                          | Blog con clusters de nicho pesquero                                           |
+| Multiidioma          | Solo español, sin infraestructura                                           | Segmento `[locale]`, `hreflang`, namespaces de traducción                                                               | `next-intl` + `[locale]` desde el día uno — ES/PT/EN                          |
+| Analítica            | Ninguna (solo Speed Insights, que mide performance no conversión)           | Cookieless o consent-gated — GA4 pierde ~44% del tráfico real por rechazos de consentimiento en estudios independientes | Analítica cookieless sin banner                                               |
+| Performance imágenes | PNG 180–320KB, sin AVIF/WebP, sobre-dimensionadas                           | AVIF/WebP automático, dimensiones ajustadas al render real                                                              | `next.config.mjs images.formats` + auditoría de tamaños con `landing-auditor` |
 
 ---
 
@@ -144,6 +144,7 @@ de color nuevo. Los únicos colores no neutros permitidos son los semantic token
 ya existentes, y solo para su uso semántico (nunca decorativo).
 
 Estructura de la home:
+
 1. **Hero** — titular + subtítulo + un único CTA + mockup real estilizado del
    dashboard, sin segundo CTA compitiendo.
 2. **Bento de módulos** — 5 tarjetas (una por módulo real), cada una con un mockup
@@ -215,6 +216,7 @@ antes de buscar en Google. Optimizar para esto (GEO/AEO) no sustituye al SEO
 clásico — lo complementa con la misma base técnica.
 
 **Páginas pilar propuestas (topic clusters):**
+
 - Trazabilidad en la industria pesquera → artículos de normativa, lotes,
   fresco/congelado.
 - Gestión de lonjas y compras → extracción de documentos, integración con
@@ -307,6 +309,7 @@ que combine con el resto del sistema monocromo.
 ### Bento de los 5 módulos (Tipo 3 · prompt IA)
 
 **Producción y Trazabilidad**
+
 ```
 [bloque de estilo base] + depicting a simplified production tracking card with
 a fish icon, a batch/lot number tag, and a small progress bar, evoking
@@ -314,18 +317,21 @@ traceability from catch to final product.
 ```
 
 **Almacén y Stock**
+
 ```
 [bloque de estilo base] + depicting a simplified isometric warehouse grid map
 with a few highlighted storage cells and a location pin icon.
 ```
 
 **Compras y Ventas**
+
 ```
 [bloque de estilo base] + depicting a simplified invoice/order card with a
 checkmark badge and an upward trend arrow icon.
 ```
 
 **Extracción de PDF con IA**
+
 ```
 [bloque de estilo base] + depicting a simplified document icon with scan lines
 transforming into a structured data table, a small sparkle icon indicating AI
@@ -333,6 +339,7 @@ processing.
 ```
 
 **Editor de Etiquetas**
+
 ```
 [bloque de estilo base] + depicting a simplified product label mockup with a
 barcode and a small printer icon.
@@ -341,6 +348,7 @@ barcode and a small printer icon.
 ### Confianza y capturas reales
 
 **Tarjeta de seguridad/confianza** (Tipo 3 · prompt IA)
+
 ```
 [bloque de estilo base] + depicting a shield icon with a checkmark, evoking
 data security — no certification badges, no unverifiable claims depicted.
@@ -362,6 +370,7 @@ etiqueta de ejemplo ya diseñada y cargada, no el lienzo vacío.
 ## 6. Roadmap priorizado
 
 ### Fase A — Detener la sangría (S)
+
 Arreglar los CTAs rotos, quitar las afirmaciones no verificadas, actualizar el
 copyright, crear `sitemap.ts`/`robots.ts` básicos. Ninguna de estas piezas
 depende del rediseño visual — se pueden cerrar en días, no en semanas, y
@@ -369,20 +378,24 @@ detienen el daño activo (leads perdidos, afirmaciones falsas publicadas, cero
 indexación).
 
 ### Fase B — Rediseño core de la home (L)
+
 Componentización real (Hero/Bento/Footer separados), sistema visual monocromo +
 bento, primeros assets tipo 1/2/3, infraestructura `[locale]` con ES como único
 idioma publicado todavía.
 
 ### Fase C — Pricing + Legal + PT/EN (M)
+
 Página de precios (estructura ya, cifras cuando Jose las confirme), las tres
 páginas legales, traducción de todo lo publicado a portugués e inglés,
 `hreflang`.
 
 ### Fase D — Blog + GEO/AEO (M)
+
 Infraestructura de blog + los primeros artículos de los tres pilares de
 contenido, siguiendo la estructura GEO-aware de §4.6.
 
 ### Fase E — Analítica + cadencia continua (S)
+
 Analítica cookieless conectada, primera ejecución de `/audit-landing` sobre el
 sitio ya rediseñado para fijar el baseline real, y arranque del ciclo trimestral.
 
@@ -407,15 +420,15 @@ Ronda de preguntas de clarificación previa a `gap-discovery`, respondida por Jo
 tocar ningún archivo. Vinculante para los GAPs de Fase B salvo que Jose las cambie
 explícitamente — mismo estatus que las decisiones de `landing-context.md` §3.
 
-| Dimensión | Decisión |
-|---|---|
-| **División en GAPs** | Dos GAPs secuenciales, no uno solo: **B1 (arquitectura)** — componentización real de `LandingPage`, infraestructura `[locale]`, convivencia con `src/app/page.js` (routing subdominio login vs landing pública), SEO/metadata por página vía Server Components. **B2 (sistema visual)** — monocromo + bento + assets, sobre la base ya componentizada de B1. B2 no arranca hasta que B1 esté cerrado y auditado. |
-| **URL de idioma** | Español sin prefijo (`lapesquerapp.es/` sirve ES directamente); `/pt` y `/en` sí llevan prefijo. `next-intl` con `localePrefix: 'as-needed'`. |
-| **Dependencia i18n** | Aprobado `next-intl` explícitamente (regla de CLAUDE.md "no añadir dependencias sin aprobación" — cubierta para esta librería, para esta fase). |
-| **Copy nuevo** | `landing-content-writer` redacta el copy nuevo (titulares, tarjetas de módulo, CTA) en el mismo ciclo de B2, siguiendo `landing-context.md` §4.3 — no se maqueta con el copy actual y se reescribe después. |
-| **Assets visuales (Tipo 1/2/3)** | B2 implementa el layout bento completo con placeholders explícitamente marcados con su clasificación (tipo 1/2/3, según `landing-context.md` §7b). Jose genera los prompts de IA (Tipo 3, ya redactados en §5) y captura las pantallas reales (Tipo 1) por su cuenta cuando el layout esté listo — no bloquea el cierre de B2. Un GAP corto de seguimiento inserta los assets finales. |
-| **Testimonios / prueba social** | Jose aún no tiene testimonios reales confirmados (nombre/empresa/cita/logo). B2 construye la sección solo con logos de lonjas ya integradas si existen, o la deja fuera por completo — cero citas ni nombres inventados. Se añade en un GAP posterior cuando Jose los aporte. |
-| **Pricing preview en home** | Incluida en B2, sin cifras — nombre de cada nivel + a quién va dirigido + CTA a `/pricing` (la página completa con cifras es Fase C). |
+| Dimensión                        | Decisión                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **División en GAPs**             | Dos GAPs secuenciales, no uno solo: **B1 (arquitectura)** — componentización real de `LandingPage`, infraestructura `[locale]`, convivencia con `src/app/page.js` (routing subdominio login vs landing pública), SEO/metadata por página vía Server Components. **B2 (sistema visual)** — monocromo + bento + assets, sobre la base ya componentizada de B1. B2 no arranca hasta que B1 esté cerrado y auditado. |
+| **URL de idioma**                | Español sin prefijo (`lapesquerapp.es/` sirve ES directamente); `/pt` y `/en` sí llevan prefijo. `next-intl` con `localePrefix: 'as-needed'`.                                                                                                                                                                                                                                                                    |
+| **Dependencia i18n**             | Aprobado `next-intl` explícitamente (regla de CLAUDE.md "no añadir dependencias sin aprobación" — cubierta para esta librería, para esta fase).                                                                                                                                                                                                                                                                  |
+| **Copy nuevo**                   | `landing-content-writer` redacta el copy nuevo (titulares, tarjetas de módulo, CTA) en el mismo ciclo de B2, siguiendo `landing-context.md` §4.3 — no se maqueta con el copy actual y se reescribe después.                                                                                                                                                                                                      |
+| **Assets visuales (Tipo 1/2/3)** | B2 implementa el layout bento completo con placeholders explícitamente marcados con su clasificación (tipo 1/2/3, según `landing-context.md` §7b). Jose genera los prompts de IA (Tipo 3, ya redactados en §5) y captura las pantallas reales (Tipo 1) por su cuenta cuando el layout esté listo — no bloquea el cierre de B2. Un GAP corto de seguimiento inserta los assets finales.                           |
+| **Testimonios / prueba social**  | Jose aún no tiene testimonios reales confirmados (nombre/empresa/cita/logo). B2 construye la sección solo con logos de lonjas ya integradas si existen, o la deja fuera por completo — cero citas ni nombres inventados. Se añade en un GAP posterior cuando Jose los aporte.                                                                                                                                    |
+| **Pricing preview en home**      | Incluida en B2, sin cifras — nombre de cada nivel + a quién va dirigido + CTA a `/pricing` (la página completa con cifras es Fase C).                                                                                                                                                                                                                                                                            |
 
 ### B1 — cerrado (GAP-120, 2026-07-28)
 
@@ -436,26 +449,26 @@ Ronda de preguntas de clarificación específica de B2 (sistema visual), posteri
 B1. Vinculante para el/los GAP(s) de B2 salvo que Jose las cambie explícitamente — mismo
 estatus que el resto de esta tabla.
 
-| Dimensión | Decisión |
-|---|---|
+| Dimensión                                                                                                                                                                             | Decisión                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Imágenes reales actuales** (`home-mockup.png`, `mockup-label.png`, `mockup-ia-2.png`, `mockup-store.png`, `mockup-orders.png`) — hoy muestran la UI real en `sky-500`, no monocroma | No se tocan ni se reutilizan en B2. B2 monta el layout con placeholders explícitos marcados `[PLACEHOLDER: captura real — vista X]` (Tipo 1, según `landing-context.md` §7b). Un GAP corto de seguimiento captura de nuevo en tenant demo/seed y aplica el tratamiento visual (recorte, sombra, aislamiento) de §7b. |
-| **`IntegratedLonjas`** (logos reales de lonjas ya integradas, sin riesgo de honestidad — a diferencia de los testimonios) | Se mantiene en B2, restyleada al sistema monocromo. No sigue el mismo destino que los testimonios (esos sí quedan fuera). |
-| **Dark mode** | La landing soporta claro/oscuro vía los tokens OKLCH ya existentes (`--background`/`--foreground`/`--primary`/`--muted`/`--border`), igual que el resto de la app — no se fija a un único modo. |
-| **`framer-motion` scroll-reveal** (§4.1/§4.9, librería ya instalada) | Entra en el alcance de B2 — scroll-reveal básico con intención en los bloques bento, no diferido a un GAP posterior. |
+| **`IntegratedLonjas`** (logos reales de lonjas ya integradas, sin riesgo de honestidad — a diferencia de los testimonios)                                                             | Se mantiene en B2, restyleada al sistema monocromo. No sigue el mismo destino que los testimonios (esos sí quedan fuera).                                                                                                                                                                                            |
+| **Dark mode**                                                                                                                                                                         | La landing soporta claro/oscuro vía los tokens OKLCH ya existentes (`--background`/`--foreground`/`--primary`/`--muted`/`--border`), igual que el resto de la app — no se fija a un único modo.                                                                                                                      |
+| **`framer-motion` scroll-reveal** (§4.1/§4.9, librería ya instalada)                                                                                                                  | Entra en el alcance de B2 — scroll-reveal básico con intención en los bloques bento, no diferido a un GAP posterior.                                                                                                                                                                                                 |
 
 ### B2 — Estructura de home confirmada (segunda ronda, 2026-07-28)
 
 Ronda de preguntas sobre la estructura real de página (comparando los 7 componentes de B1
 contra el home ideal de §4.2). Vinculante igual que el resto de esta tabla.
 
-| Dimensión | Decisión |
-|---|---|
-| **Hero** | Un único CTA + un único mockup central estilizado (placeholder Tipo 1) — se eliminan el segundo CTA y las 3 tarjetas flotantes, siguiendo estrictamente la recomendación CRO de §4.2. |
-| **`ModulesBento`** | Cada una de las 5 tarjetas añade su placeholder Tipo 3 (prompts ya redactados en §5) además del icono monocromo — no se queda solo en icono. |
-| **`HowItWorks` (nuevo)** | Se crea en B2: 3 pasos (captura/lonja → producción/stock → venta), copy nuevo de `landing-content-writer` en el mismo ciclo. |
-| **`ProductShowcase`** | Se retira como sección independiente. Decisión de Jose delegada al criterio del equipo: mantener 2 veces el mismo producto (bento + showcase apilado) contradice el objetivo de página limpia tipo Apple con "un elemento visual dominante por sección" (§4.2); sus 4 capturas actuales quedaban cubiertas por los mismos 5 mockups del bento. Se elimina el archivo, no se migra contenido 1:1. |
-| **`PricingPreview` (nuevo)** | Se crea en B2: nombre de cada nivel + a quién va dirigido, sin cifras, CTA a `/pricing`. Como `/pricing` no existe hasta Fase C, el CTA apunta temporalmente al ancla del formulario de leads (`#lead-form` o equivalente) — señalado en el GAP como cambio de destino pendiente para cuando exista la página real. |
-| **Orden final de secciones** | Hero → `ModulesBento` → `HowItWorks` → `IntegratedLonjas` → `TrustBadge` → `PricingPreview` → `LeadCaptureForm` → `Footer`. |
+| Dimensión                    | Decisión                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Hero**                     | Un único CTA + un único mockup central estilizado (placeholder Tipo 1) — se eliminan el segundo CTA y las 3 tarjetas flotantes, siguiendo estrictamente la recomendación CRO de §4.2.                                                                                                                                                                                                            |
+| **`ModulesBento`**           | Cada una de las 5 tarjetas añade su placeholder Tipo 3 (prompts ya redactados en §5) además del icono monocromo — no se queda solo en icono.                                                                                                                                                                                                                                                     |
+| **`HowItWorks` (nuevo)**     | Se crea en B2: 3 pasos (captura/lonja → producción/stock → venta), copy nuevo de `landing-content-writer` en el mismo ciclo.                                                                                                                                                                                                                                                                     |
+| **`ProductShowcase`**        | Se retira como sección independiente. Decisión de Jose delegada al criterio del equipo: mantener 2 veces el mismo producto (bento + showcase apilado) contradice el objetivo de página limpia tipo Apple con "un elemento visual dominante por sección" (§4.2); sus 4 capturas actuales quedaban cubiertas por los mismos 5 mockups del bento. Se elimina el archivo, no se migra contenido 1:1. |
+| **`PricingPreview` (nuevo)** | Se crea en B2: nombre de cada nivel + a quién va dirigido, sin cifras, CTA a `/pricing`. Como `/pricing` no existe hasta Fase C, el CTA apunta temporalmente al ancla del formulario de leads (`#lead-form` o equivalente) — señalado en el GAP como cambio de destino pendiente para cuando exista la página real.                                                                              |
+| **Orden final de secciones** | Hero → `ModulesBento` → `HowItWorks` → `IntegratedLonjas` → `TrustBadge` → `PricingPreview` → `LeadCaptureForm` → `Footer`.                                                                                                                                                                                                                                                                      |
 
 ### B2 — cerrado (GAP-121, 2026-07-28)
 
@@ -471,7 +484,7 @@ Verificado con servidor de desarrollo real (`curl`): cero clases `sky-*`, cero c
 certificaciones inventadas, cero regresión sobre GAP-119 (lógica de leads) ni GAP-120 (legal,
 sitemap, robots, routing de tenant/dominio raíz). Pendiente real heredado: verificación visual
 humana en navegador todavía no hecha (ninguno de los 3 GAPs de landing la ha tenido) — este es
-el primer GAP que cambia lo que el usuario *ve* de verdad, recomendado antes de encargar el GAP
+el primer GAP que cambia lo que el usuario _ve_ de verdad, recomendado antes de encargar el GAP
 de assets de seguimiento (sustituir los 6 placeholders Tipo 2/Tipo 3 por los assets finales).
 
 ### Riesgo técnico señalado para B1 (no una decisión, un aviso para `gap-discovery`)
@@ -494,13 +507,13 @@ Ronda de preguntas de clarificación previa a `gap-discovery` de Fase C (pricing
 completo), respondida por Jose antes de tocar ningún archivo. Vinculante para el/los GAP(s) de
 Fase C — mismo estatus que el resto de este documento.
 
-| Dimensión | Decisión |
-|---|---|
-| **División en GAPs** | Un solo GAP cubre pricing + legal + i18n completo — no se divide en C1/C2. La página `/pricing` se construye con placeholders de cifras si aún no están confirmadas (mismo patrón de disciplina de placeholder que B2), sin bloquear el resto. |
-| **Cifras de pricing** | Jose no las tiene confirmadas todavía — la página se monta con la estructura completa (3 niveles, toggle mensual/anual, comparativa, FAQ) y las cifras marcadas explícitamente como pendientes (mismo patrón `AssetPlaceholder`-like de B2, adaptado a texto en vez de imagen). |
-| **Traducción PT/EN** | `landing-content-writer` traduce todo lo publicado (home + legal) en este ciclo; Jose revisa después sin que eso bloquee el cierre del GAP — el contenido vive en JSON, fácil de corregir en una pasada posterior si hace falta. |
-| **Redirect de URLs legales viejas** | `/legal/privacy` y `/legal/terms` (fuera de `[locale]`, indexadas desde GAP-119) pasan a `/[locale]/legal/...`. Las URLs viejas quedan con redirect 301 a `/es/legal/...` vía `next.config.mjs` `redirects()` — preserva el SEO ya acumulado. |
-| **`/legal/cookies`** | Sigue pospuesta — no hay cookies no esenciales todavía (sin analítica, eso es Fase E). Se crea cuando exista analítica real que la necesite, no antes. |
+| Dimensión                           | Decisión                                                                                                                                                                                                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **División en GAPs**                | Un solo GAP cubre pricing + legal + i18n completo — no se divide en C1/C2. La página `/pricing` se construye con placeholders de cifras si aún no están confirmadas (mismo patrón de disciplina de placeholder que B2), sin bloquear el resto.                                  |
+| **Cifras de pricing**               | Jose no las tiene confirmadas todavía — la página se monta con la estructura completa (3 niveles, toggle mensual/anual, comparativa, FAQ) y las cifras marcadas explícitamente como pendientes (mismo patrón `AssetPlaceholder`-like de B2, adaptado a texto en vez de imagen). |
+| **Traducción PT/EN**                | `landing-content-writer` traduce todo lo publicado (home + legal) en este ciclo; Jose revisa después sin que eso bloquee el cierre del GAP — el contenido vive en JSON, fácil de corregir en una pasada posterior si hace falta.                                                |
+| **Redirect de URLs legales viejas** | `/legal/privacy` y `/legal/terms` (fuera de `[locale]`, indexadas desde GAP-119) pasan a `/[locale]/legal/...`. Las URLs viejas quedan con redirect 301 a `/es/legal/...` vía `next.config.mjs` `redirects()` — preserva el SEO ya acumulado.                                   |
+| **`/legal/cookies`**                | Sigue pospuesta — no hay cookies no esenciales todavía (sin analítica, eso es Fase E). Se crea cuando exista analítica real que la necesite, no antes.                                                                                                                          |
 
 ### Riesgo técnico señalado para Fase C (no una decisión, un aviso para `gap-discovery`)
 
@@ -550,20 +563,20 @@ respondida por Jose antes de escribir el GAP. Vinculante para GAP-123 — mismo 
 resto de este documento. GAP completo:
 `.claude/gaps/closed/GAP-123-landing-fase-d-blog-geo-aeo.md`.
 
-| Dimensión | Decisión |
-|---|---|
-| **División en GAPs** | Un solo GAP cubre infraestructura + los 3 primeros artículos (mismo patrón que Fase C). |
-| **Almacenamiento de contenido** | Markdown plano versionado en el repo (`src/content/blog/{slug}/{es,pt,en}.md` + `meta.ts` tipado) — publicar es añadir archivos y desplegar, sin CMS externo. Pivote técnico durante la implementación: de MDX (`next-mdx-remote`, dependencia nueva) a Markdown plano con `react-markdown`/`remark-gfm`, ya instalados y en uso real (`MarkdownRenderer.js` del chat IA) — cero dependencias nuevas, confirmado con Jose. |
-| **Artículos de lanzamiento** | 3, uno por cada topic cluster ya definido en §4.6 (trazabilidad, gestión de lonjas/compras, etiquetado y cumplimiento normativo). Títulos/ángulos exactos delegados a `landing-content-writer` dentro de cada pilar, sin aprobación previa de cada título — mismo patrón que los nombres de tiers en B2. |
-| **Autoría** | Founder-led, firma de Jose. Nombre/rol exacto **pendiente de confirmar** — se publica con placeholder de texto explícito mientras tanto, misma regla de honestidad que el precio pendiente de Fase C. |
-| **Layout del índice `/blog`** | Mismo sistema monocromo de B2, sin layout alternativo. |
-| **Portada por artículo** | Placeholder Tipo 3 (`AssetPlaceholder` reutilizado de B2) — no bloquea el cierre, GAP de assets de seguimiento las sustituye. |
-| **Traducción PT/EN** | En el mismo GAP, a cargo de `landing-content-writer`, mismo patrón que Fase C. |
-| **Pillar pages (topic cluster hubs)** | No se crean en este GAP — se revisan cuando haya 2–3 artículos por cluster. |
-| **Workflow de publicación** | Vía repo/deploy — sin CMS ni panel de edición. |
-| **RSS** | Sí, un feed por locale (`/blog/rss/{locale}`), fuera del árbol `[locale]` (no necesita tocar el middleware). |
-| **Mobile** | Aplica ya. |
-| **Dependencia nueva** | Ninguna — tras el pivote a Markdown plano, cero paquetes nuevos en `package.json`. |
+| Dimensión                             | Decisión                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **División en GAPs**                  | Un solo GAP cubre infraestructura + los 3 primeros artículos (mismo patrón que Fase C).                                                                                                                                                                                                                                                                                                                                    |
+| **Almacenamiento de contenido**       | Markdown plano versionado en el repo (`src/content/blog/{slug}/{es,pt,en}.md` + `meta.ts` tipado) — publicar es añadir archivos y desplegar, sin CMS externo. Pivote técnico durante la implementación: de MDX (`next-mdx-remote`, dependencia nueva) a Markdown plano con `react-markdown`/`remark-gfm`, ya instalados y en uso real (`MarkdownRenderer.js` del chat IA) — cero dependencias nuevas, confirmado con Jose. |
+| **Artículos de lanzamiento**          | 3, uno por cada topic cluster ya definido en §4.6 (trazabilidad, gestión de lonjas/compras, etiquetado y cumplimiento normativo). Títulos/ángulos exactos delegados a `landing-content-writer` dentro de cada pilar, sin aprobación previa de cada título — mismo patrón que los nombres de tiers en B2.                                                                                                                   |
+| **Autoría**                           | Founder-led, firma de Jose. Nombre/rol exacto **pendiente de confirmar** — se publica con placeholder de texto explícito mientras tanto, misma regla de honestidad que el precio pendiente de Fase C.                                                                                                                                                                                                                      |
+| **Layout del índice `/blog`**         | Mismo sistema monocromo de B2, sin layout alternativo.                                                                                                                                                                                                                                                                                                                                                                     |
+| **Portada por artículo**              | Placeholder Tipo 3 (`AssetPlaceholder` reutilizado de B2) — no bloquea el cierre, GAP de assets de seguimiento las sustituye.                                                                                                                                                                                                                                                                                              |
+| **Traducción PT/EN**                  | En el mismo GAP, a cargo de `landing-content-writer`, mismo patrón que Fase C.                                                                                                                                                                                                                                                                                                                                             |
+| **Pillar pages (topic cluster hubs)** | No se crean en este GAP — se revisan cuando haya 2–3 artículos por cluster.                                                                                                                                                                                                                                                                                                                                                |
+| **Workflow de publicación**           | Vía repo/deploy — sin CMS ni panel de edición.                                                                                                                                                                                                                                                                                                                                                                             |
+| **RSS**                               | Sí, un feed por locale (`/blog/rss/{locale}`), fuera del árbol `[locale]` (no necesita tocar el middleware).                                                                                                                                                                                                                                                                                                               |
+| **Mobile**                            | Aplica ya.                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **Dependencia nueva**                 | Ninguna — tras el pivote a Markdown plano, cero paquetes nuevos en `package.json`.                                                                                                                                                                                                                                                                                                                                         |
 
 **Decisiones técnicas del discovery** (no preguntas, derivadas de patrones ya establecidos en
 Fase C): mismo slug en los 3 locales (`/blog/{slug}`, `/pt/blog/{slug}`, `/en/blog/{slug}`);
@@ -611,7 +624,8 @@ urgencia dado el bug descubierto en este GAP, para confirmar con los propios ojo
 **Próximo paso:** verificación visual humana de Jose (más urgente que nunca tras el hallazgo de
 este GAP), decidir si se abre el GAP corto del `<html lang>`, y el GAP corto de assets de B2
 (pendiente desde hace dos fases) sigue disponible cuando Jose quiera retomarlo. Fase E (analítica
-+ cadencia trimestral) es la única fase del roadmap original todavía sin empezar.
+
+- cadencia trimestral) es la única fase del roadmap original todavía sin empezar.
 
 ---
 
@@ -624,6 +638,7 @@ que salió del catálogo funcional. Ver `.claude/product-catalog.md` → "Propue
 niveles de plan" para el razonamiento completo de qué bloque va en qué nivel.
 
 **Implementado:**
+
 - `src/app/[locale]/pricing/page.tsx` — cada tier (`starter`/`pro`/`enterprise`) muestra ahora
   precio mensual/anual real (excepto `enterprise`, que muestra "A medida" + CTA "Hablar con
   ventas", sin cifra — mismo patrón de mercado ya documentado en §4.3, y coherente con que
@@ -653,15 +668,16 @@ niveles de plan" para el razonamiento completo de qué bloque va en qué nivel.
 cambiarlas sin que eso implique tocar la estructura de bloques.
 
 **Traducciones sin precedente previo en el proyecto, señaladas por `landing-content-writer` para
-revisión de Jose:** "Fichaje y control horario por NFC" → PT *"Registo de ponto e controlo
-horário por NFC"*, EN *"NFC time tracking and clock-in"*. "Repartidores y autoventa móvil" → PT
-*"Distribuição e venda direta móvel"* (se evitó traducir "repartidor" literal por la connotación
-de repartidor de comida a domicilio en PT-PT), EN *"Route sales and mobile van sales"*. Ninguna
+revisión de Jose:** "Fichaje y control horario por NFC" → PT _"Registo de ponto e controlo
+horário por NFC"_, EN _"NFC time tracking and clock-in"_. "Repartidores y autoventa móvil" → PT
+_"Distribuição e venda direta móvel"_ (se evitó traducir "repartidor" literal por la connotación
+de repartidor de comida a domicilio en PT-PT), EN _"Route sales and mobile van sales"_. Ninguna
 de las dos tenía traducción previa fijada en `landing.json` ni en la navegación de la app — si
 ya existe un naming preferido en otro sitio (ERP, materiales comerciales), debería sustituir a
 este.
 
 ### ⚠️ Hallazgo no relacionado, descubierto durante la verificación — rutas públicas sin
+
 ### prefijo de idioma devuelven 404 en el servidor de desarrollo actual
 
 Durante la verificación con `curl` se confirmó que **`/pricing`, `/legal/privacy` y `/blog`
@@ -730,6 +746,7 @@ desvanecido (`mask-image` en gradiente) en ambos bordes para que los logos no ap
 ni desaparezcan de golpe. Ver fuentes al final de esta entrada.
 
 **Propuesta concreta:**
+
 - Reemplazar el grid de `IntegratedLonjas.tsx` por una banda de marquee horizontal de una
   sola fila: pista duplicada 2× (o 3× si 5 logos resultan visualmente escasos para llenar
   el ancho sin que se note el bucle demasiado pronto — a decidir en implementación viendo
@@ -777,6 +794,7 @@ integradas antes de lanzar el marquee. Si aún no está claro, hay valorar el cr
 Jose sobre este punto (`AskUserQuestion` en el propio GAP, en vez de asumir).
 
 Sources:
+
 - [Infinite-Scrolling Logos In Flat HTML And Pure CSS — Smashing Magazine](https://www.smashingmagazine.com/2024/04/infinite-scrolling-logos-html-css/)
 - [Infinite Marquee Animation using Modern CSS — Medium](https://medium.com/design-bootcamp/infinite-marquee-animation-using-modern-css-0d11d11fcc10)
 - [Logo Cloud Marquee — Aceternity UI](https://ui.aceternity.com/blocks/logo-clouds/logo-cloud-marquee)
@@ -790,6 +808,7 @@ en primera instancia traer la sección de precios completa al home en vez de dej
 página aparte.
 
 **Estado actual del código:**
+
 - `src/components/LandingPage/PricingPreview.tsx` (teaser del home, namespace
   `Landing.pricingPreview`): 3 tarjetas con solo nombre + audiencia + un texto de precio
   fijo tipo "Desde 149 €/mes" (`tiers.*.priceFrom`, string ya formateado) + un único CTA
@@ -803,8 +822,8 @@ página aparte.
   pricing) y no tiene equivalente en el teaser del home.
 - **Duplicación de origen de precio ya existente y relevante para esta idea:** el precio
   vive hoy en dos formatos distintos sin relación entre sí — `Landing.pricingPreview.
-  tiers.*.priceFrom` como texto libre ("Desde 349 €/mes") y `Pricing.tiers.*.
-  priceMonthly`/`priceAnnual` como números crudos que alimentan el toggle real. Si Jose
+tiers.*.priceFrom` como texto libre ("Desde 349 €/mes") y `Pricing.tiers.*.
+priceMonthly`/`priceAnnual` como números crudos que alimentan el toggle real. Si Jose
   cambia una cifra de precio hoy, hay que actualizarla a mano en dos sitios sin que nada
   avise de la inconsistencia.
 
@@ -815,7 +834,7 @@ fricción del resto de secciones de la home), y ese es justo el motivo por el qu
 `/pricing` ya existe como ruta propia con su propio SEO (`hreflang`/canonical) — es
 también la URL que citaría una IA generativa si alguien pregunta "cuánto cuesta un ERP
 para el sector pesquero". Al mismo tiempo, la recomendación específica para el bloque de
-precios *dentro* del home es clara: mostrar precio (al menos "desde X") y dejar claro de
+precios _dentro_ del home es clara: mostrar precio (al menos "desde X") y dejar claro de
 forma transparente en qué se diferencian los planes — no ocultar el precio, pero tampoco
 hace falta la profundidad completa de una pricing page dedicada.
 
@@ -824,6 +843,7 @@ del home ni eliminar la ruta — en su lugar, enriquecer `PricingPreview` para q
 sentirse vacío, manteniendo `/pricing` como la página con la profundidad completa.
 
 **Propuesta concreta para `PricingPreview.tsx`:**
+
 - Añadir el toggle mensual/anual real reutilizando el componente ya existente
   `PricingToggle`/`PricingPeriodLabel` (mismo patrón que `/pricing`, cero componente
   nuevo) — hoy el teaser ni siquiera deja ver el ahorro anual.
@@ -851,6 +871,7 @@ igual que en fases anteriores). No toca middleware, no añade dependencias, reut
 componentes ya existentes.
 
 Sources:
+
 - [27 SaaS Pricing Pages That Actually Convert (Real Data, 2026)](https://www.925studios.co/blog/saas-pricing-page-examples-convert-2026)
 - [B2B SaaS Landing Pages: Strategy for More Demos (2026)](https://www.apexure.com/blog/b2b-saas-marketing-the-right-landing-page-strategy/)
 - [SaaS Pricing Page Best Practices in 2026 — Fungies.io](https://fungies.io/saas-pricing-page-best-practices-2026/)
@@ -870,7 +891,7 @@ por tarjeta: icono → título → descripción → ilustración.
 
 **Por qué el icono es redundante, no solo "de más":** el propio prompt base ya bloqueado
 en `landing-context.md §7b`/§5 para las ilustraciones tipo 3 incluye explícitamente
-*"thin clean white line-icon on a solid black rounded-square badge"* como parte del
+_"thin clean white line-icon on a solid black rounded-square badge"_ como parte del
 estilo de cada ilustración generada — es decir, el concepto de icono **ya está
 incorporado dentro de la ilustración** que sustituirá al placeholder. El badge de icono
 Lucide en el `CardHeader` es un vestigio de una versión anterior del bento (previa a que
@@ -891,8 +912,9 @@ elemento visual de su tarjeta — no acompañan a ninguna ilustración tipo 3, a
 icono no es redundante y no se toca en esta idea.
 
 **Propuesta concreta:**
+
 - En `ModulesBento.tsx`, eliminar el `<div>` de badge de icono (`bg-muted mb-4 inline-flex
-  w-fit rounded-xl p-3` + el icono Lucide) de las 5 tarjetas, y el import de los 5 iconos
+w-fit rounded-xl p-3` + el icono Lucide) de las 5 tarjetas, y el import de los 5 iconos
   (`Fish`, `Package`, `ShoppingCart`, `Sparkle`, `Ticket`) ya no sería necesario en este
   archivo.
 - `CardHeader` queda solo con `CardTitle`; el orden título → descripción → ilustración se
@@ -910,6 +932,7 @@ icono no es redundante y no se toca en esta idea.
 `HowItWorks`/`TrustBadge`.
 
 Sources:
+
 - [Bento Grid UI Design Guide: Trends, Examples & Best Practices 2026 — Superfiles](https://superfiles.in/bento-grid-ui-design-trend.php)
 - [Designing Bento Grids That Actually Work: A 2026 Practical Guide — SaaSFrame](https://www.saasframe.io/blog/designing-bento-grids-that-actually-work-a-2026-practical-guide)
 - [Best Bento Grid Design Examples [2026] — Mockuuups Studio](https://mockuuups.studio/blog/post/best-bento-grid-design-examples/)
@@ -950,6 +973,7 @@ visual (aquí, captura real en vez de otra ilustración IA como en el bento).
 **Contenido nuevo — centrado en el Pedido como eje real del producto**, no en una
 metáfora de cadena de suministro física (cubre tanto al que produce como al que solo
 distribuye, sin perder vocabulario de sector):
+
 1. **El pedido, el centro de todo** — creas el pedido (cliente, productos previstos,
    plazos); todo lo demás se conecta a partir de aquí.
 2. **Producción y stock reales** — ya sea transformando materia prima propia o de lonja
@@ -960,6 +984,7 @@ distribuye, sin perder vocabulario de sector):
    pedido, sin hojas de cálculo aparte.
 
 **Rediseño visual:**
+
 - Sustituir el icono Lucide de cada paso por una **captura real de la app (Tipo 1, según
   `landing-context.md §7b`)** recortada y tratada visualmente (no una captura cruda
   pegada) — a especificar en el GAP de implementación la vista/estado/breakpoint/tenant
@@ -982,6 +1007,7 @@ capturas reales finales (mismo patrón ya usado para los assets pendientes de B2
 bloquea el cierre del GAP de layout/contenido).
 
 Sources:
+
 - [What Makes a Great SaaS Landing Page in 2026 — Framiq](https://framiq.app/blog/best-saas-landing-pages-2026)
 - [10 SaaS Landing Page Trends for 2026 — SaaSFrame](https://www.saasframe.io/blog/10-saas-landing-page-trends-for-2026-with-real-examples)
 
@@ -1010,6 +1036,7 @@ bloqueante** — no se publican hasta que se compruebe y se garantice que lo pro
 cumple de verdad, mismo criterio de honestidad que rige el resto de la landing.
 
 **Claims que se publican ya:**
+
 1. **Etiquetado según el Reglamento UE 1379/2013** — nombre comercial y científico,
    método de producción y zona de captura en cada etiqueta generada.
 2. **Trazabilidad completa por palet, caja y lote** — histórico de cada palet desde su
@@ -1017,22 +1044,20 @@ cumple de verdad, mismo criterio de honestidad que rige el resto de la landing.
 3. **Catálogo FAO/ASFIS integrado** — +13.700 especies para autocompletar nombre
    científico y datos normativos al dar de alta un producto.
 
-**Claims añadidos por Jose — bloqueados como deuda técnica hasta verificación real:**
-4. **Código de barras GS1-128** — `product-catalog.md` (módulo Stock/Almacén) documenta
-   un bug de dominio real y ya conocido: el Application Identifier de precisión usado es
-   el incorrecto (3100/3200 en vez de 3102/3202), por lo que un lector GS1 estándar
-   externo decodifica el peso ×100. Publicar "compatible con lectores estándar" hoy sería
-   un claim falso en cuanto un cliente lo probara con su propio hardware. **No se activa
-   este claim en la sección hasta que el bug esté corregido** — requiere un GAP aparte
-   fuera del alcance de esta ronda de landing, en el módulo de Stock/Almacén (fix técnico
-   de dominio, no de landing).
-5. **Cumplimiento RGPD** — a diferencia de los otros 4, no es un hecho verificable solo
-   leyendo el código (existen `/legal/privacy` y `/legal/terms` desde Fase A/GAP-119,
-   pero eso no equivale a una auditoría real de cumplimiento RGPD del tratamiento de
-   datos). **No se activa este claim hasta que Jose confirme explícitamente que el
-   tratamiento de datos de la plataforma cumple RGPD de verdad** — mismo criterio que
-   cualquier otra afirmación legal/certificación en `landing-context.md §5`, no una
-   validación técnica sino una decisión/confirmación de Jose.
+**Claims añadidos por Jose — bloqueados como deuda técnica hasta verificación real:** 4. **Código de barras GS1-128** — `product-catalog.md` (módulo Stock/Almacén) documenta
+un bug de dominio real y ya conocido: el Application Identifier de precisión usado es
+el incorrecto (3100/3200 en vez de 3102/3202), por lo que un lector GS1 estándar
+externo decodifica el peso ×100. Publicar "compatible con lectores estándar" hoy sería
+un claim falso en cuanto un cliente lo probara con su propio hardware. **No se activa
+este claim en la sección hasta que el bug esté corregido** — requiere un GAP aparte
+fuera del alcance de esta ronda de landing, en el módulo de Stock/Almacén (fix técnico
+de dominio, no de landing). 5. **Cumplimiento RGPD** — a diferencia de los otros 4, no es un hecho verificable solo
+leyendo el código (existen `/legal/privacy` y `/legal/terms` desde Fase A/GAP-119,
+pero eso no equivale a una auditoría real de cumplimiento RGPD del tratamiento de
+datos). **No se activa este claim hasta que Jose confirme explícitamente que el
+tratamiento de datos de la plataforma cumple RGPD de verdad** — mismo criterio que
+cualquier otra afirmación legal/certificación en `landing-context.md §5`, no una
+validación técnica sino una decisión/confirmación de Jose.
 
 **Tratamiento en la implementación:** los claims 4 y 5 se documentan en el propio GAP
 como backlog explícito con sus dos prerrequisitos (fix del bug GS1-128 fuera de landing;
@@ -1070,6 +1095,7 @@ palabra puntual — es literalmente el titular de casi cada sección de la pági
 **Por qué es un problema real, no solo estilístico** (contrastado contra
 `.claude/product-catalog.md`): mientras el copy repite trazabilidad, **módulos enteros y
 activos del producto no aparecen en ningún sitio de la landing**:
+
 - **CRM Comercial** (agenda, prospectos, ofertas con envío por email/WhatsApp, rutas
   comerciales, autoventa) — cero menciones, y ni siquiera es una de las 5 tarjetas del
   bento de `ModulesBento`.
@@ -1097,6 +1123,7 @@ ilustraciones tipo 3 nuevas). En su lugar:
 **1. Pasada de reescritura de copy** (criterio, no texto final — mismo reparto de trabajo
 ya establecido en §4.3: `landing-content-writer` redacta el texto exacto en el ciclo de
 implementación):
+
 - `hero.subtitle` — dejar de presentar trazabilidad/lote/caducidad como la única
   historia; puede seguir mencionándose (es real y relevante), pero no como el titular que
   resume todo el producto.
@@ -1118,7 +1145,7 @@ originales), con 3 items cortos: **CRM comercial y ofertas**, **Liquidaciones a
 proveedores**, **Reparto y autoventa móvil**. No se solapa con los items de
 rentabilidad/documentación de `HowItWorks` (§12.4 paso 3) ni con los de `TrustBadge`
 (§12.5) porque son 3 módulos de producto distintos, no propiedades transversales.
->
+
 > **⚠️ Superseded por §12.7:** en vez de sección aparte, este contenido se fusiona como el
 > tile de cierre solo-texto del bento asimétrico rediseñado en §12.7 — no se implementa
 > como componente independiente. Se deja el punto 2 tal cual aquí (histórico de la
@@ -1157,6 +1184,7 @@ Raycast) ya usan esta jerarquía de tamaños, no un grid uniforme.
 `grid-cols-5` uniforme), con jerarquía de tamaños entre las 5 tarjetas de módulo
 existentes (no se añaden módulos nuevos — eso ya se descartó explícitamente en §12.6,
 opción A):
+
 - **Tile hero (2×2, mayor peso visual): "Compras y Ventas"** (el módulo Pedidos real).
   Es el núcleo del producto según `product-catalog.md` ("difícil vender el producto sin
   él": previsión, 17 documentos, rentabilidad, ruta) y hoy es paradójicamente la tarjeta
@@ -1192,6 +1220,7 @@ tamaño de contenedor). Compatible con agruparse en el mismo GAP que §12.6 dado
 absorbe directamente su punto 2.
 
 Sources:
+
 - [Designing Bento Grids That Actually Work: A 2026 Practical Guide — SaaSFrame](https://www.saasframe.io/blog/designing-bento-grids-that-actually-work-a-2026-practical-guide)
 - [Bento Grid CSS Tutorial: Apple-Style Layout + Code (2026)](https://senorit.de/en/blog/bento-grid-design-trend-2025)
 - [Bento Grids Are Quietly Winning B2B SaaS Homepages in 2026](https://www.pravinkumar.co/blog/bento-grids-b2b-saas-homepage-design-trend-2026)
@@ -1211,6 +1240,7 @@ las ideas anteriores, aparece un hallazgo del mismo tipo que el que motivó Fase
 ```
 
 Tres señales de que es un placeholder, no un dato real:
+
 1. El patrón "900 123 456" es el equivalente español de "555-1234" — el número
    placeholder clásico.
 2. No sale de `src/configs/branding.js` (la "única fuente de verdad" de contacto del
@@ -1257,3 +1287,52 @@ Jose confirme cuándo se implementan (no se ha escrito código de producción to
 Los 3 GAPs son independientes entre sí (sin dependencias de orden de implementación) y
 cada uno referencia de vuelta a su sección de este documento para el análisis completo,
 la investigación de mercado y las alternativas descartadas.
+
+---
+
+## 14. GAP-132/133/134 — implementados y cerrados (2026-08-01)
+
+Los 3 GAPs se implementaron en la misma sesión, verificados por primera vez con un
+navegador real (Playwright + Chromium local, no solo `curl`/lectura de código) — la
+"verificación visual humana en navegador" que quedó pendiente en cada fase anterior
+(A–D) por fin se hizo de forma automatizada aquí. Los tres: `GAP-132` ✅ APROBADO (9/10),
+`GAP-133` ⚠️ APROBADO CON OBSERVACIONES (9/10), `GAP-134` ✅ APROBADO (10/10). Detalle
+completo de implementación y auditoría en cada `.claude/gaps/closed/GAP-13{2,3,4}-*.md`.
+
+**Bug real encontrado y corregido durante la implementación de GAP-133 (no era parte del
+plan):** la línea conectora nueva de `HowItWorks` no se veía por un problema de CSS
+_stacking context_ — un `-z-10` dentro de un contenedor `position: relative` sin
+`z-index` explícito escapa del stacking context local (un `relative` sin `z-index` no
+crea uno nuevo) y termina pintándose detrás del fondo de la sección, invisible.
+Corregido añadiendo `isolate` al contenedor.
+
+### ⚠️ Hallazgo importante, fuera del alcance de estos 3 GAPs — `ScrollReveal.tsx` no
+
+### respeta `prefers-reduced-motion` en la práctica
+
+Al verificar con un navegador real bajo `prefers-reduced-motion: reduce` (algo que
+ningún GAP de landing había podido comprobar hasta ahora, todos pendientes de
+"verificación visual humana"), se detectó que **`ScrollReveal.tsx` — el componente
+compartido por prácticamente toda la home desde B2/GAP-121 — no llega a mostrar su
+contenido bajo esa preferencia**: `useReducedMotion()` de `framer-motion` sí detecta
+correctamente la preferencia (`window.matchMedia('(prefers-reduced-motion: reduce)')`
+devuelve `true`), pero el componente se queda con `style="opacity:0;transform:
+translateY(16px)"` de forma permanente — la rama `if (shouldReduceMotion) return
+
+<div>{children}</div>` nunca llega a aplicarse a tiempo. Efecto real: **para cualquier
+visitante con reduced-motion activado en su sistema, la mayor parte del contenido de la
+home (bento, "Así funciona", logos, cumplimiento legal, pricing) queda invisible**, no
+solo sin animación — un problema de accesibilidad real, más grave que "no anima".
+
+No es un bug introducido por GAP-132/133/134 — `ScrollReveal.tsx` no está en la lista de
+archivos de ninguno de los tres (se usa, no se modifica) y el problema es anterior,
+solo que nunca se había verificado en un navegador real con esa preferencia activada.
+**Candidato claro a un GAP corto independiente**, prioridad alta por ser un problema de
+accesibilidad que afecta a toda la landing, no una mejora cosmética.
+
+**Próximo paso:** Jose decide si abre ya el GAP corto de `ScrollReveal`, o lo deja para
+la próxima sesión de refinamiento. El resto del roadmap sigue igual: Fase E (analítica)
+sigue siendo la única fase numerada A–E sin empezar, y el GAP corto de assets de B2
+(sustituir placeholders Tipo 2/3 por los finales) sigue disponible cuando Jose quiera
+retomarlo — ahora con más placeholders todavía por sustituir tras GAP-132/133 (marquee
+ya no necesita asset, pero los tiles del bento y los 3 pasos de "Así funciona" sí).

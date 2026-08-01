@@ -2,14 +2,14 @@
   "Landing": {
     "hero": {
       "metaTitle": "ERP para a indústria da pesca",
-      "subtitle": "Rastreabilidade, lotes e validades sob controlo, do cais até à venda.",
-      "modulesList": "Produção ∷ Compras ∷ Vendas ∷ Rotulagem ∷ Rastreabilidade",
+      "subtitle": "Encomendas, produção, armazém e documentação ligados numa única plataforma para o setor da pesca.",
+      "modulesList": "Produção ∷ Stock ∷ Compras e Vendas ∷ IA ∷ Rotulagem",
       "ctaDemo": "Ver demonstração",
       "trustSecure": "Dados seguros e encriptados",
       "trustGlobal": "Acede a partir de qualquer lota ou armazém"
     },
     "modules": {
-      "title": "Da lota ao cliente final, sem perder um único lote",
+      "title": "Tudo o que move a tua empresa de pesca, num só sítio",
       "description": "Cada processo da tua empresa de pesca, ligado: captura, produção, armazém, vendas e rotulagem.",
       "production": {
         "title": "Produção e Rastreabilidade",
@@ -21,7 +21,7 @@
       },
       "sales": {
         "title": "Compras e Vendas",
-        "description": "Gere encomendas a fornecedores e clientes, com preços de lota atualizados sem os introduzir manualmente."
+        "description": "Cria a encomenda e compara a previsão com a produção real. Gera na hora a documentação legal e logística — até 17 documentos — e consulta a margem por encomenda, sem folhas de cálculo à parte."
       },
       "ai": {
         "title": "Extração de PDF com IA",
@@ -30,6 +30,14 @@
       "labels": {
         "title": "Editor de Etiquetas",
         "description": "Cria e imprime etiquetas com lote, data de validade e rastreabilidade em conformidade com a regulamentação."
+      },
+      "closing": {
+        "title": "E também",
+        "items": {
+          "crm": "CRM comercial: prospetos, ofertas, agenda e rotas",
+          "suppliers": "Gestão de fornecedores e liquidações",
+          "delivery": "Distribuição e venda direta móvel"
+        }
       }
     },
     "integratedLonjas": {
@@ -38,22 +46,35 @@
     },
     "trustBadge": {
       "title": "Conformidade Legal",
-      "description": "Regulamentação de rastreabilidade e rotulagem do setor da pesca"
+      "claims": {
+        "labeling": {
+          "title": "Rotulagem segundo o Regulamento UE 1379/2013",
+          "description": "Nome comercial e científico, método de produção e zona de captura em cada etiqueta gerada."
+        },
+        "traceability": {
+          "title": "Rastreabilidade por palete, caixa e lote",
+          "description": "Histórico completo de cada palete desde a criação até à expedição."
+        },
+        "faoCatalog": {
+          "title": "Catálogo FAO/ASFIS integrado",
+          "description": "Mais de 13.700 espécies para autocompletar o nome científico e dados normativos."
+        }
+      }
     },
     "howItWorks": {
       "title": "É assim que funciona, do cais à venda",
       "description": "Três passos que já segues todos os dias, agora ligados numa única plataforma.",
       "step1": {
-        "title": "Captura ou lota",
-        "description": "Regista a compra em lota ou a captura própria, com peso, espécie e proveniência."
+        "title": "A encomenda, o centro de tudo",
+        "description": "Crias a encomenda: cliente, produtos previstos e prazos. Tudo o resto liga-se a partir daqui."
       },
       "step2": {
-        "title": "Produção e stock",
-        "description": "Transforma, etiqueta e armazena por lote, com validade e localização sempre visíveis."
+        "title": "Produção e stock reais",
+        "description": "Transforma matéria-prima própria ou de lota com rastreabilidade de lote, ou associa a encomenda a paletes já em armazém — o sistema compara o previsto com o real automaticamente."
       },
       "step3": {
-        "title": "Venda e rastreabilidade",
-        "description": "Gera a encomenda e a documentação com a rastreabilidade completa já incluída."
+        "title": "Documentação, envio e rentabilidade",
+        "description": "Gera com um clique a documentação legal e logística (CMR, packing list, etiquetas...), a rota de entrega e a margem por encomenda."
       }
     },
     "pricingPreview": {
@@ -64,23 +85,21 @@
       "tiers": {
         "starter": {
           "name": "Essencial",
-          "audience": "Para empresas que querem digitalizar encomendas e vendas",
-          "priceFrom": "Desde 149 €/mês"
+          "audience": "Para empresas que querem digitalizar encomendas e vendas"
         },
         "pro": {
           "name": "Profissional",
-          "audience": "Para empresas que já gerem armazém, fornecedores e equipa comercial",
-          "priceFrom": "Desde 349 €/mês"
+          "audience": "Para empresas que já gerem armazém, fornecedores e equipa comercial"
         },
         "enterprise": {
           "name": "Empresas",
-          "audience": "Para grupos com produção própria, produção subcontratada e necessidades à medida",
-          "priceFrom": "Preço à medida"
+          "audience": "Para grupos com produção própria, produção subcontratada e necessidades à medida"
         }
-      }
+      },
+      "addonsNote": "Precisas de mais? Adiciona editor de etiquetas, registo de ponto por NFC, distribuição ou produção quando precisares."
     },
     "leadForm": {
-      "title": "Pronto para deixar de perseguir um lote numa folha de cálculo?",
+      "title": "Pronto para deixar de gerir a tua operação de pesca à base de folhas de cálculo?",
       "description": "Solicita uma demonstração e mostramos-te como funciona com dados da tua própria operação.",
       "emailPlaceholder": "teu@email.com",
       "submitIdle": "Solicitar demonstração",
@@ -91,7 +110,7 @@
     },
     "footer": {
       "tagline": "O ERP para a indústria da pesca e dos congelados.",
-      "taglineLine2": "Rastreabilidade, stock e vendas numa única plataforma.",
+      "taglineLine2": "Encomendas, produção, armazém e CRM comercial numa única plataforma.",
       "contactHeading": "Contacto",
       "copyrightSuffix": "Todos os direitos reservados.",
       "legalTerms": "Aviso Legal",
