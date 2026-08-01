@@ -1053,3 +1053,76 @@ columnas en desktop se reparte a 2+3 o similar) el día que los claims 4 y 5 se 
 bloqueante), copy nuevo en `landing.json` (`es`/`pt`/`en`) para los 3 claims activos.
 Los claims 4 y 5 no forman parte del alcance de código de este GAP — solo quedan
 documentados como backlog con sus prerrequisitos.
+
+### 12.6 Diversificar el copy — la landing sobre-repite "trazabilidad/lote/caducidad" y calla módulos reales
+
+**Idea de Jose:** en general, todo el copy de la landing se enfoca en trazabilidad/lotes,
+cuando la app ofrece mucho más que eso.
+
+**Diagnóstico cuantitativo** (grep de `trazabilidad`/`lote`/`caducidad` sobre
+`landing.json` ES): 10 de los ~15 textos de cabecera/titular de toda la home repiten
+estas mismas 3 palabras — `hero.subtitle`, `hero.modulesList`, `modules.title`,
+`modules.production.title/description`, `modules.stock.description`,
+`modules.labels.description`, `trustBadge.description`, `howItWorks.step2.description`,
+`howItWorks.step3.title/description`, `leadForm.title`, `footer.taglineLine2`. No es una
+palabra puntual — es literalmente el titular de casi cada sección de la página.
+
+**Por qué es un problema real, no solo estilístico** (contrastado contra
+`.claude/product-catalog.md`): mientras el copy repite trazabilidad, **módulos enteros y
+activos del producto no aparecen en ningún sitio de la landing**:
+- **CRM Comercial** (agenda, prospectos, ofertas con envío por email/WhatsApp, rutas
+  comerciales, autoventa) — cero menciones, y ni siquiera es una de las 5 tarjetas del
+  bento de `ModulesBento`.
+- **Proveedores** (calendario de liquidaciones comparando declarado vs. real —
+  diferenciador de nicho real para cooperativas/lonjas, señalado explícitamente en
+  `product-catalog.md` como "candidato a destacarse en copy de landing dirigido
+  específicamente a cooperativas/lonjas") — cero menciones.
+- **Repartidores/Autoventa** (app mobile de reparto con navegación real, ejecución de
+  pedido en ruta) — cero menciones.
+- **Rentabilidad/margen por pedido y por palet**, y los **17 documentos legales/
+  logísticos automáticos** (el diferenciador más profundo del módulo núcleo, Pedidos) —
+  solo asoman de refilón en el rediseño de "Así funciona" (§12.4), en ningún otro sitio.
+
+**Inconsistencia adicional detectada:** `hero.modulesList` ("Producción ∷ Compras ∷
+Ventas ∷ Etiquetado ∷ Trazabilidad") no coincide con las 5 tarjetas reales del bento
+(Producción, Stock, Compras/Ventas, IA, Etiquetas) — divide Compras/Ventas en dos y trata
+"Trazabilidad" como si fuera un módulo propio cuando es una propiedad transversal de
+otros tres, y omite IA/Extracción, que sí es una tarjeta real del bento.
+
+**Decisión (Jose confirmó la opción B, 2026-08-01):** no ampliar el bento de 5 a 7-8
+tarjetas (opción A descartada explícitamente — mantiene la decisión visual ya cerrada en
+B2 de "5 módulos, bento limpio tipo Apple" y evita duplicar trabajo de assets/
+ilustraciones tipo 3 nuevas). En su lugar:
+
+**1. Pasada de reescritura de copy** (criterio, no texto final — mismo reparto de trabajo
+ya establecido en §4.3: `landing-content-writer` redacta el texto exacto en el ciclo de
+implementación):
+- `hero.subtitle` — dejar de presentar trazabilidad/lote/caducidad como la única
+  historia; puede seguir mencionándose (es real y relevante), pero no como el titular que
+  resume todo el producto.
+- `hero.modulesList` — alinear exactamente con las 5 tarjetas reales del bento
+  (Producción ∷ Stock ∷ Compras/Ventas ∷ IA ∷ Etiquetas), sin añadir "Trazabilidad" como
+  6º concepto suelto que no es un módulo.
+- `modules.title` — reemplazar el framing "sin perder ni un lote" por algo que hable de
+  conectar procesos/áreas de la empresa, no solo de trazabilidad.
+- `footer.taglineLine2` y `leadForm.title` — diversificar en la misma línea, sin el
+  mismo vocabulario que ya se repite 8 veces en el resto de la página.
+- `modules.production/stock/labels` (las 3 tarjetas donde trazabilidad/lote SÍ es
+  relevante de verdad) se mantienen con ese vocabulario — el objetivo no es eliminar la
+  palabra, es dejar de usarla como titular por defecto de todo lo demás.
+
+**2. Franja ligera nueva para los 3 módulos invisibles** — sin ilustraciones (a
+diferencia del bento, es contenido de refuerzo, no la pieza central de la página; mismo
+criterio de "icono sin ilustración compitiendo" ya usado en `TrustBadge`/`HowItWorks`
+originales), con 3 items cortos: **CRM comercial y ofertas**, **Liquidaciones a
+proveedores**, **Reparto y autoventa móvil**. Colocación propuesta: justo después de
+`ModulesBento` y antes de `HowItWorks` — continúa la narrativa de "esto es todo lo que
+cubre el producto" antes de pasar a explicar el flujo. No se solapa con los items de
+rentabilidad/documentación de `HowItWorks` (§12.4 paso 3) ni con los de `TrustBadge`
+(§12.5) porque son 3 módulos de producto distintos, no propiedades transversales.
+
+**Alcance estimado:** M — copy nuevo/reescrito en `landing.json` (`es`/`pt`/`en`,
+paridad de claves) para ~7 claves existentes + 1 sección nueva pequeña (3 items, sin
+imagen), un componente nuevo pequeño para la franja. No toca `ModulesBento` ni requiere
+assets nuevos tipo 3 — compatible con implementarse en el mismo GAP que §12.4/§12.5 o por
+separado, a decidir al agrupar la ronda completa.
