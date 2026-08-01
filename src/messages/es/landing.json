@@ -2,14 +2,14 @@
   "Landing": {
     "hero": {
       "metaTitle": "ERP para la industria pesquera",
-      "subtitle": "Trazabilidad, lotes y caducidades bajo control, del muelle a la venta.",
-      "modulesList": "Producción ∷ Compras ∷ Ventas ∷ Etiquetado ∷ Trazabilidad",
+      "subtitle": "Pedidos, producción, almacén y documentación conectados en una sola plataforma pesquera.",
+      "modulesList": "Producción ∷ Stock ∷ Compras y Ventas ∷ IA ∷ Etiquetas",
       "ctaDemo": "Ver demo",
       "trustSecure": "Datos seguros y cifrados",
       "trustGlobal": "Accede desde cualquier lonja o almacén"
     },
     "modules": {
-      "title": "De la lonja al cliente final, sin perder ni un lote",
+      "title": "Todo lo que mueve tu empresa pesquera, en un solo sitio",
       "description": "Cada proceso de tu empresa pesquera, conectado: captura, producción, almacén, ventas y etiquetado.",
       "production": {
         "title": "Producción y Trazabilidad",
@@ -21,7 +21,7 @@
       },
       "sales": {
         "title": "Compras y Ventas",
-        "description": "Gestiona pedidos a proveedores y clientes, con precios de lonja actualizados sin introducirlos a mano."
+        "description": "Crea el pedido y compara previsión contra producción real. Genera al momento la documentación legal y logística —hasta 17 documentos— y consulta el margen por pedido, sin hojas de cálculo aparte."
       },
       "ai": {
         "title": "Extracción de PDF con IA",
@@ -30,6 +30,14 @@
       "labels": {
         "title": "Editor de Etiquetas",
         "description": "Diseña e imprime etiquetas con lote, fecha de caducidad y trazabilidad conforme a normativa."
+      },
+      "closing": {
+        "title": "Y también",
+        "items": {
+          "crm": "CRM comercial: prospectos, ofertas, agenda y rutas",
+          "suppliers": "Gestión de proveedores y liquidaciones",
+          "delivery": "Repartidores y autoventa móvil"
+        }
       }
     },
     "integratedLonjas": {
@@ -38,22 +46,35 @@
     },
     "trustBadge": {
       "title": "Cumplimiento Legal",
-      "description": "Normativas de trazabilidad y etiquetado del sector pesquero"
+      "claims": {
+        "labeling": {
+          "title": "Etiquetado según el Reglamento UE 1379/2013",
+          "description": "Nombre comercial y científico, método de producción y zona de captura en cada etiqueta generada."
+        },
+        "traceability": {
+          "title": "Trazabilidad por palet, caja y lote",
+          "description": "Histórico completo de cada palet desde su creación hasta la expedición."
+        },
+        "faoCatalog": {
+          "title": "Catálogo FAO/ASFIS integrado",
+          "description": "Más de 13.700 especies para autocompletar nombre científico y datos normativos."
+        }
+      }
     },
     "howItWorks": {
       "title": "Así funciona, del muelle a la venta",
       "description": "Tres pasos que ya sigues cada día, ahora conectados en una sola plataforma.",
       "step1": {
-        "title": "Captura o lonja",
-        "description": "Registra la compra en lonja o la captura propia, con peso, especie y procedencia."
+        "title": "El pedido, el centro de todo",
+        "description": "Creas el pedido: cliente, productos previstos y plazos. Todo lo demás se conecta a partir de aquí."
       },
       "step2": {
-        "title": "Producción y stock",
-        "description": "Transforma, etiqueta y almacena por lote, con caducidad y ubicación siempre visibles."
+        "title": "Producción y stock reales",
+        "description": "Transforma materia prima propia o de lonja con trazabilidad de lote, o casa el pedido contra palets ya en almacén — el sistema compara lo previsto con lo real automáticamente."
       },
       "step3": {
-        "title": "Venta y trazabilidad",
-        "description": "Genera el pedido y la documentación con la trazabilidad completa ya incluida."
+        "title": "Documentación, envío y rentabilidad",
+        "description": "Genera de un clic la documentación legal y logística (CMR, packing list, etiquetas...), la ruta de entrega y el margen por pedido."
       }
     },
     "pricingPreview": {
@@ -64,23 +85,21 @@
       "tiers": {
         "starter": {
           "name": "Esencial",
-          "audience": "Para empresas que quieren digitalizar pedidos y ventas",
-          "priceFrom": "Desde 149 €/mes"
+          "audience": "Para empresas que quieren digitalizar pedidos y ventas"
         },
         "pro": {
           "name": "Profesional",
-          "audience": "Para empresas que ya gestionan almacén, proveedores y equipo comercial",
-          "priceFrom": "Desde 349 €/mes"
+          "audience": "Para empresas que ya gestionan almacén, proveedores y equipo comercial"
         },
         "enterprise": {
           "name": "Empresas",
-          "audience": "Para grupos con producción propia, maquiladores y necesidades a medida",
-          "priceFrom": "Precio a medida"
+          "audience": "Para grupos con producción propia, maquiladores y necesidades a medida"
         }
-      }
+      },
+      "addonsNote": "¿Necesitas más? Añade editor de etiquetas, fichaje NFC, reparto o producción cuando los necesites."
     },
     "leadForm": {
-      "title": "¿Listo para dejar de perseguir un lote en una hoja de cálculo?",
+      "title": "¿Listo para dejar de gestionar tu operativa pesquera a golpe de hoja de cálculo?",
       "description": "Solicita una demo y te enseñamos cómo funciona con datos de tu propia operativa.",
       "emailPlaceholder": "tu@email.com",
       "submitIdle": "Solicitar demo",
@@ -91,7 +110,7 @@
     },
     "footer": {
       "tagline": "El ERP para la industria pesquera y de congelados.",
-      "taglineLine2": "Trazabilidad, stock y ventas en una sola plataforma.",
+      "taglineLine2": "Pedidos, producción, almacén y CRM comercial en una sola plataforma.",
       "contactHeading": "Contacto",
       "copyrightSuffix": "Todos los derechos reservados.",
       "legalTerms": "Aviso Legal",

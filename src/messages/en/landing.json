@@ -2,14 +2,14 @@
   "Landing": {
     "hero": {
       "metaTitle": "ERP for the fishing industry",
-      "subtitle": "Traceability, batches, and expiry dates under control, from the dock to the sale.",
-      "modulesList": "Production ∷ Purchasing ∷ Sales ∷ Labeling ∷ Traceability",
+      "subtitle": "Orders, production, warehouse, and documentation connected in a single platform for the fishing industry.",
+      "modulesList": "Production ∷ Stock ∷ Purchasing and Sales ∷ AI ∷ Labeling",
       "ctaDemo": "View demo",
       "trustSecure": "Secure, encrypted data",
       "trustGlobal": "Access from any fish market or warehouse"
     },
     "modules": {
-      "title": "From the fish market to the final customer, without losing a single batch",
+      "title": "Everything that moves your fishing business, in one place",
       "description": "Every process in your fishing business, connected: catch, production, warehouse, sales, and labeling.",
       "production": {
         "title": "Production and Traceability",
@@ -21,7 +21,7 @@
       },
       "sales": {
         "title": "Purchasing and Sales",
-        "description": "Manage orders to suppliers and customers, with fish market prices updated without manual entry."
+        "description": "Create the order and compare forecast against real production. Generate legal and logistics documentation on the spot — up to 17 documents — and check the margin per order, without separate spreadsheets."
       },
       "ai": {
         "title": "AI-Powered PDF Extraction",
@@ -30,6 +30,14 @@
       "labels": {
         "title": "Label Editor",
         "description": "Design and print labels with batch, expiry date, and traceability compliant with regulations."
+      },
+      "closing": {
+        "title": "And also",
+        "items": {
+          "crm": "Sales CRM: prospects, offers, calendar, and routes",
+          "suppliers": "Supplier management and settlements",
+          "delivery": "Route sales and mobile van sales"
+        }
       }
     },
     "integratedLonjas": {
@@ -38,22 +46,35 @@
     },
     "trustBadge": {
       "title": "Legal Compliance",
-      "description": "Traceability and labeling regulations for the fishing industry"
+      "claims": {
+        "labeling": {
+          "title": "Labeling under EU Regulation 1379/2013",
+          "description": "Commercial and scientific name, production method, and catch area on every label generated."
+        },
+        "traceability": {
+          "title": "Traceability by pallet, box, and batch",
+          "description": "Full history of every pallet from creation to shipment."
+        },
+        "faoCatalog": {
+          "title": "Integrated FAO/ASFIS catalog",
+          "description": "Over 13,700 species to auto-complete scientific name and regulatory data."
+        }
+      }
     },
     "howItWorks": {
       "title": "How it works, from the dock to the sale",
       "description": "Three steps you already follow every day, now connected in a single platform.",
       "step1": {
-        "title": "Catch or fish market",
-        "description": "Record the fish market purchase or your own catch, with weight, species, and origin."
+        "title": "The order, the center of everything",
+        "description": "You create the order: customer, planned products, and deadlines. Everything else connects from here."
       },
       "step2": {
-        "title": "Production and stock",
-        "description": "Process, label, and store by batch, with expiry date and location always visible."
+        "title": "Real production and stock",
+        "description": "Process your own or fish-market raw material with batch traceability, or match the order against pallets already in the warehouse — the system compares forecast against actual automatically."
       },
       "step3": {
-        "title": "Sale and traceability",
-        "description": "Generate the order and documentation with full traceability already included."
+        "title": "Documentation, shipping, and profitability",
+        "description": "Generate legal and logistics documentation (CMR, packing list, labels...), the delivery route, and the margin per order with one click."
       }
     },
     "pricingPreview": {
@@ -64,23 +85,21 @@
       "tiers": {
         "starter": {
           "name": "Essential",
-          "audience": "For companies that want to digitize orders and sales",
-          "priceFrom": "From €149/month"
+          "audience": "For companies that want to digitize orders and sales"
         },
         "pro": {
           "name": "Professional",
-          "audience": "For companies already managing warehouse, suppliers, and a sales team",
-          "priceFrom": "From €349/month"
+          "audience": "For companies already managing warehouse, suppliers, and a sales team"
         },
         "enterprise": {
           "name": "Enterprise",
-          "audience": "For groups with in-house production, toll processors, and custom needs",
-          "priceFrom": "Custom pricing"
+          "audience": "For groups with in-house production, toll processors, and custom needs"
         }
-      }
+      },
+      "addonsNote": "Need more? Add the label editor, NFC time tracking, route sales, or production whenever you need them."
     },
     "leadForm": {
-      "title": "Ready to stop chasing a batch through a spreadsheet?",
+      "title": "Ready to stop running your fishing operation off spreadsheets?",
       "description": "Request a demo and we'll show you how it works with your own operation's data.",
       "emailPlaceholder": "you@email.com",
       "submitIdle": "Request demo",
@@ -91,7 +110,7 @@
     },
     "footer": {
       "tagline": "The ERP for the fishing and frozen goods industry.",
-      "taglineLine2": "Traceability, stock, and sales in a single platform.",
+      "taglineLine2": "Orders, production, warehouse, and sales CRM in a single platform.",
       "contactHeading": "Contact",
       "copyrightSuffix": "All rights reserved.",
       "legalTerms": "Legal Notice",

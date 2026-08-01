@@ -1,17 +1,18 @@
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 import ScrollReveal from './ScrollReveal';
 
 const LOGOS = [
   {
     src: '/images/landingPage/logos/logo-docapesca-bn.png',
     alt: 'Logo Docapesca',
-    className: 'w-full',
+    className: 'w-[160px]',
   },
   {
     src: '/images/landingPage/logos/logo-armadores-punta-bn.png',
     alt: 'Logo Armadores Punta',
-    className: 'w-full',
+    className: 'w-[160px]',
   },
   {
     src: '/images/landingPage/logos/logo-lonja-isla-bn.png',
@@ -26,6 +27,27 @@ const LOGOS = [
   { src: '/images/landingPage/logos/logo-cofra-bn.png', alt: 'Logo Cofra', className: 'w-[120px]' },
 ];
 
+function LogoTrack({ duplicate = false }: { duplicate?: boolean }) {
+  return (
+    <div
+      className={cn('flex shrink-0 items-center gap-16 pr-16', duplicate && 'marquee-duplicate')}
+      aria-hidden={duplicate}
+    >
+      {LOGOS.map((logo) => (
+        <div key={logo.src} className="flex items-center justify-center grayscale">
+          <Image
+            src={logo.src}
+            width={1000}
+            height={1000}
+            className={logo.className}
+            alt={logo.alt}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function IntegratedLonjas() {
   const t = await getTranslations('Landing.integratedLonjas');
 
@@ -37,18 +59,11 @@ export default async function IntegratedLonjas() {
             <h2 className="text-foreground text-3xl tracking-tight sm:text-3xl">{t('title')}</h2>
             <p className="text-muted-foreground text-md mt-4">{t('description')}</p>
           </div>
-          <ScrollReveal className="grid w-full grid-cols-2 gap-4 sm:grid-cols-5">
-            {LOGOS.map((logo) => (
-              <div key={logo.src} className="flex items-center justify-center grayscale">
-                <Image
-                  src={logo.src}
-                  width={1000}
-                  height={1000}
-                  className={logo.className}
-                  alt={logo.alt}
-                />
-              </div>
-            ))}
+          <ScrollReveal className="marquee-fade-mask w-full overflow-hidden">
+            <div className="animate-marquee flex w-max">
+              <LogoTrack />
+              <LogoTrack duplicate />
+            </div>
           </ScrollReveal>
         </div>
       </div>

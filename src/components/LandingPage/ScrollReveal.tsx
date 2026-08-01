@@ -1,9 +1,10 @@
 'use client';
-// Necesita 'use client': framer-motion (whileInView) y useReducedMotion son solo de cliente.
-// Puede envolver Server Components como children (patrón válido de App Router).
+// Necesita 'use client': framer-motion (whileInView) es solo de cliente. Puede envolver
+// Server Components como children (patrón válido de App Router). El reduced-motion se
+// gestiona a nivel de MotionConfig en src/app/[locale]/layout.tsx (ver GAP-135) — no aquí.
 
 import type { ReactNode } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -12,12 +13,6 @@ interface ScrollRevealProps {
 }
 
 export default function ScrollReveal({ children, className, delay = 0 }: ScrollRevealProps) {
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       className={className}
