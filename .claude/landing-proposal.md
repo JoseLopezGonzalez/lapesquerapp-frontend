@@ -1195,3 +1195,60 @@ Sources:
 - [Designing Bento Grids That Actually Work: A 2026 Practical Guide — SaaSFrame](https://www.saasframe.io/blog/designing-bento-grids-that-actually-work-a-2026-practical-guide)
 - [Bento Grid CSS Tutorial: Apple-Style Layout + Code (2026)](https://senorit.de/en/blog/bento-grid-design-trend-2025)
 - [Bento Grids Are Quietly Winning B2B SaaS Homepages in 2026](https://www.pravinkumar.co/blog/bento-grids-b2b-saas-homepage-design-trend-2026)
+
+### 12.8 Teléfono de contacto del footer — placeholder sin verificar, propuesta del equipo
+
+**Idea propuesta por el equipo (no por Jose), a petición explícita suya de cerrar la
+ronda con una última observación propia.** Revisando el resto de componentes no cubiertos
+todavía (`Hero.tsx`, `Footer.tsx`) en busca de algo con el mismo nivel de concreción que
+las ideas anteriores, aparece un hallazgo del mismo tipo que el que motivó Fase A
+(afirmaciones/datos de contacto sin respaldo real).
+
+**Estado actual del código** (`src/components/LandingPage/Footer.tsx:35`):
+
+```tsx
+<span>+34 900 123 456</span>
+```
+
+Tres señales de que es un placeholder, no un dato real:
+1. El patrón "900 123 456" es el equivalente español de "555-1234" — el número
+   placeholder clásico.
+2. No sale de `src/configs/branding.js` (la "única fuente de verdad" de contacto del
+   proyecto según su propio comentario de cabecera) como sí lo hace `infoEmail`
+   (`info@lapesquerapp.es`, real) — no existe ni un `infoPhone` ahí. Es el único dato de
+   contacto de todo el footer que no sigue ese patrón.
+3. Ni siquiera es un enlace `tel:` funcional — es texto plano dentro de un `<span>`, así
+   que ni siquiera se comporta como un número real y pulsable.
+
+**Decisión (Jose confirmó, 2026-08-01):** no tiene todavía un número real que dar. Se
+elimina el placeholder del footer — no se publica ningún teléfono mientras tanto (mismo
+criterio de honestidad que testimonios/RGPD/cifras de pricing en el resto de esta ronda:
+no publicar un dato de contacto sin verificar realidad). El footer queda con
+`infoEmail` como único contacto directo hasta que Jose aporte un número real.
+
+**Guía para cuando exista un número real (no implementar ahora, solo dejar el patrón
+listo para cuando aplique):** seguir exactamente el mismo patrón que `infoEmail` —
+añadir `infoPhone` a `src/configs/branding.js` (con su variante `isPesquerApp`/genérico,
+igual que el resto de constantes de ese archivo) y usarlo en `Footer.tsx` como enlace
+`tel:` real (`<a href={`tel:${infoPhone}`}>`), no como `<span>` de texto plano.
+
+**Alcance estimado:** XS — una línea eliminada de `Footer.tsx` ahora; el alta del
+teléfono real (cuando exista) es una tarea separada y trivial de un GAP futuro, ya con el
+patrón exacto documentado arriba.
+
+---
+
+## 13. Cierre de la ronda de refinamiento — pendiente de decisión de Jose
+
+Las 8 ideas de §12.1 a §12.8 están documentadas y confirmadas. Cuando Jose decida cerrar
+esta ronda, el siguiente paso es agruparlas en uno o varios GAPs vía `gap-discovery` para
+implementación — mismo flujo que las Fases A–D. Posible agrupación por afinidad técnica
+(a validar con Jose al cerrar):
+- **GAP 1 — Bento y flujo de producto:** §12.3 (quitar iconos), §12.6 (diversificar
+  copy), §12.7 (bento asimétrico + tile de cierre, que ya absorbe el punto 2 de §12.6).
+- **GAP 2 — "Así funciona" + Cumplimiento legal:** §12.4 (rediseño HowItWorks), §12.5
+  (TrustBadge → Cumplimiento Legal, con los claims 4/5 documentados como backlog
+  bloqueado).
+- **GAP 3 — Piezas sueltas pequeñas:** §12.1 (marquee de logos), §12.2 (enriquecer
+  PricingPreview), §12.8 (quitar teléfono placeholder) — alcance XS/S cada una,
+  agrupables sin dependencias entre sí.
