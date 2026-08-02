@@ -25,31 +25,25 @@ const META_FILE = path.join(CONTRACT_DIR, 'meta.json');
 const LOCK_FILE = path.join(CONTRACT_DIR, 'contract-lock.json');
 
 async function main() {
+  // resolveContractUrl siempre devuelve una URL concreta (fallback fijo de
+  // producción si no hay env vars) — no existe un estado "URL indeterminada".
   const contractUrl = resolveContractUrl(process.env);
-  if (!contractUrl) {
-    console.error(
-      '[contract:fetch] No se pudo determinar la URL del contrato.\n' +
-        '[contract:fetch] Define OPENAPI_CONTRACT_URL, o NEXT_PUBLIC_API_URL / NEXT_PUBLIC_API_BASE_URL.\n' +
-        '[contract:fetch] Ejemplo: OPENAPI_CONTRACT_URL=https://api.lapesquerapp.es/openapi/frontend.yaml npm run contract:fetch'
-    );
-    process.exit(1);
-  }
 
   console.log(`[contract:fetch] Descargando contrato desde ${contractUrl}`);
   let res;
   try {
     res = await fetch(contractUrl);
   } catch (err) {
-    console.error(`[contract:fetch] No se pudo conectar con ${contractUrl}: ${err.message}`);
+    console.error(`[contract:fetch] ❌ No se pudo conectar con ${contractUrl}: ${err.message}`);
     process.exit(1);
   }
   if (!res.ok) {
-    console.error(`[contract:fetch] HTTP ${res.status} ${res.statusText} al descargar el contrato.`);
+    console.error(`[contract:fetch] ❌ HTTP ${res.status} ${res.statusText} al descargar el contrato.`);
     process.exit(1);
   }
   const contractText = await res.text();
   if (!contractText.trim()) {
-    console.error('[contract:fetch] El contrato descargado está vacío.');
+    console.error('[contract:fetch] ❌ El contrato descargado está vacío.');
     process.exit(1);
   }
 

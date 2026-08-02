@@ -56,16 +56,27 @@ scripts/contract/
 
 ## Comandos
 
-| Comando                     | Qué hace                                                                           | Red necesaria |
-| --------------------------- | ---------------------------------------------------------------------------------- | ------------- |
-| `npm run contract:fetch`    | Descarga `frontend.yaml` (+`meta.json`) del backend, escribe `contract-lock.json`  | Sí            |
-| `npm run contract:generate` | Regenera `src/types/generated/api.d.ts` desde el `frontend.yaml` local             | No            |
-| `npm run contract:update`   | `fetch` + `generate` — el flujo normal para adoptar una versión nueva del contrato | Sí            |
-| `npm run contract:verify`   | Comprueba que `frontend.yaml` no fue editado a mano y que es generable             | No            |
-| `npm run contract:drift`    | Descarga el contrato real y compara contra el adoptado, sin sobrescribir           | Sí            |
+| Comando                     | Qué hace                                                                                                              | Red necesaria |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `npm run contract:fetch`    | Descarga `frontend.yaml` (+`meta.json`) del backend, escribe `contract-lock.json`                                     | Sí            |
+| `npm run contract:generate` | Regenera `src/types/generated/api.d.ts` desde el `frontend.yaml` local                                                | No            |
+| `npm run contract:update`   | `fetch` + `generate` — el flujo normal para adoptar una versión nueva del contrato                                    | Sí            |
+| `npm run contract:verify`   | Comprueba que `frontend.yaml` no fue editado a mano, es generable, y que los tipos generados no están desactualizados | No            |
+| `npm run contract:drift`    | Descarga el contrato real y compara contra el adoptado, sin sobrescribir                                              | Sí            |
 
 `contract:generate` corre automáticamente en `postinstall` (todo `npm ci`/`npm install`
 lo regenera) — nadie debería tener que acordarse de ejecutarlo a mano en el día a día.
+
+**Mecanismo endurecido — sin modo bootstrap.** `contract:generate`,
+`contract:verify` y `contract:drift` no tienen un estado "sin contrato
+todavía, se omite sin bloquear": si `openapi/frontend.yaml` falta, fue
+editado a mano, no es un OpenAPI generable, o `src/types/generated/api.d.ts`
+está desactualizado respecto al contrato, el comando correspondiente termina
+con código de salida 1 y un mensaje explícito — nunca en silencio con
+código 0. Como `contract:generate` corre en `postinstall`, esto significa
+que **`npm ci`/`npm install` fallan** mientras el repo no tenga un contrato
+adoptado — es el comportamiento esperado, no un bug: el contrato es un
+requisito del repo, no un paso opcional.
 
 ## Qué debe hacer un agente antes de terminar una tarea que toca tipos de API
 
@@ -215,7 +226,17 @@ esa capa.
 ## CI
 
 `npm run contract:verify` corre en CI (offline, sin red) en cada push/PR —
-falla si `openapi/frontend.yaml` fue editado a mano o dejó de ser un OpenAPI
-válido. Un workflow programado aparte (`contract-drift`) descarga el
-contrato real del backend semanalmente y avisa si diverge del adoptado, sin
-tocar el build normal. Ver `.claude/api-contract-guide.md` § CI.
+falla si `openapi/frontend.yaml` falta, fue editado a mano, dejó de ser un
+OpenAPI válido, o si los tipos generados están desactualizados. El job
+`build` depende de `contract-check` — un contrato en mal estado bloquea el
+build igual que un error de `type-check`. Un workflow programado aparte
+(`contract-drift`) descarga el contrato real del backend semanalmente y
+falla si diverge del adoptado, sin tocar el build normal en cada push. Ver
+`.claude/api-contract-guide.md` § CI.
+
+**Consecuencia de este endurecimiento**: mientras `openapi/frontend.yaml` no
+exista en el repo (contrato aún no adoptado), `npm ci` falla en todos los
+jobs de CI (por el hook `postinstall`), no solo en `contract-check`. Esto es
+intencional — el primer `npm run contract:fetch` real (con red hacia el
+backend) es un prerrequisito para que CI vuelva a estar verde, no un paso
+opcional que se pueda posponer indefinidamente.

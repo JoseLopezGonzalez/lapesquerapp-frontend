@@ -16,14 +16,22 @@ Backend Laravel (repo `lapesquerapp-backend`, separado de este repo), publica:
 
 En este repo, `{APP_URL}` es `NEXT_PUBLIC_API_URL` / `NEXT_PUBLIC_API_BASE_URL`
 (las mismas env vars que ya usa `src/configs/config.js`). Para apuntar a otra
-URL sin tocar esas envs: `OPENAPI_CONTRACT_URL`.
+URL sin tocar esas envs: `OPENAPI_CONTRACT_URL`. Si ninguna está definida,
+`resolveContractUrl()` no falla ni queda indeterminado: cae a una URL fija
+de producción (`https://api.lapesquerapp.es/openapi/frontend.yaml`,
+constante `DEFAULT_CONTRACT_URL` en `scripts/contract/lib/contract-core.mjs`).
 
 **Estado actual: el primer contrato real todavía no se ha adoptado en este
 repo** (ver `OPENAPI_FRONTEND_IMPLEMENTATION_SUMMARY.md` para el motivo — la
 sesión que construyó esta infraestructura no tenía red hacia el backend).
-`openapi/frontend.yaml` no existe todavía. Todo lo de abajo funciona en
-cuanto alguien con red hacia el backend ejecute `npm run contract:update`
-una vez.
+`openapi/frontend.yaml` no existe todavía.
+
+**Esto ya NO es un estado tolerado en silencio.** El mecanismo está
+endurecido: mientras el contrato no esté adoptado, `npm run contract:generate`,
+`npm run contract:verify` y, por tanto, `postinstall` (`npm ci`/`npm install`)
+**fallan con código de salida 1**. Es intencional: el contrato adoptado es un
+requisito del repo. Para destrabarlo, alguien con red real hacia el backend
+debe ejecutar `npm run contract:update` una vez y comprometer el resultado.
 
 ## Cómo actualizar el contrato
 
@@ -49,7 +57,9 @@ Ya corre automáticamente en `postinstall` (todo `npm ci`/`npm install`
 regenera `src/types/generated/api.d.ts` desde el `openapi/frontend.yaml`
 comprometido en git). No hace falta acordarse de ejecutarlo a mano en el día
 a día — solo tras un `npm run contract:fetch` si quieres ver el resultado
-sin reinstalar.
+sin reinstalar. **Si `openapi/frontend.yaml` no existe, este comando (y por
+tanto `npm ci`) falla con código 1** — no hay generación parcial ni no-op
+silencioso.
 
 ## Cómo verificar sincronización
 
@@ -58,11 +68,20 @@ npm run contract:verify   # offline — corre en CI en cada push/PR
 npm run contract:drift    # con red — compara contra el backend real, no sobrescribe nada
 ```
 
-`contract:verify` falla si `openapi/frontend.yaml` fue editado a mano (no
-coincide con `contract-lock.json`) o dejó de ser un OpenAPI generable.
-`contract:drift` es para detectar que el backend publicó una versión nueva
-que todavía no se ha adoptado — se ejecuta en un workflow programado, no en
-cada build.
+`contract:verify` falla (exit 1) si:
+
+- `openapi/frontend.yaml` no existe (contrato no adoptado);
+- fue editado a mano (no coincide con `contract-lock.json`);
+- dejó de ser un OpenAPI generable;
+- `src/types/generated/api.d.ts` no existe, o existe pero está
+  desactualizado respecto al contrato (se regenera en memoria y se compara
+  bit a bit — cualquier diferencia es un fallo).
+
+`contract:drift` falla (exit 1) si no hay contrato local adoptado, si no se
+puede contactar con el backend, o si el backend publicó una versión distinta
+a la adoptada — se ejecuta en un workflow programado (semanal), no en cada
+build, precisamente para no acoplar cada push a la disponibilidad de la URL
+del backend.
 
 ## Estructura de carpetas
 

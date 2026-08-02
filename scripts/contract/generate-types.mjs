@@ -2,11 +2,11 @@
 // Genera src/types/generated/api.d.ts a partir de openapi/frontend.yaml.
 // No hace red — es una función pura del contrato ya descargado.
 //
-// Se ejecuta automáticamente en "postinstall" (ver package.json), así que
-// debe ser un no-op silencioso y no fatal si el contrato todavía no existe
-// (repo recién clonado, contrato aún no adoptado) — de lo contrario rompería
-// "npm ci" para cualquiera que instale el proyecto antes del primer
-// "npm run contract:fetch".
+// Se ejecuta automáticamente en "postinstall" (ver package.json). Mecanismo
+// endurecido: si openapi/frontend.yaml no existe, este comando FALLA (exit 1)
+// en vez de continuar en silencio — el contrato adoptado es un requisito del
+// repo, no un paso opcional. La única forma válida de resolverlo es
+// "npm run contract:fetch" (o "npm run contract:update").
 //
 // Los tipos generados NO se versionan en git (ver .gitignore): se derivan de
 // forma determinista del openapi/frontend.yaml sí versionado, así que
@@ -16,7 +16,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runOpenApiTypeScript } from './lib/contract-core.mjs';
+import { runOpenApiTypeScript, withBanner } from './lib/contract-core.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -30,26 +30,13 @@ const CLI_BIN = path.join(
   process.platform === 'win32' ? 'openapi-typescript.cmd' : 'openapi-typescript'
 );
 
-const BANNER = `/**
- * ARCHIVO GENERADO — NO EDITAR A MANO.
- *
- * Generado por "npm run contract:generate" a partir de openapi/frontend.yaml
- * (contrato OpenAPI publicado por el backend Laravel — fuente de verdad de
- * los tipos de API). Cualquier edición manual se perderá en la siguiente
- * regeneración (postinstall, o "npm run contract:generate" explícito).
- *
- * Para actualizar a la última versión del contrato: "npm run contract:update".
- * Flujo completo y reglas de uso: .claude/api-contract-guide.md
- */
-`;
-
 function main() {
   if (!existsSync(CONTRACT_FILE)) {
-    console.warn(
-      '[contract:generate] No existe openapi/frontend.yaml todavía — nada que generar.\n' +
-        '[contract:generate] Ejecuta "npm run contract:fetch" (requiere red hacia el backend) para adoptar el contrato.'
+    console.error(
+      '[contract:generate] ❌ No existe openapi/frontend.yaml — el contrato no está adoptado.\n' +
+        '[contract:generate] Ejecuta "npm run contract:fetch" (requiere red hacia el backend) antes de instalar/buildear.'
     );
-    return;
+    process.exit(1);
   }
   if (!existsSync(CLI_BIN)) {
     console.error(
@@ -68,14 +55,17 @@ function main() {
   });
 
   if (!result.success) {
-    console.error('[contract:generate] openapi-typescript falló al generar los tipos:');
+    console.error('[contract:generate] ❌ openapi-typescript falló al generar los tipos:');
     console.error(result.stderr || result.stdout);
     process.exit(1);
   }
 
-  const generated = readFileSync(GENERATED_FILE, 'utf8');
-  writeFileSync(GENERATED_FILE, BANNER + '\n' + generated, 'utf8');
-  console.log(`[contract:generate] Tipos generados en ${path.relative(ROOT, GENERATED_FILE)}`);
+  // openapi-typescript ya escribió GENERATED_FILE directamente (vía -o); lo
+  // releemos para envolverlo con el mismo banner que usa verifyContract al
+  // comparar (contract-core.mjs § withBanner) — deben producir bytes idénticos.
+  const rawOutput = readFileSync(GENERATED_FILE, 'utf8');
+  writeFileSync(GENERATED_FILE, withBanner(rawOutput), 'utf8');
+  console.log(`[contract:generate] ✅ Tipos generados en ${path.relative(ROOT, GENERATED_FILE)}`);
 }
 
 main();

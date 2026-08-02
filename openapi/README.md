@@ -15,6 +15,14 @@ Eso descarga `frontend.yaml` (+ `meta.json` si el backend lo publica) y
 regenera `src/types/generated/api.d.ts`. Revisa el diff de git resultante
 antes de hacer commit — es el único momento en que el contrato cambia.
 
+**Mecanismo endurecido, sin modo bootstrap**: mientras este directorio esté
+vacío, `npm run contract:generate`, `npm run contract:verify` y
+`postinstall` (por tanto `npm ci`/`npm install`) **fallan con código de
+salida 1**, no continúan en silencio. El contrato adoptado es un requisito
+del repo, no un paso opcional — la única forma de destrabar `npm ci`/CI es
+ejecutar `npm run contract:fetch` (o `contract:update`) una vez, con red
+real hacia el backend, y comprometer el resultado.
+
 ## Archivos (una vez adoptado)
 
 | Archivo              | Contenido                                                                 | Versionado en git |

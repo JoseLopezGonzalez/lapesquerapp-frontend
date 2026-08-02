@@ -2,6 +2,10 @@
 // Usan una fixture sintética (scripts/contract/__fixtures__/sample-openapi.yaml),
 // nunca el contrato real del backend — el objetivo es probar que el
 // mecanismo (fetch/generate/verify) funciona, no validar campos reales.
+//
+// Mecanismo endurecido: no hay estado "missing"/bootstrap — la ausencia de
+// cualquier pieza (contrato, lock, tipos generados) o su desactualización
+// es siempre status 'error'. Estos tests verifican exactamente eso.
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -13,6 +17,8 @@ import {
   buildLock,
   verifyContract,
   runOpenApiTypeScript,
+  withBanner,
+  DEFAULT_CONTRACT_URL,
 } from '../../../scripts/contract/lib/contract-core.mjs';
 
 const ROOT = path.resolve(__dirname, '..', '..', '..');
@@ -48,8 +54,10 @@ describe('resolveContractUrl', () => {
     expect(url).toBe('http://localhost:8000/openapi/frontend.yaml');
   });
 
-  it('devuelve null si no hay ninguna variable de entorno', () => {
-    expect(resolveContractUrl({})).toBeNull();
+  it('nunca devuelve null/indeterminado — cae al fijo de producción si no hay ninguna env var', () => {
+    const url = resolveContractUrl({});
+    expect(url).toBe(DEFAULT_CONTRACT_URL);
+    expect(url).toBe('https://api.lapesquerapp.es/openapi/frontend.yaml');
   });
 });
 
@@ -104,13 +112,15 @@ describe('verifyContract', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it('devuelve status "missing" si no existe el contrato local', () => {
+  it('devuelve status "error" (no "missing") si no existe el contrato local', () => {
     const result = verifyContract({
       contractPath: path.join(dir, 'frontend.yaml'),
       lockPath: path.join(dir, 'contract-lock.json'),
       cliBin: CLI_BIN,
     });
-    expect(result.status).toBe('missing');
+    expect(result.status).toBe('error');
+    expect(result.reason).toMatch(/no existe/i);
+    expect(result.reason).toMatch(/contract:fetch/);
   });
 
   it('devuelve status "error" si falta el lock file', () => {
@@ -143,7 +153,21 @@ describe('verifyContract', () => {
     expect(result.reason).toMatch(/no coincide/i);
   });
 
-  it('devuelve status "ok" cuando el contrato coincide con el lock y es un OpenAPI válido', () => {
+  it('devuelve status "error" si el contrato no es un OpenAPI generable', () => {
+    const contractPath = path.join(dir, 'frontend.yaml');
+    const lockPath = path.join(dir, 'contract-lock.json');
+    const contractText = 'esto: no es openapi\n  - roto: [';
+    writeFileSync(contractPath, contractText);
+    writeFileSync(
+      lockPath,
+      JSON.stringify(buildLock({ sourceUrl: 'https://x/frontend.yaml', contractText }))
+    );
+
+    const result = verifyContract({ contractPath, lockPath, cliBin: CLI_BIN });
+    expect(result.status).toBe('error');
+  });
+
+  it('devuelve status "ok" cuando el contrato coincide con el lock y es válido (sin generatedPath)', () => {
     const contractPath = path.join(dir, 'frontend.yaml');
     const lockPath = path.join(dir, 'contract-lock.json');
     const contractText = readFileSync(FIXTURE, 'utf8');
@@ -158,18 +182,71 @@ describe('verifyContract', () => {
     expect(result.lock?.contractHash).toBe(sha256(contractText));
   });
 
-  it('devuelve status "error" si el contrato no es un OpenAPI generable', () => {
+  it('devuelve status "error" si se pide generatedPath y los tipos generados no existen', () => {
     const contractPath = path.join(dir, 'frontend.yaml');
     const lockPath = path.join(dir, 'contract-lock.json');
-    const contractText = 'esto: no es openapi\n  - roto: [';
+    const contractText = readFileSync(FIXTURE, 'utf8');
     writeFileSync(contractPath, contractText);
     writeFileSync(
       lockPath,
       JSON.stringify(buildLock({ sourceUrl: 'https://x/frontend.yaml', contractText }))
     );
 
-    const result = verifyContract({ contractPath, lockPath, cliBin: CLI_BIN });
+    const result = verifyContract({
+      contractPath,
+      lockPath,
+      generatedPath: path.join(dir, 'generated', 'api.d.ts'),
+      cliBin: CLI_BIN,
+    });
     expect(result.status).toBe('error');
+    expect(result.reason).toMatch(/no existen tipos generados/i);
+  });
+
+  it('devuelve status "error" si los tipos generados están desactualizados respecto al contrato', () => {
+    const contractPath = path.join(dir, 'frontend.yaml');
+    const lockPath = path.join(dir, 'contract-lock.json');
+    const generatedPath = path.join(dir, 'generated', 'api.d.ts');
+    const contractText = readFileSync(FIXTURE, 'utf8');
+    writeFileSync(contractPath, contractText);
+    writeFileSync(
+      lockPath,
+      JSON.stringify(buildLock({ sourceUrl: 'https://x/frontend.yaml', contractText }))
+    );
+    mkdirSync(path.dirname(generatedPath), { recursive: true });
+    writeFileSync(
+      generatedPath,
+      withBanner('export interface paths {} // versión vieja, a propósito')
+    );
+
+    const result = verifyContract({ contractPath, lockPath, generatedPath, cliBin: CLI_BIN });
+    expect(result.status).toBe('error');
+    expect(result.reason).toMatch(/desactualizado/i);
+  });
+
+  it('devuelve status "ok" cuando los tipos generados coinciden bit a bit con regenerar ahora', () => {
+    const contractPath = path.join(dir, 'frontend.yaml');
+    const lockPath = path.join(dir, 'contract-lock.json');
+    const generatedPath = path.join(dir, 'generated', 'api.d.ts');
+    const contractText = readFileSync(FIXTURE, 'utf8');
+    writeFileSync(contractPath, contractText);
+    writeFileSync(
+      lockPath,
+      JSON.stringify(buildLock({ sourceUrl: 'https://x/frontend.yaml', contractText }))
+    );
+
+    // Genera los tipos "reales" exactamente como lo haría contract:generate.
+    mkdirSync(path.dirname(generatedPath), { recursive: true });
+    const genResult = runOpenApiTypeScript({
+      cliBin: CLI_BIN,
+      inputPath: contractPath,
+      outputPath: generatedPath,
+      extraArgs: ['--alphabetize'],
+    });
+    expect(genResult.success).toBe(true);
+    writeFileSync(generatedPath, withBanner(readFileSync(generatedPath, 'utf8')));
+
+    const result = verifyContract({ contractPath, lockPath, generatedPath, cliBin: CLI_BIN });
+    expect(result.status).toBe('ok');
   });
 });
 

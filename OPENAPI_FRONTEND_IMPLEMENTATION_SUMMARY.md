@@ -1,6 +1,41 @@
 # Implementación — Contrato OpenAPI en el frontend
 
-> Fecha: 2026-08-02. Rama: `claude/openapi-frontend-integration-y6ein1`. Sin commits ni push (por instrucción explícita de la tarea).
+> Fecha: 2026-08-02. Rama: `claude/openapi-frontend-integration-y6ein1`.
+
+## Addendum — endurecimiento del mecanismo (mismo día, pase de seguimiento)
+
+Tras la implementación inicial (más abajo), se hizo un pase explícito de
+**endurecimiento**: se eliminó todo el modo bootstrap/no-bloqueante que dejaba
+pasar `contract:generate`/`contract:verify`/`contract:drift`/`postinstall`
+con código 0 cuando faltaba el contrato. Ahora:
+
+- `resolveContractUrl()` **nunca devuelve `null`**: si no hay
+  `OPENAPI_CONTRACT_URL` ni `NEXT_PUBLIC_API_URL`/`NEXT_PUBLIC_API_BASE_URL`,
+  cae a una URL fija de producción
+  (`https://api.lapesquerapp.es/openapi/frontend.yaml`, constante
+  `DEFAULT_CONTRACT_URL`).
+- `contract:generate` **falla (exit 1)** si `openapi/frontend.yaml` no
+  existe — ya no hay "no-op silencioso".
+- `contract:verify` **falla (exit 1)** si el contrato falta, fue editado a
+  mano, no es generable, **o si `src/types/generated/api.d.ts` no existe o
+  está desactualizado respecto al contrato** (nueva comprobación: regenera
+  en memoria y compara bit a bit).
+- `contract:drift` **falla (exit 1)** si no hay contrato local adoptado
+  (antes: exit 0 con aviso).
+- Como `contract:generate` corre en `postinstall`, **`npm ci`/`npm install`
+  ahora fallan** mientras `openapi/frontend.yaml` no exista en el repo — y
+  por tanto también fallan todos los jobs de CI que instalan dependencias
+  (`type-check`, `contract-check`, `build`), no solo `contract-check`. Esto
+  es la consecuencia esperada y deseada de "sin modo bootstrap": el
+  contrato es un requisito del repo, no un paso opcional que se pueda
+  posponer en silencio.
+- El fixture de test (`scripts/contract/__fixtures__/sample-openapi.yaml`)
+  se mantiene — es exclusivamente para `src/__tests__/contract/*.test.ts`
+  (probar que el mecanismo funciona), nunca se usa como sustituto del
+  contrato real en ningún camino de ejecución de producción/CI.
+
+Ver la sección "Respuestas al endurecimiento solicitado" al final de este
+documento para el detalle punto por punto pedido por Jose.
 
 ## Resumen en una frase
 
@@ -24,12 +59,13 @@ session"). Se preguntó explícitamente a Jose cómo proceder; eligió
 listo para funcionar, y que él ejecute `npm run contract:update` en un
 entorno con red real hacia el backend.
 
-Consecuencia práctica: `openapi/frontend.yaml` no existe en el repo. Todos
-los scripts detectan ese estado de "bootstrap" y no fallan (`postinstall`,
-`contract:generate`, `contract:verify` avisan y salen con código 0). En
-cuanto se ejecute `npm run contract:update` una vez con red real, el resto
+Consecuencia práctica: `openapi/frontend.yaml` no existe en el repo. Tras el
+pase de endurecimiento (ver Addendum arriba), esto ya **no** se tolera en
+silencio: `postinstall`, `contract:generate` y `contract:verify` fallan con
+código 1 mientras el contrato no esté adoptado. En cuanto se ejecute
+`npm run contract:fetch`/`contract:update` una vez con red real, el resto
 del flujo (generación, verificación, CI) empieza a operar sin cambios
-adicionales.
+adicionales de código.
 
 ## Herramienta elegida y por qué
 
@@ -83,14 +119,19 @@ adicionales.
 
 ## Comandos añadidos (`package.json`)
 
-| Comando                     | Qué hace                                                              | Red |
-| --------------------------- | --------------------------------------------------------------------- | --- |
-| `npm run contract:fetch`    | Descarga el contrato, escribe `openapi/*`                             | Sí  |
-| `npm run contract:generate` | Regenera `src/types/generated/api.d.ts` desde `openapi/frontend.yaml` | No  |
-| `npm run contract:update`   | `fetch` + `generate`                                                  | Sí  |
-| `npm run contract:verify`   | Detecta ediciones a mano del contrato + valida que sea generable      | No  |
-| `npm run contract:drift`    | Compara el contrato real del backend contra el adoptado, sin escribir | Sí  |
-| `postinstall` (nuevo hook)  | Corre `contract:generate` automáticamente en cada install             | No  |
+| Comando                     | Qué hace                                                                                | Red |
+| --------------------------- | --------------------------------------------------------------------------------------- | --- |
+| `npm run contract:fetch`    | Descarga el contrato, escribe `openapi/*`                                               | Sí  |
+| `npm run contract:generate` | Regenera `src/types/generated/api.d.ts` desde `openapi/frontend.yaml`                   | No  |
+| `npm run contract:update`   | `fetch` + `generate`                                                                    | Sí  |
+| `npm run contract:verify`   | Detecta contrato ausente/editado a mano/no generable, y tipos generados desactualizados | No  |
+| `npm run contract:drift`    | Compara el contrato real del backend contra el adoptado, sin escribir                   | Sí  |
+| `postinstall` (nuevo hook)  | Corre `contract:generate` automáticamente en cada install                               | No  |
+
+Todos los comandos anteriores (salvo `contract:fetch`/`contract:update`, que
+necesitan red por definición) **fallan con exit 1** si el contrato no está
+en el estado correcto — no hay un modo permisivo. Ver Addendum al principio
+de este documento.
 
 ## Módulos piloto
 
@@ -149,9 +190,9 @@ cambios confirma que nada de la capa existente se rompió.
 
 - `build-check.yml`: nuevo job `contract-check` (offline, `npm run
 contract:verify`) — el job `build` ahora depende de `[type-check,
-contract-check]`. No requiere red del backend en cada push/PR; en el
-  estado de bootstrap actual (sin `openapi/frontend.yaml`) el job pasa con
-  un aviso, no bloquea.
+contract-check]`. No requiere red del backend en cada push/PR. Tras el
+  endurecimiento, mientras `openapi/frontend.yaml` no exista en el repo,
+  este job (y de hecho `npm ci` en todos los jobs) **falla** — ver Addendum.
 - `contract-drift.yml` (nuevo, workflow separado): programado semanalmente
   (+ `workflow_dispatch` manual), descarga el contrato real y lo compara
   contra el adoptado sin sobrescribir nada — falla si diverge, para que el
@@ -161,29 +202,37 @@ contract-check]`. No requiere red del backend en cada push/PR; en el
 
 ## Tests ejecutados y resultado
 
-- `npm run type-check`: **0 errores**, antes y después de todos los cambios.
-- `npm run lint`: **0 errores** (267 warnings preexistentes, ninguno nuevo —
-  verificado con grep sobre el output).
-- `npm run test:run`: **305 passed / 22 failed** (baseline preexistente
-  documentado en `FRONTEND_API_CONTRACT_AUDIT.md` era 289 passed / 22
-  failed — los 22 fallos son los mismos de siempre, artefactos de entorno
-  sandboxed sin red hacia NextAuth y bugs de lógica de negocio no
-  relacionados; los 16 tests nuevos de `src/__tests__/contract/` suman
-  exactamente los 16 passed de más: 289+16=305).
-- Tests nuevos (`src/__tests__/contract/contract-core.test.ts`, 16 tests):
-  cubren `resolveContractUrl`, `deriveMetaUrl`, `sha256`, `buildLock`, y
-  sobre todo `verifyContract`/`runOpenApiTypeScript` ejecutados de verdad
-  contra una **fixture sintética** (`scripts/contract/__fixtures__/sample-openapi.yaml`,
-  claramente marcada como fixture de test, nunca el contrato real) — prueban
-  que el mecanismo (hash-lock, detección de edición a mano, generación real
-  vía CLI de `openapi-typescript`) funciona de extremo a extremo, sin
-  fabricar un contrato falso etiquetado como real.
-- Smoke test manual adicional (no persistido): se copió la fixture a
-  `openapi/frontend.yaml` temporalmente, se corrió `contract:generate` →
-  `src/types/generated/api.d.ts` real generado y validado con
-  `tsc --noEmit` (0 errores) → `contract:verify` → ✅. Se limpiaron todos los
-  artefactos después (`openapi/frontend.yaml` y `src/types/generated/` no
-  quedan en el repo) para no dejar una fixture pareciendo el contrato real.
+Cifras tras el pase de endurecimiento (ver Addendum):
+
+- `npm run type-check`: **0 errores**.
+- `npm run lint`: **0 errores** (267 warnings preexistentes, ninguno nuevo).
+- `npm run test:run`: **308 passed / 22 failed** (baseline preexistente de
+  `FRONTEND_API_CONTRACT_AUDIT.md` era 289 passed / 22 failed — los 22
+  fallos son los mismos de siempre, artefactos de entorno sandboxed sin red
+  hacia NextAuth y bugs de lógica de negocio no relacionados; los 19 tests
+  de `src/__tests__/contract/` explican exactamente los 19 passed de más:
+  289+19=308).
+- Tests de `src/__tests__/contract/contract-core.test.ts` (19 tests, todos
+  contra la **fixture sintética**, nunca el contrato real): cubren
+  `resolveContractUrl` (incluyendo el fallback fijo `DEFAULT_CONTRACT_URL`
+  cuando no hay env vars), `deriveMetaUrl`, `sha256`, `buildLock`, y
+  `verifyContract` con los 5 modos de fallo endurecidos (contrato ausente,
+  lock ausente, hash no coincide, contrato no generable, tipos generados
+  ausentes) + los 2 casos de comparación de tipos generados (desactualizados
+  → error; regenerados bit a bit → ok).
+- Smoke test manual end-to-end (no persistido, limpiado después): copiar la
+  fixture a `openapi/frontend.yaml` → `contract:generate` (✅, tipos
+  validados con `tsc --noEmit`) → `contract:verify` (✅) → tocar el archivo
+  generado a mano → `contract:verify` (❌ "desactualizado", confirmando la
+  detección de staleness) → regenerar → `contract:verify` (✅ de nuevo) →
+  editar `frontend.yaml` a mano → `contract:verify` (❌ "no coincide con el
+  hash", confirmando la detección de edición manual del contrato). Se
+  limpiaron todos los artefactos después — `openapi/frontend.yaml` y
+  `src/types/generated/` no quedan en el repo.
+- Smoke test de los 3 scripts en estado "sin contrato" (estado actual real
+  del repo): `contract:generate`, `contract:verify` y `contract:drift`
+  ejecutados directamente — los tres terminan con **exit 1** y un mensaje
+  explícito, confirmando que ya no existe ningún modo bootstrap.
 
 ## Instrucciones de agentes modificadas
 
@@ -301,3 +350,68 @@ la sección de rule precedence, resto intacto), toda la capa de servicios
 `entitiesConfig.js`, `queryKeys.ts`, y los ~60 archivos de los sistemas de
 instrucciones duplicados no relacionados con el contrato OpenAPI (ver
 "Limitaciones conocidas" #3).
+
+## Respuestas al endurecimiento solicitado (pase de seguimiento)
+
+1. **URL exacta que consulta el frontend**: la que resuelva
+   `resolveContractUrl()` — `OPENAPI_CONTRACT_URL` si está definida; si no,
+   `{NEXT_PUBLIC_API_URL o NEXT_PUBLIC_API_BASE_URL}/openapi/frontend.yaml`;
+   si tampoco hay ninguna, el fijo de producción
+   `https://api.lapesquerapp.es/openapi/frontend.yaml`
+   (`DEFAULT_CONTRACT_URL` en `scripts/contract/lib/contract-core.mjs`). En
+   este repo, sin overrides, la URL efectiva es esa constante fija.
+2. **Comando que descarga y actualiza el contrato**: `npm run contract:update`
+   (fetch + generate). Solo fetch: `npm run contract:fetch`.
+3. **Dónde se guarda la copia**: `openapi/frontend.yaml` (+ `openapi/meta.json`
+   si el backend lo publica, + `openapi/contract-lock.json` con el hash de
+   versión), los tres versionados en git.
+4. **Comando que genera los tipos**: `npm run contract:generate` (offline,
+   deriva `src/types/generated/api.d.ts` de `openapi/frontend.yaml`) — corre
+   también automáticamente en `postinstall`, es decir en cada
+   `npm ci`/`npm install`. No hay ningún paso manual de copiar/pegar.
+5. **Qué ocurre si la URL no responde**: `contract:fetch` (y por tanto
+   `contract:update`) falla con exit 1 y el mensaje de error de red/HTTP —
+   no escribe nada en `openapi/`. `contract:drift` (el chequeo periódico)
+   también falla con exit 1 si no puede contactar con el backend. El build
+   normal nunca depende de esto: usa la copia local ya versionada.
+6. **Qué ocurre si los tipos están desactualizados**: `contract:verify`
+   regenera el contrato local en memoria/tmp y compara bit a bit contra
+   `src/types/generated/api.d.ts` — si difieren, falla con exit 1
+   ("está desactualizado... ejecuta npm run contract:generate"). Como
+   `contract:generate` corre en `postinstall`, en la práctica un `npm ci`
+   limpio siempre deja los tipos al día; esta comprobación protege contra
+   un `src/types/generated/` local viejo que sobrevivió a un `npm ci` sin
+   `postinstall` (p. ej. `--ignore-scripts`) o manipulado a mano.
+7. **¿Sigue existiendo algún modo bootstrap o fixture temporal?** No en el
+   mecanismo real: `contract:generate`/`contract:verify`/`contract:drift`/
+   `postinstall` fallan con exit 1 ante cualquier ausencia o desactualización,
+   sin excepciones. Sí sigue existiendo `scripts/contract/__fixtures__/sample-openapi.yaml`,
+   pero es exclusivamente un fixture de **test** consumido solo por
+   `src/__tests__/contract/contract-core.test.ts` — nunca se lee desde
+   `fetch-contract.mjs`/`generate-types.mjs`/`verify-contract.mjs`/
+   `check-drift.mjs`, ni aparece en ningún flujo de build/CI real.
+8. **Archivos modificados en este pase de endurecimiento**:
+   `scripts/contract/lib/contract-core.mjs` (resolveContractUrl con fallback
+   fijo, verifyContract sin estado 'missing' + comprobación de staleness de
+   tipos generados, banner compartido `withBanner`),
+   `scripts/contract/generate-types.mjs` (falla si falta el contrato, usa
+   `withBanner` compartido), `scripts/contract/verify-contract.mjs` (falla
+   si falta el contrato, pasa `generatedPath` para detectar staleness),
+   `scripts/contract/check-drift.mjs` (falla si falta el contrato local),
+   `scripts/contract/fetch-contract.mjs` (quita la rama muerta de "URL
+   indeterminada"), `src/__tests__/contract/contract-core.test.ts`
+   (19 tests, actualizado para el mecanismo endurecido + nuevos casos de
+   staleness), `openapi/README.md`, `.claude/rules/api-contract.md`,
+   `.claude/api-contract-guide.md` (los tres actualizados para documentar el
+   comportamiento endurecido), y este mismo archivo.
+9. **Resultado de las comprobaciones ejecutadas**: `type-check` 0 errores,
+   `lint` 0 errores (267 warnings preexistentes), `test:run` 308 passed / 22
+   failed (mismo baseline de siempre + 19 tests nuevos, todos en verde).
+   Smoke tests manuales de los 5 escenarios de fallo (contrato ausente, lock
+   ausente, edición a mano, contrato inválido, tipos desactualizados) y del
+   escenario de éxito, todos con el resultado esperado (ver sección
+   "Tests ejecutados y resultado").
+
+No se tocó ningún tipo manual, servicio, hook, ni módulo de negocio en este
+pase — solo el mecanismo de sincronización, tal como se pidió. No se ha
+hecho commit ni push.
