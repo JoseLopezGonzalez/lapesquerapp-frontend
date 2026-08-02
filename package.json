@@ -15,6 +15,12 @@
     "gaps:registry": "node scripts/build-gaps-registry.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "contract:fetch": "node scripts/contract/fetch-contract.mjs",
+    "contract:generate": "node scripts/contract/generate-types.mjs",
+    "contract:update": "npm run contract:fetch && npm run contract:generate",
+    "contract:verify": "node scripts/contract/verify-contract.mjs",
+    "contract:drift": "node scripts/contract/check-drift.mjs",
+    "postinstall": "node scripts/contract/generate-types.mjs",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -118,6 +124,7 @@
     "husky": "^9.1.7",
     "jsdom": "^27.0.1",
     "lint-staged": "^17.0.7",
+    "openapi-typescript": "^7.13.0",
     "pngjs": "^4.0.1",
     "postcss": "^8.5.6",
     "prettier": "^3.8.3",

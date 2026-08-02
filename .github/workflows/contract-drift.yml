@@ -1,0 +1,38 @@
+name: OpenAPI Contract Drift
+
+# Detects when the backend has published a newer OpenAPI contract than the
+# one adopted in openapi/frontend.yaml. Runs on a schedule (not on every
+# push/PR) so a normal build never depends silently on the backend's public
+# URL being reachable at that instant — see openapi/README.md and
+# .claude/rules/api-contract.md § CI.
+#
+# This workflow only reads and compares; it never writes to the repo. If it
+# fails, someone runs `npm run contract:update` on purpose, reviews the
+# diff, and commits.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # weekly, Monday 06:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  drift-check:
+    name: Check for contract drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compare local contract against backend
+        env:
+          OPENAPI_CONTRACT_URL: ${{ vars.OPENAPI_CONTRACT_URL }}
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || secrets.NEXT_PUBLIC_API_URL }}
+        run: npm run contract:drift

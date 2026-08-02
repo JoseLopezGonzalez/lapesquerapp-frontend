@@ -48,3 +48,8 @@ next-env.d.ts
 # audit tooling — live session cookies, never commit
 .claude/tools/.auth/
 .claude/tools/.audit-screenshots/
+
+# OpenAPI contract — tipos generados (no versionar, se regeneran de forma
+# determinista desde openapi/frontend.yaml en postinstall / CI). El propio
+# openapi/frontend.yaml SÍ se versiona. Ver .claude/api-contract-guide.md.
+/src/types/generated/

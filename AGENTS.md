@@ -101,20 +101,20 @@ Codex-native behavior.
 When the user invokes a Claude-like command, Codex must map it to the matching
 Codex skill/workflow:
 
-| User input | Codex behavior |
-| --- | --- |
-| `/audit-code quality\|migrate\|arch [scope]` | Use `lapesquerapp-code-audit`. |
-| `/audit-mobile [scope]` | Use `lapesquerapp-ui-audit` in mobile mode. |
-| `/audit-desktop [scope]` | Use `lapesquerapp-ui-audit` in desktop mode. |
-| `/audit-design visual\|copy\|consistency [scope]` | Use `lapesquerapp-design-audit`. |
-| `/mobile [view]` | Use `lapesquerapp-mobile-ui`. |
-| `/idea [text]` | Use `lapesquerapp-ideas` capture mode. |
-| `/ideas [module]` | Use `lapesquerapp-ideas` list mode. |
-| `/ideas promote [NNN]` | Use `lapesquerapp-gap-discovery`. |
-| `crea un GAP`, `documenta este cambio` | Use `lapesquerapp-gap-discovery`. |
-| `implementa GAP-NNN` | Use `lapesquerapp-gap-implementor`. |
-| `audita GAP-NNN` | Use `lapesquerapp-gap-auditor`. |
-| `recuerda esto`, `añade esto al sistema` | Use `lapesquerapp-system-learner`. |
+| User input                                        | Codex behavior                               |
+| ------------------------------------------------- | -------------------------------------------- |
+| `/audit-code quality\|migrate\|arch [scope]`      | Use `lapesquerapp-code-audit`.               |
+| `/audit-mobile [scope]`                           | Use `lapesquerapp-ui-audit` in mobile mode.  |
+| `/audit-desktop [scope]`                          | Use `lapesquerapp-ui-audit` in desktop mode. |
+| `/audit-design visual\|copy\|consistency [scope]` | Use `lapesquerapp-design-audit`.             |
+| `/mobile [view]`                                  | Use `lapesquerapp-mobile-ui`.                |
+| `/idea [text]`                                    | Use `lapesquerapp-ideas` capture mode.       |
+| `/ideas [module]`                                 | Use `lapesquerapp-ideas` list mode.          |
+| `/ideas promote [NNN]`                            | Use `lapesquerapp-gap-discovery`.            |
+| `crea un GAP`, `documenta este cambio`            | Use `lapesquerapp-gap-discovery`.            |
+| `implementa GAP-NNN`                              | Use `lapesquerapp-gap-implementor`.          |
+| `audita GAP-NNN`                                  | Use `lapesquerapp-gap-auditor`.              |
+| `recuerda esto`, `añade esto al sistema`          | Use `lapesquerapp-system-learner`.           |
 
 Detailed mappings are documented in `docs/agent-system/commands/README.md`.
 
@@ -147,6 +147,13 @@ Important examples:
 - API calls follow the existing service layer and `fetchWithTenant` rules.
 - UI work follows the operational ERP design rules in `docs/ai-context/` and
   `docs/agent-system/rules/design.md`.
+- API **types** follow the OpenAPI contract rules: canonical source is
+  `.claude/rules/api-contract.md` (day-to-day guide:
+  `.claude/api-contract-guide.md`), condensed for Codex in
+  `docs/agent-system/rules/api-contract.md`. The Laravel OpenAPI contract is
+  the source of truth for API types — do not hand-write an interface that
+  duplicates a response already covered by a migrated module, and never edit
+  `src/types/generated/api.d.ts` by hand.
 
 ## Standard implementation response
 

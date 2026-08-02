@@ -1,5 +1,17 @@
 # API Services — La PesquerApp
 
+## Tipos de API — contrato OpenAPI
+
+El backend publica un contrato OpenAPI (`{APP_URL}/openapi/frontend.yaml`)
+que es la fuente de verdad para los **tipos** de request/response (no
+reemplaza esta capa de servicios). Antes de declarar una interfaz manual
+nueva para una entidad, o de tocar `src/types/`, lee
+`.claude/api-contract-guide.md` (guía operativa) y
+`.claude/rules/api-contract.md` (reglas completas — qué módulos están
+migrados, cuáles no deben tocarse todavía, patrón de adaptadores). El resto
+de este documento (servicios, `fetchWithTenant`, errores, paginación) sigue
+vigente igual — el contrato solo afecta a de dónde salen los tipos.
+
 ## Backend
 
 - API Laravel bajo `/api/v2/`
