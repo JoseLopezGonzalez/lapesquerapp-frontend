@@ -26,10 +26,28 @@ jobs:
       - name: Run type-check
         run: npm run type-check
 
+  contract-check:
+    name: OpenAPI Contract Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify local contract is unmodified and generable
+        run: npm run contract:verify
+
   build:
     name: Next.js Build
     runs-on: ubuntu-latest
-    needs: type-check
+    needs: [type-check, contract-check]
     env:
       # Variables mínimas para que next build no falle por env vacías
       # Añade aquí las NEXT_PUBLIC_* que tu proyecto necesite para buildear

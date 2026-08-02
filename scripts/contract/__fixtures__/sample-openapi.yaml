@@ -1,0 +1,59 @@
+# FIXTURE DE TEST — NO ES EL CONTRATO REAL DEL BACKEND.
+#
+# Spec OpenAPI sintética y mínima, usada solo por
+# src/__tests__/contract/*.test.ts para probar que el pipeline
+# (fetch/generate/verify) funciona mecánicamente. No representa ningún
+# endpoint real de La Pesquerapp — no debe usarse como referencia de campos.
+openapi: 3.1.0
+info:
+  title: Fixture Contract (test-only)
+  version: 0.0.0-test
+paths:
+  /fixture-countries:
+    get:
+      operationId: listFixtureCountries
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FixtureCountry'
+                  meta:
+                    $ref: '#/components/schemas/FixturePaginationMeta'
+components:
+  schemas:
+    FixtureCountry:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        iso_code:
+          type: string
+          nullable: true
+    FixturePaginationMeta:
+      type: object
+      required:
+        - current_page
+        - last_page
+        - per_page
+        - total
+      properties:
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer

@@ -8,19 +8,21 @@ SaaS multi-tenant ERP para el sector pesquero y de congelados. Cubre módulos de
 
 Read these before starting any work in the relevant area:
 
-| File                                | When to read                                                                                                                                                                              |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.claude/design-context.md`         | **Mandatory before implementing any UI.** Contains the visual and UX criteria extracted from the codebase. Kept current by the `/ui-feedback` skill.                                      |
-| `.claude/landing-context.md`        | **Mandatory before touching the public marketing site** (landing, pricing, blog, legal pages) — real brand identity, locked strategic decisions, and market-research-backed guidelines. Separate from `design-context.md`, which covers the authenticated ERP. |
-| `.claude/landing-proposal.md`       | **Mandatory before implementing any landing GAP.** Living execution plan for the public site: audit findings, 2026 market comparison, full proposal by area, visual asset production spec, and phased roadmap with live status (Fase A–E). Companion to `landing-context.md`. |
+| File                                | When to read                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.claude/design-context.md`         | **Mandatory before implementing any UI.** Contains the visual and UX criteria extracted from the codebase. Kept current by the `/ui-feedback` skill.                                                                                                                                                                                                                                                            |
+| `.claude/landing-context.md`        | **Mandatory before touching the public marketing site** (landing, pricing, blog, legal pages) — real brand identity, locked strategic decisions, and market-research-backed guidelines. Separate from `design-context.md`, which covers the authenticated ERP.                                                                                                                                                  |
+| `.claude/landing-proposal.md`       | **Mandatory before implementing any landing GAP.** Living execution plan for the public site: audit findings, 2026 market comparison, full proposal by area, visual asset production spec, and phased roadmap with live status (Fase A–E). Companion to `landing-context.md`.                                                                                                                                   |
 | `.claude/product-catalog.md`        | **Mandatory before writing landing/blog copy about product features, or making pricing/plan decisions.** Full functional inventory of the ERP (all roles/modules), built from real code analysis — maturity status per feature (Activo/En progreso/Placeholder) and an initial Core-vs-Add-on classification proposal, cross-referenced with the real feature-flag system (`module.*`) already in the codebase. |
-| `.claude/project-learnings.md`      | **Mandatory before any audit, GAP, or implementation.** Institutional memory — PesquerApp-specific rules, patterns, and corrections discovered over time. Maintained by `system-learner`. |
-| `.claude/rules/typescript.md`       | All TypeScript work — interfaces, types, strict mode rules                                                                                                                                |
-| `.claude/rules/components.md`       | All React component work — structure, patterns, naming                                                                                                                                    |
-| `.claude/rules/hooks.md`            | All hook work — TanStack Query, mutations, staleTime                                                                                                                                      |
-| `.claude/rules/api-client.md`       | All service / HTTP work — fetchWithTenant, helpers                                                                                                                                        |
-| `.claude/rules/testing.md`          | All test work — Vitest patterns, mocking                                                                                                                                                  |
-| `.claude/skills/mobile-ui/SKILL.md` | All mobile UI work — hooks, tokens, layout shell                                                                                                                                          |
+| `.claude/project-learnings.md`      | **Mandatory before any audit, GAP, or implementation.** Institutional memory — PesquerApp-specific rules, patterns, and corrections discovered over time. Maintained by `system-learner`.                                                                                                                                                                                                                       |
+| `.claude/api-contract-guide.md`     | **Mandatory before touching `src/types/`, a service, or a hook for any module covered by the OpenAPI contract.** Day-to-day guide (commands, how to migrate a module). Full rules: `.claude/rules/api-contract.md`.                                                                                                                                                                                             |
+| `.claude/rules/typescript.md`       | All TypeScript work — interfaces, types, strict mode rules                                                                                                                                                                                                                                                                                                                                                      |
+| `.claude/rules/components.md`       | All React component work — structure, patterns, naming                                                                                                                                                                                                                                                                                                                                                          |
+| `.claude/rules/hooks.md`            | All hook work — TanStack Query, mutations, staleTime                                                                                                                                                                                                                                                                                                                                                            |
+| `.claude/rules/api-client.md`       | All service / HTTP work — fetchWithTenant, helpers                                                                                                                                                                                                                                                                                                                                                              |
+| `.claude/rules/api-contract.md`     | All work touching API types generated from the OpenAPI contract — canonical source, see `.claude/api-contract-guide.md` for the day-to-day version                                                                                                                                                                                                                                                              |
+| `.claude/rules/testing.md`          | All test work — Vitest patterns, mocking                                                                                                                                                                                                                                                                                                                                                                        |
+| `.claude/skills/mobile-ui/SKILL.md` | All mobile UI work — hooks, tokens, layout shell                                                                                                                                                                                                                                                                                                                                                                |
 
 ---
 
@@ -187,18 +189,18 @@ import { fetchWithTenant } from '@/lib/fetchWithTenant'; // ← prohibido aquí
 
 ## Módulos del dominio
 
-| Módulo                    | Entidades principales                                              | Estado                               |
-| ------------------------- | ------------------------------------------------------------------ | ------------------------------------ |
-| Ventas / Pedidos          | `orders`, `customers`, `salespeople`, `payment-terms`, `incoterms` | Activo — gestor operacional complejo |
-| Stock / Almacén           | `pallets`, `boxes`, `lots`, `stores`                               | Activo — operativa warehouse         |
-| Etiquetas                 | `labelEditor`                                                      | Activo — editor visual propio        |
-| Catálogos de sector       | `species`, `fishing-gears`, `capture-zones`, `countries`           | Activo — EntityClient                |
+| Módulo                    | Entidades principales                                              | Estado                                                     |
+| ------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------- |
+| Ventas / Pedidos          | `orders`, `customers`, `salespeople`, `payment-terms`, `incoterms` | Activo — gestor operacional complejo                       |
+| Stock / Almacén           | `pallets`, `boxes`, `lots`, `stores`                               | Activo — operativa warehouse                               |
+| Etiquetas                 | `labelEditor`                                                      | Activo — editor visual propio                              |
+| Catálogos de sector       | `species`, `fishing-gears`, `capture-zones`, `countries`           | Activo — EntityClient                                      |
 | CRM                       | `customers`, `prospects`, `interactions`, agenda                   | Activo — agenda, ofertas y rutas comerciales implementadas |
-| Proveedores               | `suppliers`, `supplier-liquidations`                               | Activo                               |
-| Maquiladores / Producción | `productions`, `raw-material-receptions`                           | Activo                               |
-| Repartidores              | `field-operators`, `cebo-dispatches`                               | Activo — mobile-first                |
-| Administración            | `users`, `roles`, `employees`, `taxes`, `transports`               | Activo — EntityClient                |
-| IA / Extracción           | MarketDataExtractor (documentos lonja)                             | Activo — Azure + OpenAI              |
+| Proveedores               | `suppliers`, `supplier-liquidations`                               | Activo                                                     |
+| Maquiladores / Producción | `productions`, `raw-material-receptions`                           | Activo                                                     |
+| Repartidores              | `field-operators`, `cebo-dispatches`                               | Activo — mobile-first                                      |
+| Administración            | `users`, `roles`, `employees`, `taxes`, `transports`               | Activo — EntityClient                                      |
+| IA / Extracción           | MarketDataExtractor (documentos lonja)                             | Activo — Azure + OpenAI                                    |
 
 ---
 
@@ -212,19 +214,26 @@ npm run format           # Prettier --write . (con prettier-plugin-tailwindcss)
 npm run test             # Vitest en modo watch
 npm run test:run         # Vitest una ejecución (para CI)
 npm run type-check       # TypeScript check (requiere node_modules + next-env.d.ts)
+npm run contract:update  # Descarga el contrato OpenAPI del backend + regenera tipos (requiere red)
+npm run contract:verify  # Verifica que el contrato local no fue editado a mano y es válido (offline, corre en CI)
 ```
+
+Ver `.claude/api-contract-guide.md` para el flujo completo del contrato OpenAPI (fuente de verdad de los tipos de API).
 
 ## Workflow pre-push — protección contra errores de deploy
 
 ### Contexto LOCAL (node_modules instalado, `next dev` ha corrido al menos una vez)
 
 El Husky `pre-push` hook ejecuta automáticamente en cada `git push`:
+
 ```
 TypeScript check (npm run type-check) + ESLint (npm run lint)
 ```
+
 Si cualquiera falla, el push queda bloqueado. Corregir el error y volver a empujar.
 
 Para ejecutarlo manualmente antes de push:
+
 ```bash
 npm run type-check   # TypeScript check (requiere next-env.d.ts y node_modules)
 npm run lint         # ESLint
@@ -236,13 +245,16 @@ En sesiones cloud, el hook detecta la ausencia de `node_modules` y pasa silencio
 **Claude Code debe aplicar el protocolo manual antes de cada push:**
 
 #### 1. Revisar tipos en archivos JSX→TSX migrados
+
 Tras una migración `.jsx` → `.tsx`, revisar el archivo COMPLETO de una vez:
+
 - Todos los parámetros de función/callback (sin `any` implícito)
 - Estado con `useState` (tipar el genérico: `useState<Tipo[]>([])`)
 - Props de componentes (interfaz explícita)
 - Tipos de retorno de mutaciones contra las interfaces del backend (`src/types/`)
 
 #### 2. Protocolo de errores TypeScript en cascada
+
 TypeScript revela errores en cascada: corregir Error X puede revelar Error Y (que estaba
 "tapado" porque TypeScript dejó de evaluar la expresión al toparse con X).
 
@@ -250,16 +262,19 @@ TypeScript revela errores en cascada: corregir Error X puede revelar Error Y (qu
 antes de hacer push. No asumir que porque el error anterior ya no existe, el archivo está limpio.
 
 **Señales de que habrá más errores:**
+
 - Un parámetro se tipó como `string` cuando la interfaz del backend espera una unión (`ProspectOrigin`)
 - Se pasó un objeto a una función que espera `Record<string, unknown>` con una interfaz concreta
 - Una función callback no tiene tipos en sus parámetros
 
 #### 3. Verificar contra interfaces del backend
+
 Antes de hacer push con payload de formulario, comparar el objeto construido contra
 `src/types/` para confirmar que todos los campos son del tipo correcto (especialmente
 uniones como `ProspectOrigin`, `ProspectStatus`, etc.).
 
 #### 4. Eliminar `@ts-nocheck` de un archivo grande (>500 líneas) — protocolo reforzado
+
 Ver PL-BUILD-05 (recurrencia del PR #58, 15 deployments en ERROR seguidos sobre el mismo
 archivo ya señalado en PL-016). Al eliminar `@ts-nocheck`:
 
@@ -283,12 +298,12 @@ archivo ya señalado en PL-016). Al eliminar `@ts-nocheck`:
 
 ## Archivos protegidos — detener y preguntar antes de tocar
 
-| Archivo                          | Razón                                                                         | Acción requerida                                                     |
-| -------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `src/configs/entitiesConfig.js`  | Punto de entrada del config modular — reexporta desde `src/configs/entities/` | Solo modificar el reexport; nunca añadir entidades directamente aquí |
-| `src/hooks/useLabelEditor.ts` (~28 KB / 822 líneas) | Único hook gigante real pendiente de refactor — no añadir lógica aquí | Crear sub-hook en `src/hooks/labels/useLabelXxx.ts`                  |
-| `src/middleware.ts`              | Auth + tenant + RBAC crítico                                                  | Revisar impacto en todos los roles antes de modificar                |
-| `src/lib/fetchWithTenant.js`     | Único punto HTTP — un cambio aquí afecta a toda la aplicación                 | Solo con revisión explícita del dev                                  |
+| Archivo                                             | Razón                                                                         | Acción requerida                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `src/configs/entitiesConfig.js`                     | Punto de entrada del config modular — reexporta desde `src/configs/entities/` | Solo modificar el reexport; nunca añadir entidades directamente aquí |
+| `src/hooks/useLabelEditor.ts` (~28 KB / 822 líneas) | Único hook gigante real pendiente de refactor — no añadir lógica aquí         | Crear sub-hook en `src/hooks/labels/useLabelXxx.ts`                  |
+| `src/middleware.ts`                                 | Auth + tenant + RBAC crítico                                                  | Revisar impacto en todos los roles antes de modificar                |
+| `src/lib/fetchWithTenant.js`                        | Único punto HTTP — un cambio aquí afecta a toda la aplicación                 | Solo con revisión explícita del dev                                  |
 
 ---
 
@@ -302,7 +317,8 @@ archivo ya señalado en PL-016). Al eliminar `@ts-nocheck`:
 6. **Hooks gigantes** — ✅ `useOrder` y `usePallet` ya migrados a `.ts` y refactorizados en sub-hooks (`hooks/orders/*`, `hooks/pallets/*`). Solo `useLabelEditor` (~28 KB / 822 líneas) sigue pendiente de refactor.
 7. **Cobertura de tests** — 20 archivos de test para 269 componentes y 84+ hooks.
 8. **`entityServiceMapper.js`** — candidato prioritario de migración a TypeScript.
-9. **`maxDuration` en extracción de PDF** — `src/app/api/extraction/chatgpt/route.js` tiene `maxDuration = 60` por límite del plan Hobby de Vercel (máx 60s). El ideal sería 300s para extracciones con modelos lentos (o-series). Opciones: (a) mover la extracción a un endpoint del backend Laravel, (b) upgrade a Vercel Pro, (c) implementar extracción asíncrona con polling.
+9. **Contrato OpenAPI — fase 1 (solo tipos)** — infraestructura lista (`npm run contract:update`/`contract:verify`, `.claude/rules/api-contract.md`) pero el primer contrato real todavía no se ha adoptado (`openapi/frontend.yaml` no existe en el repo — ver `OPENAPI_FRONTEND_IMPLEMENTATION_SUMMARY.md`). Ningún módulo está migrado todavía. Catálogos de sector (countries, incoterms, payment-terms) son el piloto recomendado; Pedidos/Palets/Productos/Clientes NO deben migrarse sin resolver antes la deuda de `FRONTEND_API_CONTRACT_AUDIT.md`.
+10. **`maxDuration` en extracción de PDF** — `src/app/api/extraction/chatgpt/route.js` tiene `maxDuration = 60` por límite del plan Hobby de Vercel (máx 60s). El ideal sería 300s para extracciones con modelos lentos (o-series). Opciones: (a) mover la extracción a un endpoint del backend Laravel, (b) upgrade a Vercel Pro, (c) implementar extracción asíncrona con polling.
 
 ---
 
@@ -355,28 +371,28 @@ Para documentación extendida, ver `docs/ai-context/`. Para el estado operativo 
 
 ### Agentes disponibles en `.claude/agents/`
 
-| Agente               | Rol                                                                                                                | Se activa cuando                                                                                          |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `gap-discovery`      | Tech lead — convierte ideas en GAPs verificables (modo hilo principal, no es un subagente)                         | Jose describe un problema, mejora o feature                                                               |
-| `gap-implementor`    | Desarrollador senior — ejecuta exactamente lo que el GAP describe (modo hilo principal, no es un subagente)        | Jose confirma un GAP para implementar                                                                     |
-| `gap-auditor`        | Senior engineer independiente — veredicto técnico + visual + UX (Full review vía `ux-reviewer`, orquestado por el hilo principal). También corre en modo lote para `/implement-next` | El Implementador termina, o el orquestador de `/implement-next` al cerrar un lote |
-| `ux-reviewer`        | UX specialist — simula flujos reales, identifica fricción, bloquea cierre por fallos UX. Escribe su propio veredicto en el GAP | Invocado por el hilo principal cuando `gap-auditor` señala que un GAP requiere Full Review. Full (flujos complejos) / Light (cambios menores) |
-| `frontend-developer` | Desarrollador frontend generalista                                                                                 | Tareas de desarrollo que no siguen el flujo GAP                                                           |
-| `mobile-ui-agent`    | Especialista en UI mobile                                                                                          | Trabajo en vistas mobile con `/mobile`                                                                    |
-| `ui-audit-agent`     | Auditor autónomo de UI — recorre vistas, genera findings, convierte en GAPs                                        | Invocado por `/audit-mobile`, `/audit-desktop`, o como carril de `/deep-audit-module` (ux-ui, a11y-responsive) |
-| `system-learner`     | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md`           | Invocado por el hilo principal a partir de un PL candidate señalado por cualquier auditor, o directamente por Jose |
-| `code-audit-agent`   | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX. | Invocado por `/audit-code [quality\|migrate\|arch]`, o como carril de `/deep-audit-module` (code-quality, architecture-refactor) |
-| `design-quality-auditor` | Auditor de craft de diseño — armonía/proporción/jerarquía visual (con captura real cuando es posible), consistencia de textos, y drift entre vistas de la misma familia. Nunca evalúa código ni flujo UX. | Invocado por `/audit-design [visual\|copy\|consistency]`, o como carril de `/deep-audit-module` (ux-ui) |
-| `skeleton-fidelity-auditor` | Auditor de fidelidad de loading states — compara (con captura real cuando es posible) cada `Skeleton` contra el componente real que sustituye: estructura, dimensiones, jerarquía. Mobile y desktop como targets separados. Nunca evalúa si falta el Skeleton (eso es `ui-audit-agent`). | Invocado por `/audit-skeletons [mobile\|desktop\|both]`                                                   |
-| `skeleton-implementor` | Especialista en construir/corregir skeletons fieles al componente real — nunca adivina medidas, siempre variantes mobile/desktop separadas cuando aplica                                          | Jose confirma un GAP `AUDIT-SKEL-*`, o pide directamente un skeleton                                       |
-| `domain-business-auditor` | Audita si los flujos y reglas de negocio de un módulo reflejan cómo opera realmente una empresa de pesca/congelados (pesos, formatos, lotes, trazabilidad, fresco/congelado, maquila). Único carril que evalúa corrección de dominio, no código ni UI. | Carril de `/deep-audit-module` (categoría domain-business)                                                |
-| `permissions-multitenant-auditor` | Audita visibilidad de acciones por rol y aislamiento de datos multi-tenant — las dos áreas sin cobertura dedicada previa. | Carril de `/deep-audit-module` (hallazgos de seguridad/tenant, categoría data-api o architecture-refactor) |
-| `gap-normalizer`    | Deduplica, fusiona, divide y clasifica los GAP v2 candidatos generados por `/deep-audit-module` en GAPs implementables con frontmatter completo. Nunca implementa ni audita código directamente. | Fase 6 de `/deep-audit-module` cuando hay más de ~15 candidatos                                            |
-| `code-reviewer`      | Revisor de código independiente                                                                                    | Revisión de PRs y diffs                                                                                   |
-| `db-architect`       | Diseño de caché TanStack Query — factories de queryKey, estrategia de invalidación, staleTime, prefetch, updates optimistas | Cambios en el diseño de queries/mutaciones y su caché                                                     |
-| `design-fidelity-auditor` | Compara una vista implementada contra su mockup original de Claude Design (con captura real cuando es posible) y clasifica cada diferencia como fiel / adaptación acordada / drift no acordado. Nunca evalúa craft visual absoluto (eso es `design-quality-auditor`) ni corrección de código. | Invocado por el skill `design-to-code` (PASO D) tras una implementación, o directamente vía `/design-to-code audit [vista]` |
-| `landing-auditor`   | Auditor del sitio público de marketing (landing, pricing, blog, legal) — marca/diseño, conversión (CRO), SEO técnico, GEO/AEO, paridad i18n ES/PT/EN, accesibilidad, performance y honestidad de contenido. Nunca audita el ERP autenticado (eso es `ui-audit-agent`/`design-quality-auditor`). Nunca implementa. | Invocado por `/audit-landing` — cadencia trimestral acordada con Jose |
-| `landing-content-writer` | Redacta y mantiene copy/artículos del sitio público (blog, secciones de landing, pricing) en ES con traducción a PT/EN, siguiendo el tono y las reglas de honestidad de `.claude/landing-context.md`. Nunca toca código ni inventa cifras/testimonios. | Jose pide contenido nuevo, o `landing-auditor` señala un hallazgo puramente editorial |
+| Agente                            | Rol                                                                                                                                                                                                                                                                                                               | Se activa cuando                                                                                                                              |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `gap-discovery`                   | Tech lead — convierte ideas en GAPs verificables (modo hilo principal, no es un subagente)                                                                                                                                                                                                                        | Jose describe un problema, mejora o feature                                                                                                   |
+| `gap-implementor`                 | Desarrollador senior — ejecuta exactamente lo que el GAP describe (modo hilo principal, no es un subagente)                                                                                                                                                                                                       | Jose confirma un GAP para implementar                                                                                                         |
+| `gap-auditor`                     | Senior engineer independiente — veredicto técnico + visual + UX (Full review vía `ux-reviewer`, orquestado por el hilo principal). También corre en modo lote para `/implement-next`                                                                                                                              | El Implementador termina, o el orquestador de `/implement-next` al cerrar un lote                                                             |
+| `ux-reviewer`                     | UX specialist — simula flujos reales, identifica fricción, bloquea cierre por fallos UX. Escribe su propio veredicto en el GAP                                                                                                                                                                                    | Invocado por el hilo principal cuando `gap-auditor` señala que un GAP requiere Full Review. Full (flujos complejos) / Light (cambios menores) |
+| `frontend-developer`              | Desarrollador frontend generalista                                                                                                                                                                                                                                                                                | Tareas de desarrollo que no siguen el flujo GAP                                                                                               |
+| `mobile-ui-agent`                 | Especialista en UI mobile                                                                                                                                                                                                                                                                                         | Trabajo en vistas mobile con `/mobile`                                                                                                        |
+| `ui-audit-agent`                  | Auditor autónomo de UI — recorre vistas, genera findings, convierte en GAPs                                                                                                                                                                                                                                       | Invocado por `/audit-mobile`, `/audit-desktop`, o como carril de `/deep-audit-module` (ux-ui, a11y-responsive)                                |
+| `system-learner`                  | Memoria institucional — traduce hallazgos y correcciones en reglas permanentes en `project-learnings.md`                                                                                                                                                                                                          | Invocado por el hilo principal a partir de un PL candidate señalado por cualquier auditor, o directamente por Jose                            |
+| `code-audit-agent`                | Auditor técnico autónomo — calidad de código, deuda de migración y arquitectura React/Next.js. Nunca evalúa UI/UX.                                                                                                                                                                                                | Invocado por `/audit-code [quality\|migrate\|arch]`, o como carril de `/deep-audit-module` (code-quality, architecture-refactor)              |
+| `design-quality-auditor`          | Auditor de craft de diseño — armonía/proporción/jerarquía visual (con captura real cuando es posible), consistencia de textos, y drift entre vistas de la misma familia. Nunca evalúa código ni flujo UX.                                                                                                         | Invocado por `/audit-design [visual\|copy\|consistency]`, o como carril de `/deep-audit-module` (ux-ui)                                       |
+| `skeleton-fidelity-auditor`       | Auditor de fidelidad de loading states — compara (con captura real cuando es posible) cada `Skeleton` contra el componente real que sustituye: estructura, dimensiones, jerarquía. Mobile y desktop como targets separados. Nunca evalúa si falta el Skeleton (eso es `ui-audit-agent`).                          | Invocado por `/audit-skeletons [mobile\|desktop\|both]`                                                                                       |
+| `skeleton-implementor`            | Especialista en construir/corregir skeletons fieles al componente real — nunca adivina medidas, siempre variantes mobile/desktop separadas cuando aplica                                                                                                                                                          | Jose confirma un GAP `AUDIT-SKEL-*`, o pide directamente un skeleton                                                                          |
+| `domain-business-auditor`         | Audita si los flujos y reglas de negocio de un módulo reflejan cómo opera realmente una empresa de pesca/congelados (pesos, formatos, lotes, trazabilidad, fresco/congelado, maquila). Único carril que evalúa corrección de dominio, no código ni UI.                                                            | Carril de `/deep-audit-module` (categoría domain-business)                                                                                    |
+| `permissions-multitenant-auditor` | Audita visibilidad de acciones por rol y aislamiento de datos multi-tenant — las dos áreas sin cobertura dedicada previa.                                                                                                                                                                                         | Carril de `/deep-audit-module` (hallazgos de seguridad/tenant, categoría data-api o architecture-refactor)                                    |
+| `gap-normalizer`                  | Deduplica, fusiona, divide y clasifica los GAP v2 candidatos generados por `/deep-audit-module` en GAPs implementables con frontmatter completo. Nunca implementa ni audita código directamente.                                                                                                                  | Fase 6 de `/deep-audit-module` cuando hay más de ~15 candidatos                                                                               |
+| `code-reviewer`                   | Revisor de código independiente                                                                                                                                                                                                                                                                                   | Revisión de PRs y diffs                                                                                                                       |
+| `db-architect`                    | Diseño de caché TanStack Query — factories de queryKey, estrategia de invalidación, staleTime, prefetch, updates optimistas                                                                                                                                                                                       | Cambios en el diseño de queries/mutaciones y su caché                                                                                         |
+| `design-fidelity-auditor`         | Compara una vista implementada contra su mockup original de Claude Design (con captura real cuando es posible) y clasifica cada diferencia como fiel / adaptación acordada / drift no acordado. Nunca evalúa craft visual absoluto (eso es `design-quality-auditor`) ni corrección de código.                     | Invocado por el skill `design-to-code` (PASO D) tras una implementación, o directamente vía `/design-to-code audit [vista]`                   |
+| `landing-auditor`                 | Auditor del sitio público de marketing (landing, pricing, blog, legal) — marca/diseño, conversión (CRO), SEO técnico, GEO/AEO, paridad i18n ES/PT/EN, accesibilidad, performance y honestidad de contenido. Nunca audita el ERP autenticado (eso es `ui-audit-agent`/`design-quality-auditor`). Nunca implementa. | Invocado por `/audit-landing` — cadencia trimestral acordada con Jose                                                                         |
+| `landing-content-writer`          | Redacta y mantiene copy/artículos del sitio público (blog, secciones de landing, pricing) en ES con traducción a PT/EN, siguiendo el tono y las reglas de honestidad de `.claude/landing-context.md`. Nunca toca código ni inventa cifras/testimonios.                                                            | Jose pide contenido nuevo, o `landing-auditor` señala un hallazgo puramente editorial                                                         |
 
 Nota sobre invocación entre agentes: ningún agente de esta tabla (salvo el hilo
 principal) tiene la tool `Agent` — no pueden lanzarse subagentes entre sí. Cuando
@@ -388,29 +404,29 @@ siguiente agente y retoma el flujo.
 
 ### Slash commands disponibles
 
-| Comando                       | Agente             | Descripción                               |
-| ----------------------------- | ------------------ | ----------------------------------------- |
-| `/audit-mobile`               | `ui-audit-agent`   | Auditoría UI de vistas mobile             |
-| `/audit-desktop`              | `ui-audit-agent`   | Auditoría UI de vistas desktop            |
-| `/audit-code quality`         | `code-audit-agent` | Violaciones de calidad de código y reglas |
-| `/audit-code migrate`         | `code-audit-agent` | Candidatos JS→TS y patrones deprecated    |
-| `/audit-code arch`            | `code-audit-agent` | Problemas arquitectónicos React/Next.js   |
-| `/audit-code [mode] [module]` | `code-audit-agent` | Scope reducido a un módulo específico     |
-| `/audit-design visual`        | `design-quality-auditor` | Armonía, proporción, jerarquía y ritmo visual (captura real si hay Playwright+sesión) |
-| `/audit-design copy`          | `design-quality-auditor` | Terminología, tono, capitalización y claridad de mensajes |
-| `/audit-design consistency [family]` | `design-quality-auditor` | Drift entre vistas de la misma familia (listados, sheets, forms, confirmaciones...) |
-| `/audit-skeletons [mobile\|desktop\|both]` | `skeleton-fidelity-auditor` | Fidelidad de `Skeleton` vs el componente real que sustituye — estructura, dimensiones, jerarquía |
-| `/audit-landing [página\|locale]` | `landing-auditor` | Auditoría del sitio público (marca, CRO, SEO técnico, GEO/AEO, i18n, a11y, performance, honestidad de contenido) — cadencia trimestral |
-| `/deep-audit-module module={módulo}` | code-audit-agent, ui-audit-agent, design-quality-auditor, domain-business-auditor, permissions-multitenant-auditor | Auditoría profunda multi-carril de un módulo; escribe GAP candidates a `docs/ai/gaps/{module}/` (skill, no agente único) |
-| `/implement-next module={módulo} category={cat}` | `gap-implementor` + `gap-auditor` (modo lote) | Implementa el siguiente lote de GAPs v2 `ready` y los verifica con contexto limpio (skill) |
-| `/mobile [vista]`             | `mobile-ui-agent`  | Workflow completo de UI mobile para una vista (crear/qa/merge/status/list) |
-| `/design-to-code [vista] [fuente]` | `mobile-ui-agent` / `frontend-developer` + `design-fidelity-auditor` | Circuito recurrente: importa un diseño de Claude Design, propone mapeo de fidelidad vs adaptación, implementa y audita fidelidad contra el mockup original (skill) |
-| `/design-to-code refine [vista] [fuente]` | `design-fidelity-auditor` + `mobile-ui-agent` / `frontend-developer` | Modo REFINAR: audita primero una vista ya implementada (con o sin circuito previo) contra su diseño original y afina solo el drift detectado, sin reescribir |
-| `/design-to-code audit [vista]` | `design-fidelity-auditor` | Re-ejecuta solo la auditoría de fidelidad de una vista ya implementada |
-| `/idea [texto libre]`         | —                   | Captura rápida en el parking de ideas — sin preguntas |
-| `/ideas [módulo]`             | —                   | Lista el backlog de `.claude/ideas/parking-lot.md`    |
-| `/ideas promote [NNN]`        | `gap-discovery`     | Promociona una idea parked a GAP con protocolo completo |
-| `/help`                       | —                   | Referencia rápida de todos los comandos y agentes activos |
+| Comando                                          | Agente                                                                                                             | Descripción                                                                                                                                                        |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/audit-mobile`                                  | `ui-audit-agent`                                                                                                   | Auditoría UI de vistas mobile                                                                                                                                      |
+| `/audit-desktop`                                 | `ui-audit-agent`                                                                                                   | Auditoría UI de vistas desktop                                                                                                                                     |
+| `/audit-code quality`                            | `code-audit-agent`                                                                                                 | Violaciones de calidad de código y reglas                                                                                                                          |
+| `/audit-code migrate`                            | `code-audit-agent`                                                                                                 | Candidatos JS→TS y patrones deprecated                                                                                                                             |
+| `/audit-code arch`                               | `code-audit-agent`                                                                                                 | Problemas arquitectónicos React/Next.js                                                                                                                            |
+| `/audit-code [mode] [module]`                    | `code-audit-agent`                                                                                                 | Scope reducido a un módulo específico                                                                                                                              |
+| `/audit-design visual`                           | `design-quality-auditor`                                                                                           | Armonía, proporción, jerarquía y ritmo visual (captura real si hay Playwright+sesión)                                                                              |
+| `/audit-design copy`                             | `design-quality-auditor`                                                                                           | Terminología, tono, capitalización y claridad de mensajes                                                                                                          |
+| `/audit-design consistency [family]`             | `design-quality-auditor`                                                                                           | Drift entre vistas de la misma familia (listados, sheets, forms, confirmaciones...)                                                                                |
+| `/audit-skeletons [mobile\|desktop\|both]`       | `skeleton-fidelity-auditor`                                                                                        | Fidelidad de `Skeleton` vs el componente real que sustituye — estructura, dimensiones, jerarquía                                                                   |
+| `/audit-landing [página\|locale]`                | `landing-auditor`                                                                                                  | Auditoría del sitio público (marca, CRO, SEO técnico, GEO/AEO, i18n, a11y, performance, honestidad de contenido) — cadencia trimestral                             |
+| `/deep-audit-module module={módulo}`             | code-audit-agent, ui-audit-agent, design-quality-auditor, domain-business-auditor, permissions-multitenant-auditor | Auditoría profunda multi-carril de un módulo; escribe GAP candidates a `docs/ai/gaps/{module}/` (skill, no agente único)                                           |
+| `/implement-next module={módulo} category={cat}` | `gap-implementor` + `gap-auditor` (modo lote)                                                                      | Implementa el siguiente lote de GAPs v2 `ready` y los verifica con contexto limpio (skill)                                                                         |
+| `/mobile [vista]`                                | `mobile-ui-agent`                                                                                                  | Workflow completo de UI mobile para una vista (crear/qa/merge/status/list)                                                                                         |
+| `/design-to-code [vista] [fuente]`               | `mobile-ui-agent` / `frontend-developer` + `design-fidelity-auditor`                                               | Circuito recurrente: importa un diseño de Claude Design, propone mapeo de fidelidad vs adaptación, implementa y audita fidelidad contra el mockup original (skill) |
+| `/design-to-code refine [vista] [fuente]`        | `design-fidelity-auditor` + `mobile-ui-agent` / `frontend-developer`                                               | Modo REFINAR: audita primero una vista ya implementada (con o sin circuito previo) contra su diseño original y afina solo el drift detectado, sin reescribir       |
+| `/design-to-code audit [vista]`                  | `design-fidelity-auditor`                                                                                          | Re-ejecuta solo la auditoría de fidelidad de una vista ya implementada                                                                                             |
+| `/idea [texto libre]`                            | —                                                                                                                  | Captura rápida en el parking de ideas — sin preguntas                                                                                                              |
+| `/ideas [módulo]`                                | —                                                                                                                  | Lista el backlog de `.claude/ideas/parking-lot.md`                                                                                                                 |
+| `/ideas promote [NNN]`                           | `gap-discovery`                                                                                                    | Promociona una idea parked a GAP con protocolo completo                                                                                                            |
+| `/help`                                          | —                                                                                                                  | Referencia rápida de todos los comandos y agentes activos                                                                                                          |
 
 ---
 

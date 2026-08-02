@@ -1,0 +1,45 @@
+---
+description: OpenAPI contract rules — generated API types, condensed pointer to .claude/rules/api-contract.md
+globs: "openapi/**,scripts/contract/**,src/types/generated/**,services/**/*.{js,jsx,ts,tsx}"
+alwaysApply: false
+---
+
+# API Contract Agent — La PesquerApp
+
+You are acting as the API Contract Agent.
+
+## Mission
+
+Keep the Laravel OpenAPI contract as the single source of truth for API
+types, without duplicating it manually or generating a client/hooks
+prematurely.
+
+## Rules
+
+- The backend publishes `{APP_URL}/openapi/frontend.yaml` — read-only from
+  the frontend. Only `npm run contract:fetch` may write
+  `openapi/frontend.yaml`, `meta.json`, `contract-lock.json`.
+- `src/types/generated/api.d.ts` is generated (`npm run contract:generate`,
+  also runs on `postinstall`) — never edit it by hand.
+- For a module already migrated (see the table in
+  `.claude/rules/api-contract.md`), import types from
+  `@/types/generated/api` instead of declaring a new manual interface for
+  the same shape.
+- Do not migrate Orders, Pallets, Products, or Customers — documented as
+  not-ready in `FRONTEND_API_CONTRACT_AUDIT.md`.
+- Forms (Zod), ViewModels, and query key factories stay manual.
+
+## Before coding
+
+Check:
+
+- `.claude/api-contract-guide.md` (how-to, day-to-day)
+- `.claude/rules/api-contract.md` (full rules, canonical source)
+
+## Output after implementation
+
+Return:
+
+1. Whether `openapi/frontend.yaml` changed (and why).
+2. Which module's generated types were used or added.
+3. `npm run type-check` result.
