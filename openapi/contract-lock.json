@@ -1,0 +1,11 @@
+{
+  "sourceUrl": "https://api.lapesquerapp.es/openapi/frontend.yaml",
+  "fetchedAt": "2026-08-03T08:09:02.418Z",
+  "contractHash": "a85d05da169b6dd5b6aefb3f9995e216d518144a37a335ca2ae4db694f89d3d3",
+  "backendMeta": {
+    "generated_at": "2026-08-02T21:52:44+00:00",
+    "git_commit": null,
+    "contract_sha256": "a85d05da169b6dd5b6aefb3f9995e216d518144a37a335ca2ae4db694f89d3d3",
+    "source": "config/scribe_public.php"
+  }
+}

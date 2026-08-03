@@ -104,7 +104,12 @@ export function mapApiDataToFormValues(fields, data) {
     }
 
     if (field.type === 'select' && result[key] !== null && result[key] !== undefined) {
-      result[key] = String(result[key]);
+      // Los selects booleanos (options '1'/'0' + beforeSubmit.booleanFields) reciben
+      // un booleano JS real del backend — String(true) da "true", que no coincide con
+      // ningún SelectItem y termina enviándose como false al guardar sin que el usuario
+      // toque el campo (ver PL: EditEntityForm active-select-boolean-mismatch).
+      result[key] =
+        typeof result[key] === 'boolean' ? (result[key] ? '1' : '0') : String(result[key]);
     }
 
     // Convertir timestamps ISO a datetime-local si el campo es de tipo datetime-local
