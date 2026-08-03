@@ -5,20 +5,55 @@ import {
   normalizeProductionRecord,
 } from '@/helpers/production/normalizers';
 
-export function getProductionOutputs(token, params = {}) {
+function fetchProductionOutputsPage(token, queryParams, page) {
+  return apiGet(
+    `${API_URL_V2}production-outputs`,
+    token,
+    { ...queryParams, page },
+    { transform: (data) => data }
+  );
+}
+
+// El endpoint pagina la respuesta (por defecto 15 por página). Si el caller no pide
+// una página concreta, se asume que quiere el listado completo del production_record_id
+// (así lo consume hoy useProductionOutputsManager, que no tiene UI de paginación), así
+// que se recorren todas las páginas y se fusionan antes de devolver.
+export async function getProductionOutputs(token, params = {}) {
   const queryParams = { ...params };
   if (params.with_sources === true || params.with_sources === 'true') {
     queryParams.with_sources = true;
   }
-  return apiGet(`${API_URL_V2}production-outputs`, token, queryParams, {
-    transform: (data) => {
-      const outputs = data.data || data || [];
-      return {
-        ...data,
-        data: Array.isArray(outputs) ? outputs.map(normalizeProductionOutput) : [],
-      };
-    },
-  });
+
+  if (params.page !== undefined) {
+    return apiGet(`${API_URL_V2}production-outputs`, token, queryParams, {
+      transform: (data) => {
+        const outputs = data.data || data || [];
+        return {
+          ...data,
+          data: Array.isArray(outputs) ? outputs.map(normalizeProductionOutput) : [],
+        };
+      },
+    });
+  }
+
+  const firstPage = await fetchProductionOutputsPage(token, queryParams, 1);
+  let allOutputs = Array.isArray(firstPage?.data) ? firstPage.data : [];
+  const lastPage = firstPage?.meta?.last_page ?? 1;
+
+  if (lastPage > 1) {
+    const remainingPages = Array.from({ length: lastPage - 1 }, (_, i) => i + 2);
+    const remainingResponses = await Promise.all(
+      remainingPages.map((page) => fetchProductionOutputsPage(token, queryParams, page))
+    );
+    remainingResponses.forEach((response) => {
+      if (Array.isArray(response?.data)) allOutputs = allOutputs.concat(response.data);
+    });
+  }
+
+  return {
+    ...firstPage,
+    data: allOutputs.map(normalizeProductionOutput),
+  };
 }
 
 export function createProductionOutput(outputData, token) {
