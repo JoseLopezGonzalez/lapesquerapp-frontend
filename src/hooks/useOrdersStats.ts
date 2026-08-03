@@ -10,6 +10,11 @@ import {
   getOrdersProfitabilitySummary,
   getOrdersProfitabilityTimeline,
   getOrdersProfitabilityProducts,
+  createOrdersProfitabilitySummaryJob,
+  getOrdersProfitabilitySummaryJob,
+  createOrdersProfitabilityProductsJob,
+  getOrdersProfitabilityProductsJob,
+  ProfitabilityRangeTooLargeError,
   getAuxiliaryLinesTotalAmountStats,
   getAuxiliaryLinesByProductStats,
   getAuxiliaryLinesByCustomerStats,
@@ -36,6 +41,22 @@ function getYearToDateRange(): { dateFrom: string; dateTo: string } {
   const dateFrom = formatLocalDate(firstDay);
   const dateTo = formatLocalDate(today);
   return { dateFrom, dateTo };
+}
+
+// Backend Sprint 4 (2026-08-03): profitability-summary/profitability-products
+// rechazan con 422 rangos síncronos > 60 días — por encima de eso hay que usar
+// el flujo async (POST .../jobs + polling).
+const PROFITABILITY_SYNC_MAX_DAYS = 60;
+const PROFITABILITY_JOB_POLL_INTERVAL_MS = 1800;
+
+function daysBetween(dateFrom: string, dateTo: string): number {
+  const from = new Date(dateFrom).getTime();
+  const to = new Date(dateTo).getTime();
+  return Math.round((to - from) / (1000 * 60 * 60 * 24));
+}
+
+function isProfitabilityJobPending(status: string | undefined): boolean {
+  return status === 'pending' || status === 'processing';
 }
 
 export function useOrdersTotalNetWeightStats() {
@@ -301,22 +322,68 @@ export function useOrdersProfitabilitySummary(params: ProfitabilitySummaryParams
   const yearToDate = getYearToDateRange();
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+  const productIds = productId && productId !== 'all' ? [productId] : undefined;
+  const hasContext = !!tenantId && !!dateFrom && !!dateTo;
+  const isLongRange = daysBetween(dateFrom, dateTo) > PROFITABILITY_SYNC_MAX_DAYS;
 
-  const { data, isLoading, error } = useQuery({
+  const syncQuery = useQuery({
     queryKey: orderStatKeys.profitabilitySummary(tenantId, dateFrom, dateTo, productId),
-    queryFn: () =>
-      getOrdersProfitabilitySummary({
-        dateFrom,
-        dateTo,
-        productIds: productId && productId !== 'all' ? [productId] : undefined,
-      }),
-    enabled: !!tenantId && !!dateFrom && !!dateTo,
+    queryFn: () => getOrdersProfitabilitySummary({ dateFrom, dateTo, productIds }),
+    enabled: hasContext && !isLongRange,
+    retry: (failureCount, error) =>
+      !(error instanceof ProfitabilityRangeTooLargeError) && failureCount < 2,
   });
 
+  // hasContext también gatea needsAsync: sin tenant/rango no hay nada que
+  // despachar, y sin este guard el job quedaría "pendiente" para siempre en
+  // vez de resolver isLoading a false (jobQuery/jobStatusQuery nunca se habilitan).
+  const needsAsync =
+    hasContext &&
+    (isLongRange || (syncQuery.error != null && syncQuery.error instanceof ProfitabilityRangeTooLargeError));
+
+  // Dispatch: crea el job una vez por rango (staleTime infinito) — el polling real
+  // de status/resultado lo hace la query de abajo, keyed por el jobId devuelto aquí.
+  const jobQuery = useQuery({
+    queryKey: orderStatKeys.profitabilitySummaryJob(tenantId, dateFrom, dateTo, productId),
+    queryFn: () => createOrdersProfitabilitySummaryJob({ dateFrom, dateTo, productIds }),
+    enabled: needsAsync,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  const jobId = jobQuery.data?.id;
+
+  const jobStatusQuery = useQuery({
+    queryKey: orderStatKeys.profitabilitySummaryJobStatus(tenantId, jobId),
+    queryFn: () => getOrdersProfitabilitySummaryJob(jobId as string),
+    enabled: !!jobId,
+    refetchInterval: (query) =>
+      isProfitabilityJobPending(query.state.data?.status) ? PROFITABILITY_JOB_POLL_INTERVAL_MS : false,
+  });
+
+  if (!needsAsync) {
+    return {
+      data: syncQuery.data ?? null,
+      isLoading: syncQuery.isLoading,
+      error:
+        syncQuery.error && !(syncQuery.error instanceof ProfitabilityRangeTooLargeError)
+          ? syncQuery.error.message
+          : null,
+    };
+  }
+
+  const job = jobStatusQuery.data ?? jobQuery.data;
+  const isLoading = jobQuery.isLoading || !job || isProfitabilityJobPending(job.status);
+  const error =
+    jobQuery.error?.message ??
+    jobStatusQuery.error?.message ??
+    (job?.status === 'failed' ? (job.errorMessage ?? 'No se pudo calcular la rentabilidad') : null);
+
   return {
-    data: data ?? null,
+    data: job?.status === 'finished' ? job.result : null,
     isLoading,
-    error: error?.message ?? null,
+    error,
   };
 }
 
@@ -354,20 +421,64 @@ export function useOrdersProfitabilityProducts(params: ProfitabilityRangeParams)
   const yearToDate = getYearToDateRange();
   const dateFrom = range?.from?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateFrom;
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
+  const hasContext = !!tenantId && !!dateFrom && !!dateTo;
+  const isLongRange = daysBetween(dateFrom, dateTo) > PROFITABILITY_SYNC_MAX_DAYS;
 
-  const { data, isLoading, error } = useQuery({
+  const syncQuery = useQuery({
     queryKey: orderStatKeys.profitabilityProducts(tenantId, dateFrom, dateTo),
-    queryFn: () =>
-      getOrdersProfitabilityProducts({
-        dateFrom,
-        dateTo,
-      }),
-    enabled: !!tenantId && !!dateFrom && !!dateTo,
+    queryFn: () => getOrdersProfitabilityProducts({ dateFrom, dateTo }),
+    enabled: hasContext && !isLongRange,
+    retry: (failureCount, error) =>
+      !(error instanceof ProfitabilityRangeTooLargeError) && failureCount < 2,
   });
 
+  // hasContext también gatea needsAsync: sin tenant/rango no hay nada que
+  // despachar, y sin este guard el job quedaría "pendiente" para siempre en
+  // vez de resolver isLoading a false (jobQuery/jobStatusQuery nunca se habilitan).
+  const needsAsync =
+    hasContext &&
+    (isLongRange || (syncQuery.error != null && syncQuery.error instanceof ProfitabilityRangeTooLargeError));
+
+  const jobQuery = useQuery({
+    queryKey: orderStatKeys.profitabilityProductsJob(tenantId, dateFrom, dateTo),
+    queryFn: () => createOrdersProfitabilityProductsJob({ dateFrom, dateTo }),
+    enabled: needsAsync,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  const jobId = jobQuery.data?.id;
+
+  const jobStatusQuery = useQuery({
+    queryKey: orderStatKeys.profitabilityProductsJobStatus(tenantId, jobId),
+    queryFn: () => getOrdersProfitabilityProductsJob(jobId as string),
+    enabled: !!jobId,
+    refetchInterval: (query) =>
+      isProfitabilityJobPending(query.state.data?.status) ? PROFITABILITY_JOB_POLL_INTERVAL_MS : false,
+  });
+
+  if (!needsAsync) {
+    return {
+      data: syncQuery.data ?? null,
+      isLoading: syncQuery.isLoading,
+      error:
+        syncQuery.error && !(syncQuery.error instanceof ProfitabilityRangeTooLargeError)
+          ? syncQuery.error.message
+          : null,
+    };
+  }
+
+  const job = jobStatusQuery.data ?? jobQuery.data;
+  const isLoading = jobQuery.isLoading || !job || isProfitabilityJobPending(job.status);
+  const error =
+    jobQuery.error?.message ??
+    jobStatusQuery.error?.message ??
+    (job?.status === 'failed' ? (job.errorMessage ?? 'No se pudo calcular la rentabilidad') : null);
+
   return {
-    data: data ?? null,
+    data: job?.status === 'finished' ? job.result : null,
     isLoading,
-    error: error?.message ?? null,
+    error,
   };
 }

@@ -282,6 +282,45 @@ export interface ProfitabilityProductsResponse {
   products: ProfitabilityProductItem[];
 }
 
+/**
+ * Job asíncrono para profitability-summary/profitability-products cuando el rango
+ * de fechas supera el límite de la consulta síncrona (60 días — backend Sprint 4,
+ * 2026-08-03). Mismo patrón que OrdersProfitabilityExportJob, pero `result` trae
+ * la respuesta JSON en vez de un fichero a descargar.
+ */
+export type ProfitabilityJobStatus = 'pending' | 'processing' | 'finished' | 'failed';
+
+export interface ProfitabilitySummaryJob {
+  id: string;
+  type: 'summary';
+  status: ProfitabilityJobStatus;
+  filters: {
+    dateFrom: string;
+    dateTo: string;
+    productIds?: Array<string | number>;
+  };
+  result: ProfitabilitySummaryResponse | null;
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+}
+
+export interface ProfitabilityProductsJob {
+  id: string;
+  type: 'products';
+  status: ProfitabilityJobStatus;
+  filters: {
+    dateFrom: string;
+    dateTo: string;
+  };
+  result: ProfitabilityProductsResponse | null;
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  finishedAt: string | null;
+}
+
 /** Order incident payload */
 export interface OrderIncidentPayload {
   description?: string;

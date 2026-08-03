@@ -32,6 +32,8 @@ import type {
   ProfitabilityTimelineResponse,
   ProfitabilityProductItem,
   ProfitabilityProductsResponse,
+  ProfitabilitySummaryJob,
+  ProfitabilityProductsJob,
   OrderIncidentPayload,
   OrderRankingStatsParams,
   SalesChartParams,
@@ -68,6 +70,8 @@ export type {
   ProfitabilityTimelineResponse,
   ProfitabilityProductItem,
   ProfitabilityProductsResponse,
+  ProfitabilitySummaryJob,
+  ProfitabilityProductsJob,
   OrderIncidentPayload,
   OrderRankingStatsParams,
   SalesChartParams,
@@ -124,6 +128,23 @@ function buildProfitabilityQuery(
 function unwrapProfitabilityExportJob(data: unknown): OrdersProfitabilityExportJob {
   return ((data as { data?: OrdersProfitabilityExportJob })?.data ??
     data) as OrdersProfitabilityExportJob;
+}
+
+function unwrapProfitabilityJob<T>(data: unknown): T {
+  return ((data as { data?: T })?.data ?? data) as T;
+}
+
+/**
+ * Señal de que el rango de fechas supera el límite de la consulta síncrona de
+ * rentabilidad (60 días, backend Sprint 4 2026-08-03) — distinguible de otros
+ * errores para que el hook pueda hacer fallback automático al flujo async
+ * (POST .../jobs + polling) sin depender de parsear el mensaje.
+ */
+export class ProfitabilityRangeTooLargeError extends Error {
+  constructor() {
+    super('El rango de fechas no puede superar 60 días en la consulta síncrona.');
+    this.name = 'ProfitabilityRangeTooLargeError';
+  }
 }
 
 function normalizeProfitabilityProductIds(productIds?: Array<string | number>): number[] {
@@ -684,6 +705,10 @@ export async function getOrdersProfitabilitySummary(
     }
   );
 
+  if (response.status === 422) {
+    throw new ProfitabilityRangeTooLargeError();
+  }
+
   const data = await handleServiceResponse(
     response,
     null,
@@ -692,6 +717,53 @@ export async function getOrdersProfitabilitySummary(
 
   return ((data as { data?: ProfitabilitySummaryResponse })?.data ??
     data) as ProfitabilitySummaryResponse;
+}
+
+/**
+ * Crea un job asíncrono para calcular el resumen de rentabilidad — usar cuando
+ * el rango de fechas supera 60 días (o tras un 422 de getOrdersProfitabilitySummary).
+ */
+export async function createOrdersProfitabilitySummaryJob(
+  params: OrdersProfitabilitySummaryParams
+): Promise<ProfitabilitySummaryJob> {
+  const response = await orderFetch(`${API_URL_V2}statistics/orders/profitability-summary/jobs`, {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    body: JSON.stringify({
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
+      productIds: normalizeProfitabilityProductIds(params.productIds),
+    }),
+  });
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al iniciar el cálculo de rentabilidad'
+  );
+
+  return unwrapProfitabilityJob<ProfitabilitySummaryJob>(data);
+}
+
+/**
+ * Consulta el estado/resultado de un job de resumen de rentabilidad (polling).
+ */
+export async function getOrdersProfitabilitySummaryJob(id: string): Promise<ProfitabilitySummaryJob> {
+  const response = await orderFetch(
+    `${API_URL_V2}statistics/orders/profitability-summary/jobs/${id}`,
+    {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    }
+  );
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al consultar el cálculo de rentabilidad'
+  );
+
+  return unwrapProfitabilityJob<ProfitabilitySummaryJob>(data);
 }
 
 /**
@@ -822,6 +894,10 @@ export async function getOrdersProfitabilityProducts(
     }
   );
 
+  if (response.status === 422) {
+    throw new ProfitabilityRangeTooLargeError();
+  }
+
   const data = await handleServiceResponse(
     response,
     null,
@@ -830,6 +906,54 @@ export async function getOrdersProfitabilityProducts(
 
   return ((data as { data?: ProfitabilityProductsResponse })?.data ??
     data) as ProfitabilityProductsResponse;
+}
+
+/**
+ * Crea un job asíncrono para calcular la rentabilidad por producto — usar cuando
+ * el rango de fechas supera 60 días (o tras un 422 de getOrdersProfitabilityProducts).
+ */
+export async function createOrdersProfitabilityProductsJob(
+  params: OrdersProfitabilityProductsParams
+): Promise<ProfitabilityProductsJob> {
+  const response = await orderFetch(`${API_URL_V2}statistics/orders/profitability-products/jobs`, {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    body: JSON.stringify({
+      dateFrom: params.dateFrom,
+      dateTo: params.dateTo,
+    }),
+  });
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al iniciar el cálculo de rentabilidad por producto'
+  );
+
+  return unwrapProfitabilityJob<ProfitabilityProductsJob>(data);
+}
+
+/**
+ * Consulta el estado/resultado de un job de rentabilidad por producto (polling).
+ */
+export async function getOrdersProfitabilityProductsJob(
+  id: string
+): Promise<ProfitabilityProductsJob> {
+  const response = await orderFetch(
+    `${API_URL_V2}statistics/orders/profitability-products/jobs/${id}`,
+    {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    }
+  );
+
+  const data = await handleServiceResponse(
+    response,
+    null,
+    'Error al consultar el cálculo de rentabilidad por producto'
+  );
+
+  return unwrapProfitabilityJob<ProfitabilityProductsJob>(data);
 }
 
 /**

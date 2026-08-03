@@ -161,7 +161,9 @@ export const getProductFamilyOptions = async (token) => {
 
 export const getProductFamilies = async (token) => {
   const service = productFamilyService;
-  const result = await service.list({}, { perPage: 1000 }); // Obtener todas
+  // El backend limita perPage a 100 — para obtener realmente todas usar
+  // service.getOptions() si solo hacen falta {value,label}.
+  const result = await service.list({}, { perPage: 100 });
   return result.data || [];
 };
 

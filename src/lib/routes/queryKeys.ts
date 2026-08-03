@@ -411,6 +411,11 @@ export const customsBrokerOptionKeys = {
     ['customs-brokers', 'options', tenantId ?? 'unknown'] as const,
 };
 
+export const countryOptionKeys = {
+  list: (tenantId: string | null | undefined) =>
+    ['countries', 'options', tenantId ?? 'unknown'] as const,
+};
+
 export const fuelQueryKeys = {
   spainAverageDiesel: () => ['fuel', 'spain-average-diesel'] as const,
 };
@@ -479,6 +484,30 @@ export const orderStatKeys = {
     ] as const,
   profitabilityProducts: (tenantId: string | null | undefined, dateFrom: string, dateTo: string) =>
     ['orders', 'profitabilityProducts', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  profitabilitySummaryJob: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string,
+    productId: string | undefined
+  ) =>
+    [
+      'orders',
+      'profitabilitySummaryJob',
+      tenantId ?? 'unknown',
+      dateFrom,
+      dateTo,
+      productId,
+    ] as const,
+  profitabilitySummaryJobStatus: (tenantId: string | null | undefined, jobId: string | undefined) =>
+    ['orders', 'profitabilitySummaryJobStatus', tenantId ?? 'unknown', jobId ?? 'none'] as const,
+  profitabilityProductsJob: (
+    tenantId: string | null | undefined,
+    dateFrom: string,
+    dateTo: string
+  ) =>
+    ['orders', 'profitabilityProductsJob', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  profitabilityProductsJobStatus: (tenantId: string | null | undefined, jobId: string | undefined) =>
+    ['orders', 'profitabilityProductsJobStatus', tenantId ?? 'unknown', jobId ?? 'none'] as const,
 };
 
 export const auxiliaryLineStatKeys = {

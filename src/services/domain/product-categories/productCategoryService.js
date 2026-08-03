@@ -161,7 +161,9 @@ export const getProductCategoryOptions = async (token) => {
 
 export const getProductCategories = async (token) => {
   const service = productCategoryService;
-  const result = await service.list({}, { perPage: 1000 }); // Obtener todas
+  // El backend limita perPage a 100 — para obtener realmente todas usar
+  // service.getOptions() si solo hacen falta {value,label}.
+  const result = await service.list({}, { perPage: 100 });
   return result.data || [];
 };
 

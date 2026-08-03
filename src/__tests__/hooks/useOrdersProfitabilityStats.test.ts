@@ -36,6 +36,11 @@ vi.mock('@/services/orderService', () => ({
     mockGetOrdersProfitabilityTimeline(...args),
   getOrdersProfitabilityProducts: (...args: unknown[]) =>
     mockGetOrdersProfitabilityProducts(...args),
+  createOrdersProfitabilitySummaryJob: vi.fn(),
+  getOrdersProfitabilitySummaryJob: vi.fn(),
+  createOrdersProfitabilityProductsJob: vi.fn(),
+  getOrdersProfitabilityProductsJob: vi.fn(),
+  ProfitabilityRangeTooLargeError: class ProfitabilityRangeTooLargeError extends Error {},
 }));
 
 function createWrapper() {

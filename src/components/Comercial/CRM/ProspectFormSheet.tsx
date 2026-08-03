@@ -28,7 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { notify } from '@/lib/notifications';
 import { ApiError } from '@/lib/api/apiHelpers';
 import { setErrorsFrom422 } from '@/lib/validation/setErrorsFrom422';
-import { useCountriesList } from '@/hooks/useCountriesList';
+import { useCountryOptions } from '@/hooks/useCountryOptions';
 import { useProspectCategoryOptions } from '@/hooks/useProspectCategories';
 import { useProspectMutations } from '@/hooks/useProspects';
 import { prospectOriginOptions } from './utils';
@@ -65,7 +65,7 @@ interface ProspectFormSheetProps {
 
 export default function ProspectFormSheet({ open, onOpenChange, initialData = null }: ProspectFormSheetProps) {
   const isEditing = Boolean(initialData);
-  const { data: countries } = useCountriesList({ page: 1, perPage: 250, enabled: open });
+  const { options: countries } = useCountryOptions({ enabled: open });
   const { data: categoryOptions = [], isLoading: categoriesLoading } =
     useProspectCategoryOptions(open);
   const { createProspect, updateProspect } = useProspectMutations();
@@ -345,8 +345,8 @@ export default function ProspectFormSheet({ open, onOpenChange, initialData = nu
                         </SelectTrigger>
                         <SelectContent>
                           {countries.map((country) => (
-                            <SelectItem key={country.id} value={String(country.id)}>
-                              {country.name}
+                            <SelectItem key={country.value} value={String(country.value)}>
+                              {country.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
