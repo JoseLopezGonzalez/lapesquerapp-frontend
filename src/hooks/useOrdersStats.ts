@@ -48,11 +48,21 @@ function getYearToDateRange(): { dateFrom: string; dateTo: string } {
 // el flujo async (POST .../jobs + polling).
 const PROFITABILITY_SYNC_MAX_DAYS = 60;
 const PROFITABILITY_JOB_POLL_INTERVAL_MS = 1800;
+// ~20-30s / 10-15 intentos de polling, recomendado por el propio backend antes
+// de considerar que el cálculo "está tardando más de lo normal".
+const PROFITABILITY_JOB_TIMEOUT_MS = 30000;
 
 function daysBetween(dateFrom: string, dateTo: string): number {
   const from = new Date(dateFrom).getTime();
   const to = new Date(dateTo).getTime();
   return Math.round((to - from) / (1000 * 60 * 60 * 24));
+}
+
+function hasProfitabilityJobTimedOut(
+  job: { status: string; createdAt: string } | undefined
+): boolean {
+  if (!job || !isProfitabilityJobPending(job.status)) return false;
+  return Date.now() - new Date(job.createdAt).getTime() > PROFITABILITY_JOB_TIMEOUT_MS;
 }
 
 function isProfitabilityJobPending(status: string | undefined): boolean {
@@ -339,7 +349,8 @@ export function useOrdersProfitabilitySummary(params: ProfitabilitySummaryParams
   // vez de resolver isLoading a false (jobQuery/jobStatusQuery nunca se habilitan).
   const needsAsync =
     hasContext &&
-    (isLongRange || (syncQuery.error != null && syncQuery.error instanceof ProfitabilityRangeTooLargeError));
+    (isLongRange ||
+      (syncQuery.error != null && syncQuery.error instanceof ProfitabilityRangeTooLargeError));
 
   // Dispatch: crea el job una vez por rango (staleTime infinito) — el polling real
   // de status/resultado lo hace la query de abajo, keyed por el jobId devuelto aquí.
@@ -359,7 +370,10 @@ export function useOrdersProfitabilitySummary(params: ProfitabilitySummaryParams
     queryFn: () => getOrdersProfitabilitySummaryJob(jobId as string),
     enabled: !!jobId,
     refetchInterval: (query) =>
-      isProfitabilityJobPending(query.state.data?.status) ? PROFITABILITY_JOB_POLL_INTERVAL_MS : false,
+      isProfitabilityJobPending(query.state.data?.status) &&
+      !hasProfitabilityJobTimedOut(query.state.data)
+        ? PROFITABILITY_JOB_POLL_INTERVAL_MS
+        : false,
   });
 
   if (!needsAsync) {
@@ -373,12 +387,29 @@ export function useOrdersProfitabilitySummary(params: ProfitabilitySummaryParams
     };
   }
 
+  // Los fallos de creación/polling del job deben cortar isLoading, no dejarlo
+  // colgado — sin esto, un 404/500 en cualquiera de los dos endpoints se
+  // enmascaraba como "cargando" para siempre (job seguía siendo undefined).
+  if (jobQuery.isError) {
+    return { data: null, isLoading: false, error: jobQuery.error.message };
+  }
+  if (jobStatusQuery.isError) {
+    return { data: null, isLoading: false, error: jobStatusQuery.error.message };
+  }
+
   const job = jobStatusQuery.data ?? jobQuery.data;
-  const isLoading = jobQuery.isLoading || !job || isProfitabilityJobPending(job.status);
+
+  if (hasProfitabilityJobTimedOut(job)) {
+    return {
+      data: null,
+      isLoading: false,
+      error: 'El cálculo está tardando más de lo esperado. Inténtalo de nuevo en unos minutos.',
+    };
+  }
+
+  const isLoading = !job || isProfitabilityJobPending(job.status);
   const error =
-    jobQuery.error?.message ??
-    jobStatusQuery.error?.message ??
-    (job?.status === 'failed' ? (job.errorMessage ?? 'No se pudo calcular la rentabilidad') : null);
+    job?.status === 'failed' ? (job.errorMessage ?? 'No se pudo calcular la rentabilidad') : null;
 
   return {
     data: job?.status === 'finished' ? job.result : null,
@@ -397,7 +428,13 @@ export function useOrdersProfitabilityTimeline(params: ProfitabilityTimelinePara
   const dateTo = range?.to?.toLocaleDateString?.('sv-SE') ?? yearToDate.dateTo;
 
   const { data, isLoading, error } = useQuery({
-    queryKey: orderStatKeys.profitabilityTimeline(tenantId, dateFrom, dateTo, granularity, productId),
+    queryKey: orderStatKeys.profitabilityTimeline(
+      tenantId,
+      dateFrom,
+      dateTo,
+      granularity,
+      productId
+    ),
     queryFn: () =>
       getOrdersProfitabilityTimeline({
         dateFrom,
@@ -437,7 +474,8 @@ export function useOrdersProfitabilityProducts(params: ProfitabilityRangeParams)
   // vez de resolver isLoading a false (jobQuery/jobStatusQuery nunca se habilitan).
   const needsAsync =
     hasContext &&
-    (isLongRange || (syncQuery.error != null && syncQuery.error instanceof ProfitabilityRangeTooLargeError));
+    (isLongRange ||
+      (syncQuery.error != null && syncQuery.error instanceof ProfitabilityRangeTooLargeError));
 
   const jobQuery = useQuery({
     queryKey: orderStatKeys.profitabilityProductsJob(tenantId, dateFrom, dateTo),
@@ -455,7 +493,10 @@ export function useOrdersProfitabilityProducts(params: ProfitabilityRangeParams)
     queryFn: () => getOrdersProfitabilityProductsJob(jobId as string),
     enabled: !!jobId,
     refetchInterval: (query) =>
-      isProfitabilityJobPending(query.state.data?.status) ? PROFITABILITY_JOB_POLL_INTERVAL_MS : false,
+      isProfitabilityJobPending(query.state.data?.status) &&
+      !hasProfitabilityJobTimedOut(query.state.data)
+        ? PROFITABILITY_JOB_POLL_INTERVAL_MS
+        : false,
   });
 
   if (!needsAsync) {
@@ -469,12 +510,29 @@ export function useOrdersProfitabilityProducts(params: ProfitabilityRangeParams)
     };
   }
 
+  // Los fallos de creación/polling del job deben cortar isLoading, no dejarlo
+  // colgado — sin esto, un 404/500 en cualquiera de los dos endpoints se
+  // enmascaraba como "cargando" para siempre (job seguía siendo undefined).
+  if (jobQuery.isError) {
+    return { data: null, isLoading: false, error: jobQuery.error.message };
+  }
+  if (jobStatusQuery.isError) {
+    return { data: null, isLoading: false, error: jobStatusQuery.error.message };
+  }
+
   const job = jobStatusQuery.data ?? jobQuery.data;
-  const isLoading = jobQuery.isLoading || !job || isProfitabilityJobPending(job.status);
+
+  if (hasProfitabilityJobTimedOut(job)) {
+    return {
+      data: null,
+      isLoading: false,
+      error: 'El cálculo está tardando más de lo esperado. Inténtalo de nuevo en unos minutos.',
+    };
+  }
+
+  const isLoading = !job || isProfitabilityJobPending(job.status);
   const error =
-    jobQuery.error?.message ??
-    jobStatusQuery.error?.message ??
-    (job?.status === 'failed' ? (job.errorMessage ?? 'No se pudo calcular la rentabilidad') : null);
+    job?.status === 'failed' ? (job.errorMessage ?? 'No se pudo calcular la rentabilidad') : null;
 
   return {
     data: job?.status === 'finished' ? job.result : null,
