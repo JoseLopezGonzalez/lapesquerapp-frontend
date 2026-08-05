@@ -5,6 +5,8 @@ import type { LabelElement } from '@/types/labelEditor';
 
 const pxToMm = (px: number): number => px / 3.78;
 
+const DRAG_THRESHOLD_PX = 3;
+
 interface UseLabelCanvasInteractionParams {
   selectedElement: string | null;
   setSelectedElement: React.Dispatch<React.SetStateAction<string | null>>;
@@ -47,12 +49,14 @@ export function useLabelCanvasInteraction({
   const mouseDownPosRef = useRef<{ x: number; y: number } | null>(null);
   const wasSelectedOnMouseDownRef = useRef(false);
   const clickedElementIdRef = useRef<string | null>(null);
+  const hasExceededDragThresholdRef = useRef(false);
 
   const handleMouseDown = (e: React.MouseEvent, elementId: string) => {
     e.preventDefault();
     clickedElementIdRef.current = elementId;
     wasSelectedOnMouseDownRef.current = selectedElement === elementId;
     mouseDownPosRef.current = { x: e.clientX, y: e.clientY };
+    hasExceededDragThresholdRef.current = false;
 
     if (!wasSelectedOnMouseDownRef.current) {
       setSelectedElement(elementId);
@@ -92,16 +96,18 @@ export function useLabelCanvasInteraction({
     (e: MouseEvent) => {
       if ((!isDragging && !isResizing) || !canvasRef.current) return;
 
-      if (
-        isDragging &&
-        wasSelectedOnMouseDownRef.current &&
-        mouseDownPosRef.current &&
-        clickedElementIdRef.current
-      ) {
+      if (isDragging && mouseDownPosRef.current && !hasExceededDragThresholdRef.current) {
         const movedX = Math.abs(e.clientX - mouseDownPosRef.current.x);
         const movedY = Math.abs(e.clientY - mouseDownPosRef.current.y);
-        if (movedX > 3 || movedY > 3) {
-          if (!selectedElement) setSelectedElement(clickedElementIdRef.current);
+        if (movedX > DRAG_THRESHOLD_PX || movedY > DRAG_THRESHOLD_PX) {
+          hasExceededDragThresholdRef.current = true;
+          if (
+            wasSelectedOnMouseDownRef.current &&
+            !selectedElement &&
+            clickedElementIdRef.current
+          ) {
+            setSelectedElement(clickedElementIdRef.current);
+          }
         }
       }
 
@@ -111,7 +117,7 @@ export function useLabelCanvasInteraction({
       const curX = pxToMm(e.clientX - rect.left) / zoom;
       const curY = pxToMm(e.clientY - rect.top) / zoom;
 
-      if (isDragging) {
+      if (isDragging && hasExceededDragThresholdRef.current) {
         const newX = curX - dragOffset.x;
         const newY = curY - dragOffset.y;
         const element = elements.find((el) => el.id === selectedElement);
@@ -199,6 +205,7 @@ export function useLabelCanvasInteraction({
       mouseDownPosRef.current = null;
       wasSelectedOnMouseDownRef.current = false;
       clickedElementIdRef.current = null;
+      hasExceededDragThresholdRef.current = false;
     },
     [setSelectedElement]
   );

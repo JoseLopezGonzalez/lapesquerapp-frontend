@@ -147,7 +147,7 @@ export default function RichParagraph({ element, style = {} }) {
           <span
             key={i}
             style={{
-              fontWeight: seg.style?.fontWeight,
+              fontWeight: seg.style?.fontWeight ? cssFontWeight(seg.style.fontWeight) : undefined,
               fontStyle: seg.style?.fontStyle,
               textDecoration: seg.style?.textDecoration,
               color: seg.style?.color,

@@ -206,6 +206,38 @@ export default function LabelEditor() {
     }
   }, [selectedElement]); // Solo cuando cambia el ID del elemento seleccionado
 
+  // Sincronizar x/y/width/height cuando cambian por arrastre o redimensionado con el
+  // cursor en el canvas (ese flujo actualiza `elements` vía updateElement, pero no
+  // conoce el snapshot local del panel, así que sin esto los inputs de posición se
+  // quedan desincronizados hasta que se deselecciona y reselecciona el elemento)
+  useEffect(() => {
+    if (!selectedElementData) return;
+    setActiveElementState((prev) => {
+      if (!prev || prev.id !== selectedElementData.id) return prev;
+      if (
+        prev.x === selectedElementData.x &&
+        prev.y === selectedElementData.y &&
+        prev.width === selectedElementData.width &&
+        prev.height === selectedElementData.height
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        x: selectedElementData.x,
+        y: selectedElementData.y,
+        width: selectedElementData.width,
+        height: selectedElementData.height,
+      };
+    });
+  }, [
+    selectedElementData?.id,
+    selectedElementData?.x,
+    selectedElementData?.y,
+    selectedElementData?.width,
+    selectedElementData?.height,
+  ]);
+
   // Función para actualizar el estado local y sincronizar con el canvas
   const updateActiveElement = useCallback(
     (updates) => {

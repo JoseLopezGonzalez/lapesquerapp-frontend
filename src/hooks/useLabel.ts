@@ -2,6 +2,7 @@
 
 import { getLabel, getLabelsOptions } from '@/services/labelService';
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { normalizeElements } from '@/hooks/labels/labelEditorHelpers';
 import type { Label } from '@/types/labelEditor';
 
 /** Formato interno/API e input type="date": YYYY-MM-DD */
@@ -296,8 +297,17 @@ export function useLabel({ boxes = [], open }: UseLabelParams) {
     setIsLoadingLabel(true);
     getLabel(labelId)
       .then((data) => {
-        setLabel(data);
-        const elements = (data.format?.elements ?? []) as LabelElementLike[];
+        // Normalizar los elementos igual que hace el editor al cargar una etiqueta
+        // (canoniza fontWeight y otras propiedades de formato) — sin esto, la impresión
+        // real de una caja podía desincronizarse de lo que se ve en el editor.
+        const normalizedData = data.format
+          ? {
+              ...data,
+              format: { ...data.format, elements: normalizeElements(data.format.elements) },
+            }
+          : data;
+        setLabel(normalizedData);
+        const elements = (normalizedData.format?.elements ?? []) as LabelElementLike[];
         const updatedManualFields = extractManualFieldsFromLabel(elements);
         const stored = loadLabelPrintData(labelId, boxes);
         let mergedManualFields = updatedManualFields;
