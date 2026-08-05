@@ -952,6 +952,28 @@ export default function LabelEditorPropertyPanel({
                       <TooltipTrigger asChild>
                         <Button
                           variant={
+                            activeElementState.fontWeight === 'black' ? 'default' : 'outline'
+                          }
+                          size="sm"
+                          className="w-8"
+                          onClick={() => {
+                            updateActiveElement({
+                              fontWeight:
+                                activeElementState.fontWeight === 'black' ? 'normal' : 'black',
+                            });
+                          }}
+                        >
+                          <Bold className="h-4 w-4" strokeWidth={3} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Black</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={
                             activeElementState.fontStyle === 'italic' ? 'default' : 'outline'
                           }
                           size="sm"

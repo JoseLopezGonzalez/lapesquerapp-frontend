@@ -10,7 +10,9 @@ export const normalizeElement = (
   if (!element) return element;
 
   let fontWeight = element.fontWeight;
-  if (fontWeight === 700 || fontWeight === '700') {
+  if (fontWeight === 900 || fontWeight === '900' || fontWeight === 'black') {
+    fontWeight = 'black';
+  } else if (fontWeight === 700 || fontWeight === '700') {
     fontWeight = 'bold';
   } else if (!fontWeight || fontWeight === 'normal') {
     fontWeight = 'normal';
@@ -75,6 +77,17 @@ export const normalizeElement = (
   }
 
   return normalized;
+};
+
+/**
+ * Maps a canonical fontWeight value ('normal' | 'bold' | 'black') to a value
+ * valid for the CSS `font-weight` property. 'black' has no CSS keyword —
+ * it must be sent as the numeric weight 900.
+ */
+export const cssFontWeight = (fontWeight: unknown): string | number => {
+  if (fontWeight === 'black' || fontWeight === 900 || fontWeight === '900') return 900;
+  if (fontWeight === 'bold' || fontWeight === 700 || fontWeight === '700') return 'bold';
+  return (fontWeight as string) || 'normal';
 };
 
 export const normalizeElements = (elements: unknown): LabelElement[] => {

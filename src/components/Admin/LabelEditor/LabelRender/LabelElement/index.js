@@ -9,6 +9,7 @@ import {
   parseEuropeanNumber,
 } from '@/helpers/formats/numbers/formatNumbers';
 import { formatDateDisplay } from '@/hooks/useLabel';
+import { cssFontWeight } from '@/hooks/labels/labelEditorHelpers';
 import SanitaryRegister from './SanitaryRegister';
 import RichParagraph from './RichParagraph';
 
@@ -85,7 +86,7 @@ export default function LabelElement({ element, values = {} }) {
 
   const commonStyle = {
     fontSize: `${element.fontSize}mm`,
-    fontWeight: element.fontWeight,
+    fontWeight: cssFontWeight(element.fontWeight),
     color: element.color,
     textTransform: element.textTransform,
     fontStyle: element.fontStyle,

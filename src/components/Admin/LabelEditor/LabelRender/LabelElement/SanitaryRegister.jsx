@@ -1,4 +1,5 @@
 import React from 'react';
+import { cssFontWeight } from '@/hooks/labels/labelEditorHelpers';
 
 export default function SanitaryRegister({
   element = {},
@@ -18,7 +19,7 @@ export default function SanitaryRegister({
   const strokeWidth = parseFloat(element.borderWidth || '0.10');
 
   const fs = (fontSize || element.fontSize || 2) / 3;
-  const fw = fontWeight || element.fontWeight || 'bold';
+  const fw = cssFontWeight(fontWeight || element.fontWeight || 'bold');
 
   const color = element.color || '#000';
 

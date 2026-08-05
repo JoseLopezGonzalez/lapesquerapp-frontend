@@ -507,11 +507,9 @@ export default function LabelEditor() {
           {/* Impresión */}
 
           <div id="print-area-id" className="hidden print:block">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="page">
-                <LabelRender label={labelData} values={getDefaultValuesFromElements()} />
-              </div>
-            ))}
+            <div className="page">
+              <LabelRender label={labelData} values={getDefaultValuesFromElements()} />
+            </div>
           </div>
         </div>
         <Dialog open={showManualDialog} onOpenChange={setShowManualDialog}>

@@ -14,7 +14,7 @@ import {
   hasElementValidationError,
   getElementValidationErrorReason,
 } from '@/hooks/labels/labelValidation';
-import { normalizeElement } from '@/hooks/labels/labelEditorHelpers';
+import { normalizeElement, cssFontWeight } from '@/hooks/labels/labelEditorHelpers';
 import { useLabelCanvasInteraction } from '@/hooks/labels/useLabelCanvasInteraction';
 import { useLabelPersistence } from '@/hooks/labels/useLabelPersistence';
 import { useLabelPrint } from '@/hooks/labels/useLabelPrint';
@@ -682,7 +682,7 @@ export function useLabelEditor(
     try {
       const tempElement = document.createElement('div');
       tempElement.style.fontSize = `${Number(element.fontSize) || 2.5}mm`;
-      tempElement.style.fontWeight = String(element.fontWeight ?? 'normal');
+      tempElement.style.fontWeight = String(cssFontWeight(element.fontWeight ?? 'normal'));
       tempElement.style.fontStyle = String(element.fontStyle ?? 'normal');
       tempElement.style.textDecoration = String(element.textDecoration ?? 'none');
       tempElement.style.textTransform = String(element.textTransform ?? 'none');

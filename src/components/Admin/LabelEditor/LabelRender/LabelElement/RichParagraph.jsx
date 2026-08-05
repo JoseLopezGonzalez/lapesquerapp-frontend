@@ -1,3 +1,5 @@
+import { cssFontWeight } from '@/hooks/labels/labelEditorHelpers';
+
 export default function RichParagraph({ element, style = {} }) {
   const fontSize = element.fontSize || 2.5;
 
@@ -98,7 +100,7 @@ export default function RichParagraph({ element, style = {} }) {
           style={{
             textAlign: getTextAlign(),
             fontSize: `${fontSize}mm`,
-            fontWeight: element.fontWeight,
+            fontWeight: cssFontWeight(element.fontWeight),
             color: element.color,
             textTransform: element.textTransform,
             fontStyle: element.fontStyle,
@@ -132,7 +134,7 @@ export default function RichParagraph({ element, style = {} }) {
         style={{
           textAlign: getTextAlign(),
           fontSize: `${fontSize}mm`,
-          fontWeight: element.fontWeight,
+          fontWeight: cssFontWeight(element.fontWeight),
           color: element.color,
           textTransform: element.textTransform,
           fontStyle: element.fontStyle,
