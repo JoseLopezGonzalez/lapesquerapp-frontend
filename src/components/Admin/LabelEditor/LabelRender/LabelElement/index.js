@@ -16,6 +16,9 @@ import RichParagraph from './RichParagraph';
 // Valor por defecto de netWeight para usar cuando no hay valor disponible
 const NET_WEIGHT_DEFAULT = '20,000 kg';
 
+// Factor de conversión kg -> lb (avoirdupois), usado para el campo GS1 AI 3202
+const KG_TO_LB = 2.20462262185;
+
 const formatMap = {
   ean13: 'EAN13',
   code128: 'CODE128',
@@ -71,6 +74,13 @@ const formatNetWeightField = (value, fieldName) => {
     const roundedValue = Math.round(numValue * 100) / 100; // Redondear a 2 decimales
     const integerValue = Math.round(roundedValue * 100); // Multiplicar por 100 para obtener entero
     return String(integerValue).padStart(6, '0');
+  } else if (fieldName === 'netWeightLb6digits') {
+    // Igual que netWeight6digits pero convirtiendo kg -> lb primero (GS1 AI 3202: peso neto
+    // en libras, 2 decimales implícitos, 6 dígitos)
+    const lbValue = numValue * KG_TO_LB;
+    const roundedValue = Math.round(lbValue * 100) / 100;
+    const integerValue = Math.round(roundedValue * 100);
+    return String(integerValue).padStart(6, '0');
   }
 
   // Para netWeight sin formato, devolver valor original
@@ -96,7 +106,11 @@ export default function LabelElement({ element, values = {} }) {
 
   const getValue = (key) => {
     // Si es un campo de netWeight con formato específico, aplicar el formato
-    if (key === 'netWeightFormatted' || key === 'netWeight6digits') {
+    if (
+      key === 'netWeightFormatted' ||
+      key === 'netWeight6digits' ||
+      key === 'netWeightLb6digits'
+    ) {
       // Usar el valor de netWeight si existe, si no usar el valor por defecto
       const baseValue = values?.['netWeight'] ?? NET_WEIGHT_DEFAULT;
       return formatNetWeightField(baseValue, key);

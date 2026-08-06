@@ -63,24 +63,34 @@ interface LabelElementLike {
   [key: string]: unknown;
 }
 
+// 'netWeightFormatted' y 'netWeight6digits' no son propiedades reales de la caja:
+// son vistas formateadas de 'netWeight' (ver formatNetWeightField en LabelElement/index.js
+// y useLabelEditor.ts). Si no se registra también 'netWeight' aquí, getValueByPath busca
+// una propiedad inexistente en la caja, values['netWeight'] queda undefined, y el campo
+// cae siempre al valor de ejemplo por defecto (20,000 kg → "002000").
+const NET_WEIGHT_DERIVED_FIELDS = ['netWeightFormatted', 'netWeight6digits', 'netWeightLb6digits'];
+
 export const extractFieldsFromLabel = (elements: LabelElementLike[]): Record<string, string> => {
   const result: Record<string, string> = {};
   const seen = new Set<string>();
 
+  const registerField = (field: string) => {
+    if (seen.has(field)) return;
+    result[field] = '';
+    seen.add(field);
+    if (NET_WEIGHT_DERIVED_FIELDS.includes(field)) {
+      registerField('netWeight');
+    }
+  };
+
   elements.forEach((el) => {
-    if (el.type === 'field' && el.field && !seen.has(el.field)) {
-      result[el.field] = '';
-      seen.add(el.field);
+    if (el.type === 'field' && el.field) {
+      registerField(el.field);
     }
 
     const contents = [el.html, el.qrContent, el.barcodeContent];
     contents.forEach((content) => {
-      extractPlaceholders(content).forEach((field) => {
-        if (!seen.has(field)) {
-          result[field] = '';
-          seen.add(field);
-        }
-      });
+      extractPlaceholders(content).forEach((field) => registerField(field));
     });
   });
 

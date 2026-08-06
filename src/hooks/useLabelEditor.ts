@@ -153,6 +153,9 @@ const normalizeKeyForStorage = (raw: string): string => {
 
 const NET_WEIGHT_DEFAULT = '20,000 kg';
 
+// Factor de conversión kg -> lb (avoirdupois), usado para el campo GS1 AI 3202
+const KG_TO_LB = 2.20462262185;
+
 const formatNetWeightField = (value: string | number, fieldName: string): string | number => {
   if (!value) return value;
   let numValue =
@@ -163,6 +166,12 @@ const formatNetWeightField = (value: string | number, fieldName: string): string
     return formatDecimal(numValue);
   } else if (fieldName === 'netWeight6digits') {
     const roundedValue = Math.round(numValue * 100) / 100;
+    const integerValue = Math.round(roundedValue * 100);
+    return String(integerValue).padStart(6, '0');
+  } else if (fieldName === 'netWeightLb6digits') {
+    // Igual que netWeight6digits pero convirtiendo kg -> lb primero (GS1 AI 3202)
+    const lbValue = numValue * KG_TO_LB;
+    const roundedValue = Math.round(lbValue * 100) / 100;
     const integerValue = Math.round(roundedValue * 100);
     return String(integerValue).padStart(6, '0');
   }
@@ -361,6 +370,7 @@ export function useLabelEditor(
         ...baseOptions,
         { value: 'netWeightFormatted', label: netWeightField.label },
         { value: 'netWeight6digits', label: `${netWeightField.label} (6 dígitos)` },
+        { value: 'netWeightLb6digits', label: `${netWeightField.label} (lb, 6 dígitos - AI 3202)` },
       ];
     }
     return baseOptions;
@@ -652,7 +662,11 @@ export function useLabelEditor(
     }
 
     const getExampleValue = (key: string): string => {
-      if (key === 'netWeightFormatted' || key === 'netWeight6digits') {
+      if (
+        key === 'netWeightFormatted' ||
+        key === 'netWeight6digits' ||
+        key === 'netWeightLb6digits'
+      ) {
         const baseValue =
           fieldExampleValues['netWeight'] ||
           labelFields['netWeight']?.defaultValue ||
