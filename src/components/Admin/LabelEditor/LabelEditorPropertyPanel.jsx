@@ -1104,6 +1104,24 @@ export default function LabelEditorPropertyPanel({
                     </Tooltip>
                   </div>
                 </div>
+                {activeElementState.type === 'richParagraph' && (
+                  <div className="flex w-full items-center justify-between gap-2">
+                    <span className="text-muted-foreground text-xs">Interlineado</span>
+                    <Input
+                      id="lineHeight"
+                      type="number"
+                      step="0.1"
+                      min="0.8"
+                      max="3"
+                      className="w-24"
+                      value={activeElementState.lineHeight ?? 1.2}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        updateActiveElement({ lineHeight: Number.isNaN(value) ? 1.2 : value });
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -18,6 +18,12 @@ export const normalizeElement = (
     fontWeight = 'normal';
   }
 
+  let lineHeight = element.lineHeight;
+  if (typeof lineHeight === 'string') lineHeight = parseFloat(lineHeight);
+  if (typeof lineHeight !== 'number' || !Number.isFinite(lineHeight) || lineHeight <= 0) {
+    lineHeight = 1.2;
+  }
+
   let fontStyle = element.fontStyle || 'normal';
   if (fontStyle === 'oblique') fontStyle = 'italic';
 
@@ -62,6 +68,7 @@ export const normalizeElement = (
   const normalized: LabelElement = {
     ...element,
     fontWeight,
+    lineHeight,
     fontStyle,
     textDecoration,
     textTransform,

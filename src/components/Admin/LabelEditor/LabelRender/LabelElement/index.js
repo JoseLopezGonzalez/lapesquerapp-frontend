@@ -87,6 +87,7 @@ export default function LabelElement({ element, values = {} }) {
   const commonStyle = {
     fontSize: `${element.fontSize}mm`,
     fontWeight: cssFontWeight(element.fontWeight),
+    lineHeight: element.lineHeight ?? 1.2,
     color: element.color,
     textTransform: element.textTransform,
     fontStyle: element.fontStyle,

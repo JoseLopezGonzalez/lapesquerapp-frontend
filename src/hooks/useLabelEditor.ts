@@ -462,6 +462,7 @@ export function useLabelEditor(
               : 10,
       fontSize: type === 'sanitaryRegister' ? 2 : 2.5,
       fontWeight: 'normal',
+      lineHeight: 1.2,
       fontStyle: 'normal',
       textDecoration: 'none',
       textTransform: 'none',
@@ -688,7 +689,7 @@ export function useLabelEditor(
       tempElement.style.textTransform = String(element.textTransform ?? 'none');
       tempElement.style.color = String(element.color ?? '#000000');
       tempElement.style.fontFamily = 'inherit';
-      tempElement.style.lineHeight = '1.2';
+      tempElement.style.lineHeight = String(Number(element.lineHeight) || 1.2);
 
       if (element.type === 'richParagraph') {
         if (element.horizontalAlign === 'justify') {
