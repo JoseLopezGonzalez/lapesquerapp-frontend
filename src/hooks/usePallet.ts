@@ -183,16 +183,21 @@ export function usePallet({
     deleteAllBoxes,
   } = usePalletBoxOperations({ temporalPallet, setTemporalPallet, productsOptions });
 
-  const { boxCreationDataChange, onAddNewBox, onDeleteScannedCode, onResetBoxCreationData } =
-    usePalletBoxCreation({
-      temporalPallet,
-      setTemporalPallet,
-      productsOptions,
-      addBox,
-      boxCreationData,
-      setBoxCreationData,
-      session,
-    });
+  const {
+    boxCreationDataChange,
+    onAddNewBox,
+    onDeleteScannedCode,
+    onResetBoxCreationData,
+    addBoxesFromGs1Lines,
+  } = usePalletBoxCreation({
+    temporalPallet,
+    setTemporalPallet,
+    productsOptions,
+    addBox,
+    boxCreationData,
+    setBoxCreationData,
+    session,
+  });
 
   const { onSavingChanges } = usePalletSave({
     temporalPallet,
@@ -221,6 +226,7 @@ export function usePallet({
       deleteMultiple: deleteBoxes,
       edit: editBox,
       bulkEdit: bulkEditBoxes,
+      addFromGs1Lines: addBoxesFromGs1Lines,
     },
     observations: editObservations,
     palletTareWeightKg: editPalletTareWeightKg,
@@ -269,9 +275,7 @@ export function usePallet({
     });
   };
 
-  const hasPalletChanges = !temporalPallet
-    ? false
-    : !palletDataEqual(pallet, temporalPallet);
+  const hasPalletChanges = !temporalPallet ? false : !palletDataEqual(pallet, temporalPallet);
 
   return {
     pallet,

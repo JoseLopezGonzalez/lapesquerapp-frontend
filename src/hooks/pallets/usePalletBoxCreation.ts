@@ -36,6 +36,7 @@ export interface UsePalletBoxCreationResult {
   onAddNewBox: (params: { method: string }) => void;
   onDeleteScannedCode: () => void;
   onResetBoxCreationData: () => void;
+  addBoxesFromGs1Lines: (gs1codes: string) => boolean;
 }
 
 export function usePalletBoxCreation({
@@ -55,6 +56,76 @@ export function usePalletBoxCreation({
 
   const boxCreationDataChange = (field: string, value: unknown) => {
     setBoxCreationData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Toma los códigos GS1-128 por parámetro (en vez de leerlos de boxCreationData) para poder
+  // llamarse desde fuera del formulario de creación de cajas (p.ej. la importación de JSON)
+  // sin depender de que un setBoxCreationData previo ya se haya reflejado en el estado — los
+  // setState de React no son síncronos, así que encadenar boxCreationDataChange + onAddNewBox
+  // en la misma función leería el valor anterior.
+  const addBoxesFromGs1Lines = (gs1codes: string): boolean => {
+    if (!gs1codes) {
+      notify.error({
+        title: 'Códigos requeridos',
+        description: 'Por favor, pega los códigos GS1-128, uno por línea.',
+      });
+      return false;
+    }
+
+    const lines = gs1codes
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    const parsedBoxes: Parameters<typeof addBox>[0][] = [];
+    const failedLines: string[] = [];
+
+    for (const line of lines) {
+      const parsed = (
+        parseGs1128Line as (
+          code: string,
+          options: ProductOption[]
+        ) => Record<string, unknown> | null
+      )(line, productsOptions);
+      if (!parsed) {
+        failedLines.push(line);
+        continue;
+      }
+      parsedBoxes.push({
+        product: { id: parsed.productId as number | string, name: parsed.productName as string },
+        lot: parsed.lot as string,
+        netWeight: parsed.netWeight as number,
+        scannedCode: parsed.gs1128 as string,
+        isPounds: parsed.isPounds as boolean,
+        originalWeightInPounds: (parsed.originalWeightInPounds as number | undefined) ?? null,
+      });
+    }
+
+    if (parsedBoxes.length === 0) {
+      notify.error({
+        title: 'Códigos no procesados',
+        description:
+          'Ninguno de los códigos pudo ser procesado. Verifica que tengan formato 01(GTIN)3100/3200(peso)10(lote) y que los productos existan.',
+      });
+      return false;
+    }
+
+    parsedBoxes.forEach(addBox);
+
+    if (failedLines.length > 0) {
+      notify.error({
+        title: 'Algunos códigos no reconocidos',
+        description: `${failedLines.length} ${failedLines.length === 1 ? 'código no' : 'códigos no'} fueron reconocidos. Revisa el formato (01+GTIN+3100/3200+peso+10+lote) y que los productos existan.`,
+      });
+      console.warn('Códigos fallidos:', failedLines);
+    } else {
+      notify.success({
+        title: 'Cajas agregadas',
+        description: `Se han añadido ${parsedBoxes.length} cajas al palet desde los códigos GS1-128.`,
+      });
+    }
+
+    return true;
   };
 
   const onAddNewBox = ({ method }: { method: string }) => {
@@ -236,70 +307,10 @@ export function usePalletBoxCreation({
         originalWeightInPounds: (parsed.originalWeightInPounds as number | undefined) ?? null,
       });
     } else if (method === 'gs1') {
-      const { gs1codes } = boxCreationData;
-
-      if (!gs1codes) {
-        notify.error({
-          title: 'Códigos requeridos',
-          description: 'Por favor, pega los códigos GS1-128, uno por línea.',
-        });
-        return;
+      const added = addBoxesFromGs1Lines(boxCreationData.gs1codes);
+      if (added) {
+        setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
       }
-
-      const lines = gs1codes
-        .split('\n')
-        .map((line) => line.trim())
-        .filter((line) => line.length > 0);
-
-      const parsedBoxes: Parameters<typeof addBox>[0][] = [];
-      const failedLines: string[] = [];
-
-      for (const line of lines) {
-        const parsed = (
-          parseGs1128Line as (
-            code: string,
-            options: ProductOption[]
-          ) => Record<string, unknown> | null
-        )(line, productsOptions);
-        if (!parsed) {
-          failedLines.push(line);
-          continue;
-        }
-        parsedBoxes.push({
-          product: { id: parsed.productId as number | string, name: parsed.productName as string },
-          lot: parsed.lot as string,
-          netWeight: parsed.netWeight as number,
-          scannedCode: parsed.gs1128 as string,
-          isPounds: parsed.isPounds as boolean,
-          originalWeightInPounds: (parsed.originalWeightInPounds as number | undefined) ?? null,
-        });
-      }
-
-      if (parsedBoxes.length === 0) {
-        notify.error({
-          title: 'Códigos no procesados',
-          description:
-            'Ninguno de los códigos pudo ser procesado. Verifica que tengan formato 01(GTIN)3100/3200(peso)10(lote) y que los productos existan.',
-        });
-        return;
-      }
-
-      parsedBoxes.forEach(addBox);
-
-      if (failedLines.length > 0) {
-        notify.error({
-          title: 'Algunos códigos no reconocidos',
-          description: `${failedLines.length} ${failedLines.length === 1 ? 'código no' : 'códigos no'} fueron reconocidos. Revisa el formato (01+GTIN+3100/3200+peso+10+lote) y que los productos existan.`,
-        });
-        console.warn('Códigos fallidos:', failedLines);
-      } else {
-        notify.success({
-          title: 'Cajas agregadas',
-          description: `Se han añadido ${parsedBoxes.length} cajas al palet desde los códigos GS1-128.`,
-        });
-      }
-
-      setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
     }
 
     setBoxCreationData((prev) => resetBoxCreationDataPreservingDiscounts(prev));
@@ -376,5 +387,11 @@ export function usePalletBoxCreation({
     });
   };
 
-  return { boxCreationDataChange, onAddNewBox, onDeleteScannedCode, onResetBoxCreationData };
+  return {
+    boxCreationDataChange,
+    onAddNewBox,
+    onDeleteScannedCode,
+    onResetBoxCreationData,
+    addBoxesFromGs1Lines,
+  };
 }

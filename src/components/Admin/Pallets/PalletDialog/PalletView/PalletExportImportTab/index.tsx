@@ -27,8 +27,7 @@ export interface PalletExportImportTabProps {
       netWeight: unknown;
     }
   ) => void;
-  boxCreationDataChange: (field: string, value: unknown) => void;
-  onAddNewBox: (params: { method: string }) => void;
+  addBoxesFromGs1Lines: (gs1codes: string) => boolean;
   editObservations: (observations: string) => void;
   isReadOnly: boolean;
   canEditCost: boolean;
@@ -38,8 +37,7 @@ export default function PalletExportImportTab({
   pallet,
   productsOptions,
   addBox,
-  boxCreationDataChange,
-  onAddNewBox,
+  addBoxesFromGs1Lines,
   editObservations,
   isReadOnly,
   canEditCost,
@@ -48,8 +46,7 @@ export default function PalletExportImportTab({
     temporalPallet: pallet,
     productsOptions,
     addBox,
-    boxCreationDataChange,
-    onAddNewBox,
+    addBoxesFromGs1Lines,
     editObservations,
   });
 

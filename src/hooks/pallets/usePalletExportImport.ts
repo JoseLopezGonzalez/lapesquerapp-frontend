@@ -56,8 +56,7 @@ interface UsePalletExportImportParams {
       netWeight: unknown;
     }
   ) => void;
-  boxCreationDataChange: (field: string, value: unknown) => void;
-  onAddNewBox: (params: { method: string }) => void;
+  addBoxesFromGs1Lines: (gs1codes: string) => boolean;
   editObservations: (observations: string) => void;
 }
 
@@ -74,8 +73,7 @@ export function usePalletExportImport({
   temporalPallet,
   productsOptions,
   addBox,
-  boxCreationDataChange,
-  onAddNewBox,
+  addBoxesFromGs1Lines,
   editObservations,
 }: UsePalletExportImportParams) {
   const exportBoxes = (boxIds: (number | string)[], fields: PalletExportFieldOptions) => {
@@ -218,8 +216,7 @@ export function usePalletExportImport({
       });
 
     if (gs1Lines.length > 0) {
-      boxCreationDataChange('gs1codes', gs1Lines.join('\n'));
-      onAddNewBox({ method: 'gs1' });
+      addBoxesFromGs1Lines(gs1Lines.join('\n'));
     }
 
     if (applyObservations && preview.observations) {
