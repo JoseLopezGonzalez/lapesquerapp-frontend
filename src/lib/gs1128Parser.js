@@ -16,6 +16,14 @@ function roundToTwoDecimals(weight) {
   return parseFloat(num.toFixed(2));
 }
 
+// El AI GS1 01 siempre trae 14 dígitos, pero boxGtin se guarda tal cual lo introdujo el
+// usuario (8-14 dígitos, ver validación de producto) sin rellenar con ceros. Hay que
+// normalizar el GTIN almacenado al mismo formato de 14 dígitos antes de comparar con el
+// GTIN de 14 dígitos que sale del código escaneado/pegado.
+function normalizeGtinTo14(value) {
+  return String(value ?? '').padStart(14, '0');
+}
+
 /**
  * Normaliza un código escaneado a formato GS1-128 estándar (01)(3102|3202)(10).
  * @param {string} scannedCode - Código crudo (con o sin paréntesis)
@@ -63,7 +71,7 @@ export function parseGs1128Line(line, productsOptions) {
   let netWeight = parseFloat(weightStr) / 100;
   if (isPounds) netWeight = netWeight * 0.453592;
   netWeight = roundToTwoDecimals(netWeight);
-  const product = productsOptions.find((p) => p.boxGtin === gtin);
+  const product = productsOptions.find((p) => normalizeGtinTo14(p.boxGtin) === gtin);
   if (!product) return null;
   const gs1128 = normalizeScannedCodeToGs1128(scannedCode) || scannedCode;
   const result = {

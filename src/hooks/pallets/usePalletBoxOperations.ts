@@ -78,8 +78,14 @@ export function usePalletBoxOperations({
   // familia 310n/320n indica el número de decimales según el estándar GS1 General
   // Specifications). No usar 3100/3200 (0 decimales) — un lector GS1-128 externo
   // decodificaría el peso como 100 veces el real. Ver GAP-V2-078.
+  //
+  // AI GS1 01 exige siempre 14 dígitos. boxGtin se valida en el catálogo de productos como
+  // 8-14 dígitos (EAN-8/UPC-12/EAN-13/GTIN-14, ver docs/API-references/productos/README.md),
+  // así que hay que rellenar con ceros a la izquierda hasta 14 al construir el código — si no,
+  // parseGs1128Line (que sí exige \d{14} tras "01" siguiendo el estándar) nunca puede volver a
+  // leer su propio código para GTIN de menos de 14 dígitos.
   const getGs1128 = (productId: number | string, lot: string, netWeight: unknown): string => {
-    const boxGtin = getBoxGtinById(productId);
+    const boxGtin = (getBoxGtinById(productId) ?? '').padStart(14, '0');
     const weight = parseFloat(String(netWeight)) || 0;
     const formattedNetWeight = weight.toFixed(2).replace('.', '').padStart(6, '0');
     return `(01)${boxGtin}(3102)${formattedNetWeight}(10)${lot}`;
@@ -90,7 +96,7 @@ export function usePalletBoxOperations({
     lot: string,
     netWeightInPounds: number
   ): string => {
-    const boxGtin = getBoxGtinById(productId);
+    const boxGtin = (getBoxGtinById(productId) ?? '').padStart(14, '0');
     const formattedNetWeight = netWeightInPounds.toFixed(2).replace('.', '').padStart(6, '0');
     return `(01)${boxGtin}(3202)${formattedNetWeight}(10)${lot}`;
   };

@@ -107,6 +107,7 @@ export function usePalletBoxCreation({
         description:
           'Ninguno de los códigos pudo ser procesado. Verifica que tengan formato 01(GTIN)3100/3200(peso)10(lote) y que los productos existan.',
       });
+      console.warn('Códigos fallidos:', failedLines);
       return false;
     }
 
