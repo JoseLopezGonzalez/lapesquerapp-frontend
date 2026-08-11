@@ -41,6 +41,7 @@ import {
   Hash,
   Filter,
   X,
+  FileJson,
 } from 'lucide-react';
 import { PiShrimp } from 'react-icons/pi';
 
@@ -98,6 +99,7 @@ import { usePrintElement } from '@/hooks/usePrintElement';
 import PalletLabel from '@/components/Admin/Pallets/PalletLabel';
 import SummaryPieChart from './SummaryPieChart';
 import PalletImagesTab from './PalletImagesTab';
+import PalletExportImportTab from './PalletExportImportTab';
 import { BoxTableColumnFilter, type RangeFilterValue } from './BoxTableColumnFilter';
 import { notify } from '@/lib/notifications';
 import { deletePalletTimeline, downloadPalletExpeditionLabel } from '@/services/palletService';
@@ -834,6 +836,9 @@ export default function PalletView({
                   </TabsTrigger>
                   <TabsTrigger value="boxesLabels" className="flex items-center gap-2">
                     <FileText className="h-4 w-4" /> Etiquetas Cajas
+                  </TabsTrigger>
+                  <TabsTrigger value="exportar-importar" className="flex items-center gap-2">
+                    <FileJson className="h-4 w-4" /> Exportar / Importar
                   </TabsTrigger>
                   {showHistorialTab && (
                     <TabsTrigger value="imagenes" className="flex items-center gap-2">
@@ -3032,6 +3037,22 @@ export default function PalletView({
 
                 <TabsContent value="boxesLabels" className="mt-0 w-full">
                   <BoxesLabels pallet={temporalPallet} setBoxPrinted={setBoxPrinted} />
+                </TabsContent>
+
+                <TabsContent
+                  value="exportar-importar"
+                  className="mt-0 min-h-0 flex-1 data-[state=inactive]:hidden"
+                >
+                  <PalletExportImportTab
+                    pallet={temporalPallet}
+                    productsOptions={productsOptions}
+                    addBox={editPallet.box.add}
+                    boxCreationDataChange={boxCreationDataChange}
+                    onAddNewBox={onAddNewBox}
+                    editObservations={editPallet.observations}
+                    isReadOnly={isReadOnly}
+                    canEditCost={canEditCost}
+                  />
                 </TabsContent>
 
                 {showHistorialTab && (
