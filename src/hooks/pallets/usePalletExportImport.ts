@@ -193,7 +193,14 @@ export function usePalletExportImport({
   const importBoxes = (preview: PalletImportPreview, applyObservations: boolean) => {
     if (!temporalPallet) return;
 
-    const gs1Lines = preview.raw.filter((b) => b.gs1128).map((b) => b.gs1128 as string);
+    // box.gs1128 se guarda siempre en formato "bonito" con paréntesis por AI —
+    // (01)GTIN(3102)PESO(10)LOTE, ver getGs1128 en usePalletBoxOperations.ts — pero
+    // parseGs1128Line espera el formato crudo de escáner, sin paréntesis (dígitos
+    // contiguos). Se quitan aquí antes de reenviarlo al mismo parser que usa el
+    // formulario de alta manual por GS1-128.
+    const gs1Lines = preview.raw
+      .filter((b) => b.gs1128)
+      .map((b) => (b.gs1128 as string).replace(/[()]/g, ''));
     let manualAdded = 0;
     let manualSkipped = 0;
 
