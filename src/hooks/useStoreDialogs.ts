@@ -1,7 +1,7 @@
 'use client';
 
 import { getPallet } from '@/services/palletService';
-import { getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
+import { getAvailableBoxes, getAvailableNetWeight } from '@/helpers/pallet/boxAvailability';
 import { useRef, useState } from 'react';
 import { notify } from '@/lib/notifications';
 
@@ -33,7 +33,9 @@ interface UseStoreDialogsParams {
   setStore: React.Dispatch<React.SetStateAction<StoreData | null>>;
   token: string | undefined;
   storeId: string | number;
-  onUpdateCurrentStoreTotalNetWeight?: ((storeId: string | number, totalNetWeight: number) => void) | null;
+  onUpdateCurrentStoreTotalNetWeight?:
+    | ((storeId: string | number, totalNetWeight: number) => void)
+    | null;
   onAddNetWeightToStore?: ((storeId: string | number, weight: number) => void) | null;
 }
 
@@ -167,11 +169,11 @@ export function useStoreDialogs({
             ((err?.data as Record<string, unknown> | undefined)?.userMessage as
               | string
               | undefined) ||
-            (
+            ((
               (err?.response as Record<string, unknown> | undefined)?.data as
                 | Record<string, unknown>
                 | undefined
-            )?.userMessage as string | undefined ||
+            )?.userMessage as string | undefined) ||
             (err?.message as string | undefined) ||
             'No se pudo cargar el palet. Intente de nuevo.';
           return { title: 'Error al duplicar el palet', description: desc };
@@ -179,20 +181,28 @@ export function useStoreDialogs({
       });
 
       const original = originalPallet as StorePallet;
+      const availableBoxes = getAvailableBoxes(original.boxes ?? []);
+      const excludedCount = (original.boxes?.length ?? 0) - availableBoxes.length;
       const clonedPallet: StorePallet = {
         ...original,
         id: null as unknown as string,
         receptionId: null,
-        boxes:
-          original.boxes?.map((box) => ({
-            ...box,
-            id: generateUniqueBoxId(),
-            new: true,
-          })) ?? [],
+        boxes: availableBoxes.map((box) => ({
+          ...box,
+          id: generateUniqueBoxId(),
+          new: true,
+        })),
         store: original.store ? { id: original.store.id } : null,
         storeId: original.storeId || original.store?.id || storeId,
         orderId: null,
       };
+
+      if (excludedCount > 0) {
+        notify.warning({
+          title: 'Cajas en uso excluidas',
+          description: `${excludedCount} ${excludedCount === 1 ? 'caja' : 'cajas'} ya consumidas en producción no se han duplicado.`,
+        });
+      }
 
       setClonedPalletData(clonedPallet);
       setPalletDialogData('new');
@@ -210,9 +220,7 @@ export function useStoreDialogs({
       const palletIndex = existingPallets.findIndex((p) => p.id === updatedPallet.id);
       const updatedPallets =
         palletIndex !== -1
-          ? existingPallets.map((p) =>
-              p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p
-            )
+          ? existingPallets.map((p) => (p.id === updatedPallet.id ? { ...p, ...updatedPallet } : p))
           : [...existingPallets, updatedPallet];
 
       const totalNetWeight = updatedPallets.reduce(
