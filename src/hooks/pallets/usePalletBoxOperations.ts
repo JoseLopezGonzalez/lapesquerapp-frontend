@@ -83,9 +83,13 @@ export function usePalletBoxOperations({
   // 8-14 dígitos (EAN-8/UPC-12/EAN-13/GTIN-14, ver docs/API-references/productos/README.md),
   // así que hay que rellenar con ceros a la izquierda hasta 14 al construir el código — si no,
   // parseGs1128Line (que sí exige \d{14} tras "01" siguiendo el estándar) nunca puede volver a
-  // leer su propio código para GTIN de menos de 14 dígitos.
+  // leer su propio código para GTIN de menos de 14 dígitos. Si el producto NO tiene GTIN de
+  // caja configurado, no se rellena con ceros — un "00000000000000" fabricado parecería un
+  // GTIN real y colisionaría con cualquier otro producto igualmente sin GTIN al reconocerlo
+  // luego (ver normalizeGtinTo14 en gs1128Parser.js, que exige boxGtin truthy para matchear).
   const getGs1128 = (productId: number | string, lot: string, netWeight: unknown): string => {
-    const boxGtin = (getBoxGtinById(productId) ?? '').padStart(14, '0');
+    const rawBoxGtin = getBoxGtinById(productId);
+    const boxGtin = rawBoxGtin ? rawBoxGtin.padStart(14, '0') : '';
     const weight = parseFloat(String(netWeight)) || 0;
     const formattedNetWeight = weight.toFixed(2).replace('.', '').padStart(6, '0');
     return `(01)${boxGtin}(3102)${formattedNetWeight}(10)${lot}`;
@@ -96,7 +100,8 @@ export function usePalletBoxOperations({
     lot: string,
     netWeightInPounds: number
   ): string => {
-    const boxGtin = (getBoxGtinById(productId) ?? '').padStart(14, '0');
+    const rawBoxGtin = getBoxGtinById(productId);
+    const boxGtin = rawBoxGtin ? rawBoxGtin.padStart(14, '0') : '';
     const formattedNetWeight = netWeightInPounds.toFixed(2).replace('.', '').padStart(6, '0');
     return `(01)${boxGtin}(3202)${formattedNetWeight}(10)${lot}`;
   };

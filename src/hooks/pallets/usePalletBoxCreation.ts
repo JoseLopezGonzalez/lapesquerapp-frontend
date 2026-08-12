@@ -36,7 +36,6 @@ export interface UsePalletBoxCreationResult {
   onAddNewBox: (params: { method: string }) => void;
   onDeleteScannedCode: () => void;
   onResetBoxCreationData: () => void;
-  addBoxesFromGs1Lines: (gs1codes: string) => boolean;
 }
 
 export function usePalletBoxCreation({
@@ -388,11 +387,5 @@ export function usePalletBoxCreation({
     });
   };
 
-  return {
-    boxCreationDataChange,
-    onAddNewBox,
-    onDeleteScannedCode,
-    onResetBoxCreationData,
-    addBoxesFromGs1Lines,
-  };
+  return { boxCreationDataChange, onAddNewBox, onDeleteScannedCode, onResetBoxCreationData };
 }

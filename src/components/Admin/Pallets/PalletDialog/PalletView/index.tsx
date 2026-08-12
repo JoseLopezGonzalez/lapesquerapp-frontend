@@ -3047,7 +3047,6 @@ export default function PalletView({
                     pallet={temporalPallet}
                     productsOptions={productsOptions}
                     addBox={editPallet.box.add}
-                    addBoxesFromGs1Lines={editPallet.box.addFromGs1Lines}
                     editObservations={editPallet.observations}
                     isReadOnly={isReadOnly}
                     canEditCost={canEditCost}

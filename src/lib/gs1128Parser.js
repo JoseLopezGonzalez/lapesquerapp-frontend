@@ -71,7 +71,11 @@ export function parseGs1128Line(line, productsOptions) {
   let netWeight = parseFloat(weightStr) / 100;
   if (isPounds) netWeight = netWeight * 0.453592;
   netWeight = roundToTwoDecimals(netWeight);
-  const product = productsOptions.find((p) => normalizeGtinTo14(p.boxGtin) === gtin);
+  // p.boxGtin es opcional: un producto sin GTIN de caja configurado no debe poder
+  // "coincidir" con un código real solo porque ambos se normalizarían al mismo
+  // relleno de ceros — eso emparejaría por error dos productos distintos que
+  // simplemente no tienen GTIN.
+  const product = productsOptions.find((p) => p.boxGtin && normalizeGtinTo14(p.boxGtin) === gtin);
   if (!product) return null;
   const gs1128 = normalizeScannedCodeToGs1128(scannedCode) || scannedCode;
   const result = {

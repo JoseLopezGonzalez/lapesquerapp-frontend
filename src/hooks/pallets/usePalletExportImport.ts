@@ -2,7 +2,18 @@
 
 import { notify } from '@/lib/notifications';
 import { downloadJsonFile } from '@/lib/utils/downloadJsonFile';
+import { parseGs1128Line } from '@/lib/gs1128Parser';
 import { PalletBox, PalletState, ProductOption } from './palletHelpers';
+
+type ParsedGs1Box = {
+  productId: number | string;
+  productName: string;
+  lot: string;
+  netWeight: number;
+  gs1128: string;
+  isPounds?: boolean;
+  originalWeightInPounds?: number;
+};
 
 export interface PalletExportFieldOptions {
   includeGs1: boolean;
@@ -56,7 +67,6 @@ interface UsePalletExportImportParams {
       netWeight: unknown;
     }
   ) => void;
-  addBoxesFromGs1Lines: (gs1codes: string) => boolean;
   editObservations: (observations: string) => void;
 }
 
@@ -73,7 +83,6 @@ export function usePalletExportImport({
   temporalPallet,
   productsOptions,
   addBox,
-  addBoxesFromGs1Lines,
   editObservations,
 }: UsePalletExportImportParams) {
   const exportBoxes = (boxIds: (number | string)[], fields: PalletExportFieldOptions) => {
@@ -190,58 +199,90 @@ export function usePalletExportImport({
     };
   };
 
+  // box.gs1128 se guarda siempre en formato "bonito" con paréntesis por AI —
+  // (01)GTIN(3102)PESO(10)LOTE, ver getGs1128 en usePalletBoxOperations.ts — pero
+  // parseGs1128Line espera el formato crudo de escáner, sin paréntesis (dígitos
+  // contiguos). Se quitan aquí antes de reenviarlo al mismo parser que usa el
+  // formulario de alta manual por GS1-128.
+  const tryParseGs1 = (gs1128: string): ParsedGs1Box | null => {
+    const stripped = gs1128.replace(/[()]/g, '');
+    return (parseGs1128Line as (code: string, options: ProductOption[]) => ParsedGs1Box | null)(
+      stripped,
+      productsOptions
+    );
+  };
+
   const importBoxes = (preview: PalletImportPreview, applyObservations: boolean) => {
     if (!temporalPallet) return;
 
-    // box.gs1128 se guarda siempre en formato "bonito" con paréntesis por AI —
-    // (01)GTIN(3102)PESO(10)LOTE, ver getGs1128 en usePalletBoxOperations.ts — pero
-    // parseGs1128Line espera el formato crudo de escáner, sin paréntesis (dígitos
-    // contiguos). Se quitan aquí antes de reenviarlo al mismo parser que usa el
-    // formulario de alta manual por GS1-128.
-    const gs1Lines = preview.raw
-      .filter((b) => b.gs1128)
-      .map((b) => (b.gs1128 as string).replace(/[()]/g, ''));
+    let gs1Added = 0;
     let manualAdded = 0;
-    let manualSkipped = 0;
+    let skipped = 0;
 
-    preview.raw
-      .filter((b) => !b.gs1128)
-      .forEach((b) => {
-        const productExists = productsOptions.some((p) => p.value === b.product?.id);
-        if (!productExists || !b.product || !b.lot || b.netWeight === undefined) {
-          manualSkipped++;
+    preview.raw.forEach((b) => {
+      // 1. Si trae código GS1-128, intentar reconstruir la caja a partir del propio
+      // código (igual que un escaneo real) — más fiable porque recalcula el producto
+      // y el peso desde una fuente verificable.
+      if (b.gs1128) {
+        const parsed = tryParseGs1(b.gs1128);
+        if (parsed) {
+          addBox({
+            product: { id: parsed.productId, name: parsed.productName },
+            lot: parsed.lot,
+            netWeight: parsed.netWeight,
+            scannedCode: parsed.gs1128,
+            isPounds: parsed.isPounds,
+            originalWeightInPounds: parsed.originalWeightInPounds ?? null,
+          });
+          gs1Added++;
           return;
         }
-        addBox({
-          product: b.product,
-          lot: b.lot,
-          netWeight: b.netWeight,
-          grossWeight: b.grossWeight,
-          manualCostPerKg: b.manualCostPerKg ?? undefined,
-        });
-        manualAdded++;
-      });
+        // El código GS1 no se pudo reconocer (producto sin GTIN de caja configurado,
+        // GTIN no coincide con ningún producto, formato inesperado…) — no descartar la
+        // caja: caer a los datos "en crudo" (product/lot/netWeight) que el propio JSON
+        // ya trae para todas las cajas, igual que las cajas exportadas sin GS1-128.
+      }
 
-    if (gs1Lines.length > 0) {
-      addBoxesFromGs1Lines(gs1Lines.join('\n'));
-    }
+      const productExists = productsOptions.some((p) => p.value === b.product?.id);
+      if (!productExists || !b.product || !b.lot || b.netWeight === undefined) {
+        skipped++;
+        return;
+      }
+      addBox({
+        product: b.product,
+        lot: b.lot,
+        netWeight: b.netWeight,
+        grossWeight: b.grossWeight,
+        manualCostPerKg: b.manualCostPerKg ?? undefined,
+      });
+      manualAdded++;
+    });
 
     if (applyObservations && preview.observations) {
       editObservations(preview.observations);
     }
 
-    if (manualSkipped > 0) {
-      notify.warning({
-        title: 'Algunas cajas no se importaron',
-        description: `${manualSkipped} ${manualSkipped === 1 ? 'caja no tenía' : 'cajas no tenían'} un producto reconocido en este palet.`,
-      });
-    }
-    if (gs1Lines.length === 0 && manualAdded === 0) {
+    const totalAdded = gs1Added + manualAdded;
+
+    if (totalAdded === 0) {
       notify.error({
         title: 'Nada que importar',
-        description: 'No se pudo añadir ninguna caja desde el archivo.',
+        description:
+          'No se pudo añadir ninguna caja desde el archivo: ni el código GS1-128 ni los datos de producto/lote/peso eran reconocibles.',
+      });
+      return;
+    }
+
+    if (skipped > 0) {
+      notify.warning({
+        title: 'Algunas cajas no se importaron',
+        description: `${skipped} ${skipped === 1 ? 'caja no tenía' : 'cajas no tenían'} un producto reconocido ni código GS1-128 válido en este palet.`,
       });
     }
+    notify.success({
+      title: 'Palet importado',
+      description: `Se ${totalAdded === 1 ? 'ha añadido 1 caja' : `han añadido ${totalAdded} cajas`} al palet.`,
+    });
   };
 
   return { exportBoxes, parseImportFile, importBoxes };
