@@ -200,6 +200,13 @@ const adminConfig: Record<string, any> = {
         { name: 'email', label: 'Email', type: 'text', path: 'email', hideOnMobile: true },
         { name: 'type', label: 'Tipo', type: 'text', path: 'type' },
         {
+          name: 'tollClient',
+          label: 'Cliente de maquila',
+          type: 'text',
+          path: 'tollClient.name',
+          hideOnMobile: true,
+        },
+        {
           name: 'isActive',
           label: 'Activo',
           type: 'badge',
@@ -313,6 +320,15 @@ const adminConfig: Record<string, any> = {
         cols: { sm: 3, md: 3, lg: 3, xl: 3 },
       },
       {
+        name: 'toll_client_id',
+        path: 'tollClientId',
+        label: 'Cliente de maquila',
+        type: 'Autocomplete',
+        endpoint: 'toll-clients/options',
+        placeholder: 'Vincular a un cliente de maquila (opcional)',
+        cols: { sm: 3, md: 3, lg: 3, xl: 3 },
+      },
+      {
         name: 'is_active',
         path: 'isActive',
         label: 'Activo',
@@ -393,7 +409,13 @@ const adminConfig: Record<string, any> = {
         { name: 'address', label: 'Dirección', type: 'text', path: 'address' },
         { name: 'emails', label: 'Emails', type: 'list', path: 'emails' },
         { name: 'ccEmails', label: 'Emails en copia (CC)', type: 'list', path: 'ccEmails' },
-        { name: 'contactos', label: 'Contactos', type: 'multiline', path: 'contactos', hideOnMobile: true },
+        {
+          name: 'contactos',
+          label: 'Contactos',
+          type: 'multiline',
+          path: 'contactos',
+          hideOnMobile: true,
+        },
       ],
     },
     createForm: {
