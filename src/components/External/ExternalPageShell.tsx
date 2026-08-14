@@ -1,6 +1,11 @@
 import { cn } from '@/lib/utils';
 
-export function ExternalPageShell({ children, contentClassName }) {
+interface ExternalPageShellProps {
+  children: React.ReactNode;
+  contentClassName?: string;
+}
+
+export function ExternalPageShell({ children, contentClassName }: ExternalPageShellProps) {
   return (
     <div
       className={cn(

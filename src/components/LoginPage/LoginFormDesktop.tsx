@@ -15,6 +15,8 @@ interface LoginFormDesktopProps {
   tenantActive: boolean;
   isDemo: boolean;
   brandingImageUrl?: string | null;
+  /** Nombre del cliente de maquila (portal /portal/{slug}) — sustituye {appName} cuando está presente. */
+  titleOverride?: string | null;
   accessRequested: boolean;
   loading: boolean;
   emailRegister: UseFormRegister<LoginEmailForm>;
@@ -32,6 +34,7 @@ export default function LoginFormDesktop(props: LoginFormDesktopProps) {
     tenantActive,
     isDemo,
     brandingImageUrl,
+    titleOverride,
     accessRequested,
     loading,
     emailRegister,
@@ -89,7 +92,7 @@ export default function LoginFormDesktop(props: LoginFormDesktopProps) {
           <div className="mx-auto w-full max-w-xs space-y-8 py-20">
             <div className="flex flex-col gap-3 text-center">
               <h2 className="text-primary from-primary to-muted-foreground bg-gradient-to-tr bg-clip-text text-2xl leading-tight font-bold text-transparent lg:text-3xl xl:text-[2.5rem]">
-                {appName}
+                {titleOverride ?? appName}
               </h2>
               <div className="flex items-center justify-center gap-1 text-nowrap">
                 <span className="text-md text-primary lg:text-xl">Mantén tu producción</span>

@@ -4,6 +4,7 @@ export type ExternalUserType = 'maquilador' | null;
 export interface AuthActorLike {
   actorType?: ActorType | null;
   externalUserType?: ExternalUserType;
+  tollClientId?: number | null;
   allowedStoreIds?: number[] | null;
   role?: string | string[] | null;
 }
@@ -19,6 +20,17 @@ export function isExternalActor(user?: AuthActorLike | null): boolean {
 
 export function isInternalActor(user?: AuthActorLike | null): boolean {
   return user?.actorType !== 'external_user';
+}
+
+/**
+ * Cliente de maquila (TollClient) — portal reducido y propio dentro de la experiencia externa.
+ * No usar `externalUserType` para esta decisión: es un enum con un único valor legal
+ * ('maquilador') compartido por cualquier ExternalUser, tenga o no toll_client_id vinculado.
+ * El único campo fiable es `tollClientId !== null` (fail-closed, mismo criterio que el backend
+ * usa en cada controller del portal vía getCurrentTollClientId()) — ver docs/maquila/frontend/00-index.md §1.1.
+ */
+export function isTollClient(user?: AuthActorLike | null): boolean {
+  return isExternalActor(user) && user?.tollClientId != null;
 }
 
 export function canDeletePallet(user?: AuthActorLike | null): boolean {
@@ -39,6 +51,7 @@ export function canManagePalletCostFields(user?: AuthActorLike | null): boolean 
 }
 
 export function getDefaultAuthenticatedRoute(user?: AuthActorLike | null): string {
+  if (isTollClient(user)) return '/external/maquila';
   if (isExternalActor(user)) return '/external/stores-manager';
 
   const role = normalizeRole(user?.role);

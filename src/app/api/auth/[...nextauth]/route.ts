@@ -66,11 +66,15 @@ export const authOptions: NextAuthOptions = {
           assignedStoreId?: number;
           actorType?: 'internal_user' | 'external_user' | null;
           externalUserType?: 'maquilador' | null;
+          tollClientId?: number | null;
+          tollClientName?: string | null;
           allowedStoreIds?: number[];
         };
         if (u.assignedStoreId != null) token.assignedStoreId = u.assignedStoreId;
         token.actorType = u.actorType ?? 'internal_user';
         token.externalUserType = u.externalUserType ?? null;
+        token.tollClientId = u.tollClientId ?? null;
+        token.tollClientName = u.tollClientName ?? null;
         token.allowedStoreIds = Array.isArray(u.allowedStoreIds) ? u.allowedStoreIds : [];
       }
 
@@ -114,6 +118,14 @@ export const authOptions: NextAuthOptions = {
               token.externalUserType =
                 (currentUser as { externalUserType?: 'maquilador' | null }).externalUserType ??
                 null;
+            }
+            if ((currentUser as { tollClientId?: number | null }).tollClientId !== undefined) {
+              token.tollClientId =
+                (currentUser as { tollClientId?: number | null }).tollClientId ?? null;
+            }
+            if ((currentUser as { tollClientName?: string | null }).tollClientName !== undefined) {
+              token.tollClientName =
+                (currentUser as { tollClientName?: string | null }).tollClientName ?? null;
             }
             if (Array.isArray((currentUser as { allowedStoreIds?: number[] }).allowedStoreIds)) {
               token.allowedStoreIds = (
@@ -160,6 +172,8 @@ export const authOptions: NextAuthOptions = {
           (token.actorType as 'internal_user' | 'external_user' | null | undefined) ??
           'internal_user',
         externalUserType: (token.externalUserType as 'maquilador' | null | undefined) ?? null,
+        tollClientId: (token.tollClientId as number | null | undefined) ?? null,
+        tollClientName: (token.tollClientName as string | null | undefined) ?? null,
         allowedStoreIds: Array.isArray(token.allowedStoreIds)
           ? (token.allowedStoreIds as number[])
           : [],

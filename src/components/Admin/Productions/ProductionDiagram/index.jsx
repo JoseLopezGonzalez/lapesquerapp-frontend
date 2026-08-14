@@ -43,16 +43,23 @@ function FlowContent({
   onViewModeChange,
   viewModes,
   isFiltered = false,
+  onNodeNavigate,
 }) {
   const router = useRouter();
   const { fitView } = useReactFlow();
 
-  // Función para navegar a un record (definida antes de usarse en useMemo)
+  // Función para navegar a un record (definida antes de usarse en useMemo).
+  // onNodeNavigate permite a un consumidor sin la ruta /admin/productions/*/records/*
+  // (p. ej. el portal de maquila) sustituir o desactivar la navegación por defecto.
   const navigateToRecord = useCallback(
     (recordId) => {
+      if (onNodeNavigate) {
+        onNodeNavigate(recordId);
+        return;
+      }
       router.push(`/admin/productions/${productionId}/records/${recordId}`);
     },
-    [router, productionId]
+    [router, productionId, onNodeNavigate]
   );
 
   // Transformar datos del API a formato React Flow
@@ -70,9 +77,10 @@ function FlowContent({
         ...node,
         data: {
           ...node.data,
-          // Solo agregar onNavigate si es un nodo de proceso con recordId
+          // Solo agregar onNavigate si es un nodo de proceso con recordId y hay algún destino
+          // (onNodeNavigate === null desactiva la navegación explícitamente, ver arriba)
           onNavigate:
-            node.type === 'processNode' && node.data.recordId
+            node.type === 'processNode' && node.data.recordId && onNodeNavigate !== null
               ? () => navigateToRecord(node.data.recordId)
               : undefined,
         },
@@ -83,7 +91,7 @@ function FlowContent({
       console.error('Error al transformar el árbol de procesos:', error);
       return { nodes: [], edges: [] };
     }
-  }, [processTree, viewMode, navigateToRecord]);
+  }, [processTree, viewMode, navigateToRecord, onNodeNavigate]);
 
   // Aplicar layout automático
   const { nodes: layoutedNodes, edges: layoutedEdges } = useMemo(() => {
@@ -200,9 +208,12 @@ export default function ProductionDiagram({
   processTree,
   productionId,
   loading = false,
-  viewMode: externalViewMode,
-  onViewModeChange: externalOnViewModeChange,
+  viewMode: externalViewMode = undefined,
+  onViewModeChange: externalOnViewModeChange = undefined,
   isFiltered = false,
+  // undefined (default) = navegación admin a /admin/productions/*/records/* sin cambios.
+  // función = navegación custom. null = desactiva el botón "ver detalle" del nodo.
+  onNodeNavigate,
 }) {
   const [internalViewMode, setInternalViewMode] = useState('simple');
 
@@ -219,6 +230,7 @@ export default function ProductionDiagram({
         viewMode={viewMode}
         onViewModeChange={onViewModeChange}
         isFiltered={isFiltered}
+        onNodeNavigate={onNodeNavigate}
       />
     </ReactFlowProvider>
   );

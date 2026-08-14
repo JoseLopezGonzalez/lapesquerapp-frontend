@@ -9,12 +9,18 @@ import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { pageTransition } from '@/lib/motion-presets';
 import { useLoginTenant } from '@/hooks/useLoginTenant';
 import { useLoginActions } from '@/hooks/useLoginActions';
+import { useTollClientBranding } from '@/hooks/useTollClientBranding';
 import { loginEmailSchema, loginOtpSchema } from '@/schemas/loginSchema';
 import LoginWelcomeStep from './LoginWelcomeStep';
 import LoginFormDesktop from './LoginFormDesktop';
 import LoginFormMobile from './LoginFormMobile';
 
-export default function LoginPage() {
+interface LoginPageProps {
+  /** Slug del cliente de maquila (ruta /portal/{slug}) — activa el branding propio del portal. */
+  tollClientSlug?: string;
+}
+
+export default function LoginPage({ tollClientSlug }: LoginPageProps = {}) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [accessRequested, setAccessRequested] = useState(false);
@@ -31,6 +37,15 @@ export default function LoginPage() {
   });
 
   const { tenantChecked, tenantActive, brandingImageUrl, isDemo, demoEmail } = useLoginTenant();
+  const { data: tollClientBranding, isLoading: tollClientBrandingLoading } =
+    useTollClientBranding(tollClientSlug);
+
+  // Fallback neutro (branding genérico del tenant) mientras carga o si el slug no existe/está
+  // inactivo (404 → data null) — nunca bloquea ni muestra error, ver docs/maquila/frontend/00-index.md §1.2.
+  const effectiveBrandingImageUrl =
+    (!tollClientBrandingLoading && tollClientBranding?.loginBannerUrl) || brandingImageUrl;
+  const tollClientLogoUrl = tollClientBranding?.logoUrl ?? null;
+  const tollClientDisplayName = tollClientBranding?.name ?? null;
 
   const { isMobile } = useIsMobileSafe();
 
@@ -69,7 +84,9 @@ export default function LoginPage() {
       <AnimatePresence mode="wait">
         {shouldShowWelcome ? (
           <LoginWelcomeStep
-            brandingImageUrl={brandingImageUrl}
+            brandingImageUrl={effectiveBrandingImageUrl}
+            logoUrl={tollClientLogoUrl}
+            titleOverride={tollClientDisplayName}
             isDemo={isDemo}
             tenantActive={tenantActive}
             onContinue={() => setShowForm(true)}
@@ -84,6 +101,7 @@ export default function LoginPage() {
               <LoginFormMobile
                 tenantActive={tenantActive}
                 isDemo={isDemo}
+                titleOverride={tollClientDisplayName}
                 onBackToWelcome={() => setShowForm(false)}
                 accessRequested={accessRequested}
                 loading={loading}
@@ -100,7 +118,8 @@ export default function LoginPage() {
               <LoginFormDesktop
                 tenantActive={tenantActive}
                 isDemo={isDemo}
-                brandingImageUrl={brandingImageUrl}
+                brandingImageUrl={effectiveBrandingImageUrl}
+                titleOverride={tollClientDisplayName}
                 accessRequested={accessRequested}
                 loading={loading}
                 emailRegister={emailForm.register}

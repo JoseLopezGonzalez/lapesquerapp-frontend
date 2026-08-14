@@ -328,7 +328,12 @@ export const orderKeys = {
   // ['orders','detail',t,'123'] son claves distintas para React Query y
   // invalidateQueries no encuentra la query activa a refrescar tras crear/editar/eliminar.
   detail: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
-    ['orders', 'detail', tenantId ?? 'unknown', orderId == null ? 'unknown' : String(orderId)] as const,
+    [
+      'orders',
+      'detail',
+      tenantId ?? 'unknown',
+      orderId == null ? 'unknown' : String(orderId),
+    ] as const,
 };
 
 export const orderCostAnalysisKeys = {
@@ -504,9 +509,11 @@ export const orderStatKeys = {
     tenantId: string | null | undefined,
     dateFrom: string,
     dateTo: string
+  ) => ['orders', 'profitabilityProductsJob', tenantId ?? 'unknown', dateFrom, dateTo] as const,
+  profitabilityProductsJobStatus: (
+    tenantId: string | null | undefined,
+    jobId: string | undefined
   ) =>
-    ['orders', 'profitabilityProductsJob', tenantId ?? 'unknown', dateFrom, dateTo] as const,
-  profitabilityProductsJobStatus: (tenantId: string | null | undefined, jobId: string | undefined) =>
     ['orders', 'profitabilityProductsJobStatus', tenantId ?? 'unknown', jobId ?? 'none'] as const,
 };
 
@@ -748,4 +755,125 @@ export const orderChartKeys = {
     ] as const,
   transport: (tenantId: string | null | undefined, from: string, to: string) =>
     ['transport', 'chart', tenantId ?? 'unknown', from, to] as const,
+};
+
+/** Branding público del portal de maquila (pre-login, sin tenant conocido vía session) */
+export const tollClientBrandingKeys = {
+  bySlug: (tenantId: string | null | undefined, slug: string) =>
+    ['toll-client-branding', tenantId ?? 'unknown', slug] as const,
+};
+
+/** Gestión admin (staff) del cliente de maquila — detalle usado por la página de branding */
+export const tollClientAdminKeys = {
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['toll-clients', 'admin-detail', tenantId ?? 'unknown', id] as const,
+};
+
+/** Producciones del portal de maquila (GET /maquila/productions/*) */
+export const maquilaProductionKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['maquila', 'productions', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, page = 1, perPage = 12) =>
+    ['maquila', 'productions', 'list', tenantId ?? 'unknown', page, perPage] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['maquila', 'productions', 'detail', tenantId ?? 'unknown', id] as const,
+  traceability: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['maquila', 'productions', 'traceability', tenantId ?? 'unknown', id] as const,
+};
+
+/** Adjuntos de producción (GET /productions/{id}/attachments — ruta compartida internal/external) */
+export const productionAttachmentKeys = {
+  listPrefix: (
+    tenantId: string | null | undefined,
+    productionId: number | string | null | undefined
+  ) => ['productions', 'attachments', tenantId ?? 'unknown', productionId] as const,
+  list: (
+    tenantId: string | null | undefined,
+    productionId: number | string | null | undefined,
+    params: Record<string, unknown> = {}
+  ) =>
+    [
+      'productions',
+      'attachments',
+      tenantId ?? 'unknown',
+      productionId,
+      normalizeQueryParams(params),
+    ] as const,
+};
+
+/** Recepciones del portal de maquila (GET /maquila/receptions/*) */
+export const maquilaReceptionKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['maquila', 'receptions', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, page = 1, perPage = 12) =>
+    ['maquila', 'receptions', 'list', tenantId ?? 'unknown', page, perPage] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['maquila', 'receptions', 'detail', tenantId ?? 'unknown', id] as const,
+};
+
+/** Adjuntos de recepción (GET /raw-material-receptions/{id}/attachments) */
+export const receptionAttachmentKeys = {
+  listPrefix: (
+    tenantId: string | null | undefined,
+    receptionId: number | string | null | undefined
+  ) => ['receptions', 'attachments', tenantId ?? 'unknown', receptionId] as const,
+  list: (
+    tenantId: string | null | undefined,
+    receptionId: number | string | null | undefined,
+    params: Record<string, unknown> = {}
+  ) =>
+    [
+      'receptions',
+      'attachments',
+      tenantId ?? 'unknown',
+      receptionId,
+      normalizeQueryParams(params),
+    ] as const,
+};
+
+/** Devoluciones del portal de maquila (GET /toll-client-returns/*) */
+export const maquilaReturnKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['maquila', 'returns', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, page = 1, perPage = 12) =>
+    ['maquila', 'returns', 'list', tenantId ?? 'unknown', page, perPage] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['maquila', 'returns', 'detail', tenantId ?? 'unknown', id] as const,
+};
+
+/** Pedidos del portal de maquila (GET/POST/PUT /maquila/orders/*) */
+export const maquilaOrderKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['maquila', 'orders', 'list', tenantId ?? 'unknown'] as const,
+  list: (tenantId: string | null | undefined, status: string | undefined, page = 1, perPage = 15) =>
+    ['maquila', 'orders', 'list', tenantId ?? 'unknown', status ?? 'all', page, perPage] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['maquila', 'orders', 'detail', tenantId ?? 'unknown', id] as const,
+  incident: (tenantId: string | null | undefined, orderId: number | string | null | undefined) =>
+    ['maquila', 'orders', 'incident', tenantId ?? 'unknown', orderId] as const,
+  transportOptions: (tenantId: string | null | undefined) =>
+    ['maquila', 'orders', 'transport-options', tenantId ?? 'unknown'] as const,
+};
+
+/** Almacén interactivo del portal de maquila (GET /pallets, ya scopeado por toll_client_id) */
+export const maquilaPalletKeys = {
+  listPrefix: (tenantId: string | null | undefined) =>
+    ['maquila', 'pallets', 'list', tenantId ?? 'unknown'] as const,
+  list: (
+    tenantId: string | null | undefined,
+    filters: Record<string, unknown> = {},
+    page = 1,
+    perPage = 12
+  ) =>
+    [
+      'maquila',
+      'pallets',
+      'list',
+      tenantId ?? 'unknown',
+      normalizeQueryParams(filters),
+      page,
+      perPage,
+    ] as const,
+  detail: (tenantId: string | null | undefined, id: number | string | null | undefined) =>
+    ['maquila', 'pallets', 'detail', tenantId ?? 'unknown', id] as const,
 };

@@ -13,6 +13,8 @@ import type { LoginEmailForm, LoginOtpForm } from '@/schemas/loginSchema';
 interface LoginFormMobileProps {
   tenantActive: boolean;
   isDemo: boolean;
+  /** Nombre del cliente de maquila (portal /portal/{slug}) — sustituye {appName} cuando está presente. */
+  titleOverride?: string | null;
   onBackToWelcome: () => void;
   accessRequested: boolean;
   loading: boolean;
@@ -29,6 +31,7 @@ interface LoginFormMobileProps {
 export default function LoginFormMobile({
   tenantActive,
   isDemo,
+  titleOverride,
   onBackToWelcome,
   accessRequested,
   loading,
@@ -60,7 +63,7 @@ export default function LoginFormMobile({
       )}
 
       {isDemo && (
-        <div className="absolute top-4 right-4 z-10 rounded-lg bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground shadow">
+        <div className="bg-accent text-accent-foreground absolute top-4 right-4 z-10 rounded-lg px-3 py-1 text-xs font-semibold shadow">
           MODO DEMO
         </div>
       )}
@@ -78,7 +81,7 @@ export default function LoginFormMobile({
         <div className="w-full space-y-8">
           <div className="flex flex-col gap-4 text-center">
             <h2 className="text-primary from-primary to-muted-foreground bg-gradient-to-tr bg-clip-text text-4xl leading-tight font-bold text-transparent">
-              {appName}
+              {titleOverride ?? appName}
             </h2>
             <div className="flex flex-wrap items-center justify-center gap-1 text-nowrap">
               <span className="text-primary text-base">Mantén tu producción</span>

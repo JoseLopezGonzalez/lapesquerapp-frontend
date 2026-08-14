@@ -19,6 +19,10 @@ export interface AuthUser {
   salespersonId?: number | null;
   actorType?: 'internal_user' | 'external_user' | null;
   externalUserType?: 'maquilador' | null;
+  /** ID del TollClient vinculado (portal de maquila). Único campo fiable para distinguir
+   * un cliente de maquila real de un ExternalUser genérico — ver docs/maquila/frontend/00-index.md §1.1 */
+  tollClientId?: number | null;
+  tollClientName?: string | null;
   allowedStoreIds?: number[];
   assigned_store_id?: number | null;
   [key: string]: unknown;

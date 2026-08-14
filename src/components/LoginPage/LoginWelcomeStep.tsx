@@ -10,6 +10,10 @@ import { ArrowRight } from 'lucide-react';
 
 interface LoginWelcomeStepProps {
   brandingImageUrl?: string | null;
+  /** Logo del cliente de maquila (portal /portal/{slug}) — sustituye el título por texto+logo propio. */
+  logoUrl?: string | null;
+  /** Nombre del cliente de maquila — sustituye {appName} cuando está presente. */
+  titleOverride?: string | null;
   isDemo: boolean;
   tenantActive: boolean;
   onContinue: () => void;
@@ -17,6 +21,8 @@ interface LoginWelcomeStepProps {
 
 export default function LoginWelcomeStep({
   brandingImageUrl,
+  logoUrl,
+  titleOverride,
   isDemo,
   tenantActive,
   onContinue,
@@ -70,8 +76,17 @@ export default function LoginWelcomeStep({
       <div className="relative z-10 flex w-full max-w-sm flex-1 flex-col items-center justify-end pb-8">
         <div className="flex w-full flex-col items-center space-y-8 text-center">
           <div className="space-y-4">
+            {logoUrl && (
+              <Image
+                src={logoUrl}
+                alt={titleOverride ?? appName}
+                width={72}
+                height={72}
+                className="mx-auto rounded-lg object-contain"
+              />
+            )}
             <h1 className="text-primary from-primary to-primary/80 bg-gradient-to-tr bg-clip-text text-5xl font-bold">
-              {appName}
+              {titleOverride ?? appName}
             </h1>
           </div>
 

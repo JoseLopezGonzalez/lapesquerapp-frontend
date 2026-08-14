@@ -3,15 +3,44 @@
 import * as React from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { Building2, Warehouse } from 'lucide-react';
+import {
+  Building2,
+  Warehouse,
+  LayoutDashboard,
+  Factory,
+  ClipboardList,
+  PackageCheck,
+  Undo2,
+  Receipt,
+} from 'lucide-react';
 import { NavigationSheet } from '@/components/Admin/Layout/NavigationSheet';
 import { BottomNav } from '@/components/Admin/Layout/BottomNav';
 import { ExternalSidebar } from '@/components/External/ExternalSidebar';
 import { ExternalUserMenuDialog } from '@/components/External/ExternalUserMenuDialog';
 import { useIsMobileSafe } from '@/hooks/use-mobile';
 import { notify } from '@/lib/notifications';
+import { isTollClient } from '@/lib/auth/actor';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
+
+/** Navegación completa del portal de maquila (sidebar desktop + sheet mobile) */
+const MAQUILA_NAVIGATION_ITEMS = [
+  { name: 'Inicio', href: '/external/maquila', icon: LayoutDashboard },
+  { name: 'Almacén', href: '/external/maquila/almacen', icon: Warehouse },
+  { name: 'Producciones', href: '/external/maquila/producciones', icon: Factory },
+  { name: 'Pedidos', href: '/external/maquila/pedidos', icon: ClipboardList },
+  { name: 'Recepciones', href: '/external/maquila/recepciones', icon: PackageCheck },
+  { name: 'Devoluciones', href: '/external/maquila/devoluciones', icon: Undo2 },
+  { name: 'Cargo de servicio', href: '/external/maquila/cargo-servicio', icon: Receipt },
+];
+
+/** Subconjunto priorizado para el BottomNav mobile (tope 4, ver BottomNav) */
+const MAQUILA_BOTTOM_NAV_ITEMS = MAQUILA_NAVIGATION_ITEMS.slice(0, 4);
+
+/** Navegación del ExternalUser genérico (sin tollClientId) — solo almacenes/palets */
+const GENERIC_EXTERNAL_NAVIGATION_ITEMS = [
+  { name: 'Almacenes', href: '/external/stores-manager', icon: Warehouse },
+];
 
 function ExternalLayoutContent({ children }) {
   const { data: session } = useSession();
@@ -25,6 +54,8 @@ function ExternalLayoutContent({ children }) {
     () => (Array.isArray(session?.user?.allowedStoreIds) ? session.user.allowedStoreIds : []),
     [session?.user?.allowedStoreIds]
   );
+
+  const isMaquilaPortal = isTollClient(session?.user);
 
   const handleLogout = React.useCallback(async () => {
     sessionStorage.setItem('__is_logging_out__', 'true');
@@ -56,25 +87,13 @@ function ExternalLayoutContent({ children }) {
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const navigationItems = React.useMemo(
-    () => [
-      {
-        name: 'Almacenes',
-        href: '/external/stores-manager',
-        icon: Warehouse,
-      },
-    ],
-    []
+    () => (isMaquilaPortal ? MAQUILA_NAVIGATION_ITEMS : GENERIC_EXTERNAL_NAVIGATION_ITEMS),
+    [isMaquilaPortal]
   );
 
   const bottomNavItems = React.useMemo(
-    () => [
-      {
-        name: 'Almacenes',
-        href: '/external/stores-manager',
-        icon: Warehouse,
-      },
-    ],
-    []
+    () => (isMaquilaPortal ? MAQUILA_BOTTOM_NAV_ITEMS : GENERIC_EXTERNAL_NAVIGATION_ITEMS),
+    [isMaquilaPortal]
   );
 
   const user = React.useMemo(
@@ -82,7 +101,7 @@ function ExternalLayoutContent({ children }) {
       name: session?.user?.name || 'Usuario externo',
       email: session?.user?.email || '',
       image: session?.user?.image || '',
-      companyName: session?.user?.companyName || 'PesquerApp',
+      companyName: session?.user?.tollClientName || session?.user?.companyName || 'PesquerApp',
       companyLogoUrl: session?.user?.companyLogoUrl || '',
       externalUserType: session?.user?.externalUserType || null,
       allowedStoreIds,

@@ -340,6 +340,11 @@ export const navigationConfig: NavigationItem[] = [
         href: '/admin/external-users',
         allowedRoles: ['administrador', 'direccion', 'tecnico'],
       },
+      {
+        name: 'Clientes de maquila',
+        href: '/admin/toll-clients',
+        allowedRoles: ['administrador', 'direccion', 'tecnico', 'administracion'],
+      },
     ],
   },
   {

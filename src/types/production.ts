@@ -30,10 +30,19 @@ export interface Production {
   reopenReason?: string | null;
   reopenedByUser?: { id: number; name: string } | null;
   notes: string | null;
+  date?: string;
+  totalInputWeight?: number;
+  totalOutputWeight?: number;
+  totalInputBoxes?: number;
+  totalOutputBoxes?: number;
   waste?: number;
   wastePercentage?: number;
   yield?: number;
   yieldPercentage?: number;
+  /** Solo id/processId/startedAt/finishedAt en el listado (ver ProductionResource del portal de maquila) */
+  records?: { id: number; processId: number; startedAt: string; finishedAt: string | null }[];
+  createdAt?: string;
+  updatedAt?: string;
   reconciliation?: ProductionReconciliation | null;
 }
 

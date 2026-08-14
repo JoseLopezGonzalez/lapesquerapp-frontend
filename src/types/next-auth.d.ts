@@ -10,6 +10,9 @@ declare module 'next-auth' {
       role?: string | null;
       actorType?: 'internal_user' | 'external_user' | null;
       externalUserType?: 'maquilador' | null;
+      /** ID del TollClient vinculado (portal de maquila). null = ExternalUser genérico o User interno. */
+      tollClientId?: number | null;
+      tollClientName?: string | null;
       allowedStoreIds?: number[];
       assignedStoreId?: number | null;
       name?: string | null;
@@ -24,6 +27,8 @@ declare module 'next-auth' {
     role?: string | string[] | null;
     actorType?: 'internal_user' | 'external_user' | null;
     externalUserType?: 'maquilador' | null;
+    tollClientId?: number | null;
+    tollClientName?: string | null;
     allowedStoreIds?: number[];
     assignedStoreId?: number | null;
     [key: string]: unknown;
@@ -36,6 +41,8 @@ declare module 'next-auth/jwt' {
     role?: string | null;
     actorType?: 'internal_user' | 'external_user' | null;
     externalUserType?: 'maquilador' | null;
+    tollClientId?: number | null;
+    tollClientName?: string | null;
     allowedStoreIds?: number[];
     assignedStoreId?: number | null;
     lastRefresh?: number;

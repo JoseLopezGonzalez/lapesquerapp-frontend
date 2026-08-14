@@ -69,6 +69,7 @@ import { punchService } from './punches/punchService';
 // TODO: migrate to .ts
 import { externalUserService } from './external-users/externalUserService';
 import { externalProcessorService } from './external-processors/externalProcessorService';
+import { tollClientService } from './toll-clients/tollClientService';
 import { supplierLiquidationDomainService } from './supplier-liquidations/supplierLiquidationDomainService';
 import { customsBrokerService } from './customs-brokers/customsBrokerService';
 
@@ -110,6 +111,7 @@ const entityServiceMap: Record<string, DomainService> = {
   users: userService,
   'external-users': externalUserService,
   'external-processors': externalProcessorService,
+  'toll-clients': tollClientService,
   'field-operators': fieldOperatorAdminService,
   'supplier-liquidations': supplierLiquidationDomainService,
   'customs-brokers': customsBrokerService,

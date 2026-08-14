@@ -34,6 +34,8 @@ interface JWTToken {
   accessToken?: string;
   role?: string | string[] | null;
   actorType?: 'internal_user' | 'external_user' | null;
+  /** ID del TollClient vinculado (portal de maquila) — ver docs/maquila/frontend/00-index.md §1.1 */
+  tollClientId?: number | null;
   exp?: number;
   assignedStoreId?: number | null;
   [key: string]: unknown;
@@ -252,7 +254,12 @@ export async function middleware(req: NextRequest) {
   }
 
   if (actorType === 'external_user') {
-    const externalUrl = new URL('/external/stores-manager', req.url);
+    const tollClientId =
+      (currentUser?.tollClientId as number | null | undefined) ?? token.tollClientId ?? null;
+    const externalUrl = new URL(
+      tollClientId != null ? '/external/maquila' : '/external/stores-manager',
+      req.url
+    );
     return NextResponse.redirect(externalUrl);
   }
 
