@@ -74,7 +74,13 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
         quantity: number;
         products: Map<
           string,
-          { quantity: number; boxes: number; costWeightedSum: number; costWeight: number }
+          {
+            quantity: number;
+            boxes: number;
+            boxesWithCost: number;
+            costWeightedSum: number;
+            costWeight: number;
+          }
         >;
       }
     >();
@@ -113,6 +119,7 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
             speciesData.products.set(productName, {
               quantity: 0,
               boxes: 0,
+              boxesWithCost: 0,
               costWeightedSum: 0,
               costWeight: 0,
             });
@@ -122,6 +129,7 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
           productData.quantity += netWeight;
           productData.boxes += 1;
           if (boxCostPerKg !== null && !Number.isNaN(boxCostPerKg)) {
+            productData.boxesWithCost += 1;
             productData.costWeightedSum += boxCostPerKg * netWeight;
             productData.costWeight += netWeight;
           }
@@ -137,6 +145,7 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
         boxes: data.boxes,
         productPercentage: totalProductWeight > 0 ? (data.quantity / totalProductWeight) * 100 : 0,
         avgCostPerKg: data.costWeight > 0 ? data.costWeightedSum / data.costWeight : null,
+        costCoveragePercentage: data.boxes > 0 ? (data.boxesWithCost / data.boxes) * 100 : 0,
       }));
 
       return {

@@ -19,6 +19,7 @@ interface ProductSummaryEntry {
   boxes: number;
   productPercentage: number;
   avgCostPerKg: number | null;
+  costCoveragePercentage: number;
 }
 
 interface SpeciesSummaryEntry {
@@ -82,6 +83,7 @@ export default function ProductSummary() {
         Cajas: product.boxes,
         'Coste medio (€/kg)':
           product.avgCostPerKg !== null ? Number(product.avgCostPerKg.toFixed(2)) : '-',
+        '% cajas con coste': Number(product.costCoveragePercentage.toFixed(2)),
       }));
       return acc.concat(speciesProducts);
     }, []);
@@ -190,7 +192,7 @@ export default function ProductSummary() {
             </div>
 
             <div className="max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
-              <table className="w-full min-w-[520px]">
+              <table className="w-full min-w-[620px]">
                 <tbody>
                   {filteredProducts.map((product) => (
                     <tr
@@ -207,6 +209,17 @@ export default function ProductSummary() {
                       </td>
                       <td className="text-muted-foreground px-4 py-3 text-right text-sm">
                         {formatCostPerKg(product.avgCostPerKg)}
+                      </td>
+                      <td
+                        className={cn(
+                          'px-4 py-3 text-right text-sm',
+                          product.costCoveragePercentage > 0 && product.costCoveragePercentage < 100
+                            ? 'text-warning'
+                            : 'text-muted-foreground'
+                        )}
+                        title="Porcentaje de cajas del producto que tienen coste asignado"
+                      >
+                        {formatDecimal(product.costCoveragePercentage)}%
                       </td>
                     </tr>
                   ))}
