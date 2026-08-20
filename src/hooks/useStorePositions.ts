@@ -31,7 +31,9 @@ interface UseStorePositionsParams {
 export function useStorePositions({ store, setStore, token }: UseStorePositionsParams) {
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [speciesSummary, setSpeciesSummary] = useState<unknown[]>([]);
-  const [filteredPositionsMap, setFilteredPositionsMap] = useState<Map<string | number, StorePallet[]>>(new Map());
+  const [filteredPositionsMap, setFilteredPositionsMap] = useState<
+    Map<string | number, StorePallet[]>
+  >(new Map());
 
   const onChangeFilters = (newFilters: Filters) => setFilters(newFilters);
   const resetFilters = () => setFilters(initialFilters);
@@ -41,7 +43,8 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
     store?.content?.pallets?.forEach((pallet) => {
       pallet.boxes?.forEach((box) => {
         const product = (box as { product?: { id?: string | number; name?: string } }).product;
-        if (product?.id) productsMap.set(product.id, product as { id: string | number; name: string });
+        if (product?.id)
+          productsMap.set(product.id, product as { id: string | number; name: string });
       });
     });
     return Array.from(productsMap.values()).map((p) => ({
@@ -64,7 +67,17 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
   );
 
   useEffect(() => {
-    const map = new Map<string, { name: string; quantity: number; products: Map<string, { quantity: number; boxes: number }> }>();
+    const map = new Map<
+      string,
+      {
+        name: string;
+        quantity: number;
+        products: Map<
+          string,
+          { quantity: number; boxes: number; costWeightedSum: number; costWeight: number }
+        >;
+      }
+    >();
     let totalWeight = 0;
     let totalProductWeight = 0;
 
@@ -72,11 +85,14 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
       const availableBoxes = getAvailableBoxes(pallet.boxes || []) as Array<{
         product?: { species?: { name?: string }; name?: string };
         netWeight?: string | number;
+        costPerKg?: string | number | null;
       }>;
       availableBoxes.forEach((box) => {
         const speciesName = box.product?.species?.name;
         const productName = box.product?.name;
         const netWeight = Number(box.netWeight) || 0;
+        const boxCostPerKg =
+          box.costPerKg !== null && box.costPerKg !== undefined ? Number(box.costPerKg) : null;
 
         if (speciesName && productName) {
           totalWeight += netWeight;
@@ -94,12 +110,21 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
           speciesData.quantity += netWeight;
 
           if (!speciesData.products.has(productName)) {
-            speciesData.products.set(productName, { quantity: 0, boxes: 0 });
+            speciesData.products.set(productName, {
+              quantity: 0,
+              boxes: 0,
+              costWeightedSum: 0,
+              costWeight: 0,
+            });
           }
 
           const productData = speciesData.products.get(productName)!;
           productData.quantity += netWeight;
           productData.boxes += 1;
+          if (boxCostPerKg !== null && !Number.isNaN(boxCostPerKg)) {
+            productData.costWeightedSum += boxCostPerKg * netWeight;
+            productData.costWeight += netWeight;
+          }
         }
       });
     });
@@ -111,6 +136,7 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
         quantity: data.quantity,
         boxes: data.boxes,
         productPercentage: totalProductWeight > 0 ? (data.quantity / totalProductWeight) * 100 : 0,
+        avgCostPerKg: data.costWeight > 0 ? data.costWeightedSum / data.costWeight : null,
       }));
 
       return {
@@ -171,7 +197,10 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
     const hasPalletFilters = filters.pallets.length > 0;
     const hasActiveFilters = hasProductFilters || hasPalletFilters || filters.lots.length > 0;
     if (!hasActiveFilters) return false;
-    return filteredPositionsMap.has(positionId) && (filteredPositionsMap.get(positionId)?.length ?? 0) > 0;
+    return (
+      filteredPositionsMap.has(positionId) &&
+      (filteredPositionsMap.get(positionId)?.length ?? 0) > 0
+    );
   };
 
   const isPositionFilled = (positionId: string | number) => {
@@ -196,9 +225,13 @@ export function useStorePositions({ store, setStore, token }: UseStorePositionsP
       ?.sort((a, b) => Number(a.id) - Number(b.id)) ?? [];
 
   const getPosition = (positionId: string | number | null | undefined) =>
-    (store as { map?: { posiciones?: Array<{ id: string | number; nombre?: string; [key: string]: unknown }> } } | null)?.map?.posiciones?.find(
-      (p) => p.id === positionId
-    ) ?? null;
+    (
+      store as {
+        map?: {
+          posiciones?: Array<{ id: string | number; nombre?: string; [key: string]: unknown }>;
+        };
+      } | null
+    )?.map?.posiciones?.find((p) => p.id === positionId) ?? null;
 
   const changePalletsPosition = (palletsIds: (string | number)[], positionId: string | number) => {
     setStore((prevStore) => {

@@ -7,19 +7,35 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useStoreContext } from '@/context/StoreContext';
 import { formatDecimal, formatDecimalWeight } from '@/helpers/formats/numbers/formatNumbers';
+import { formatCostPerKg } from '@/helpers/production/costFormatters';
 import { Input } from '@/components/ui/input';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { PiMicrosoftExcelLogo } from 'react-icons/pi';
 
+interface ProductSummaryEntry {
+  name: string;
+  quantity: number;
+  boxes: number;
+  productPercentage: number;
+  avgCostPerKg: number | null;
+}
+
+interface SpeciesSummaryEntry {
+  name: string;
+  quantity: number;
+  percentage: number;
+  products: ProductSummaryEntry[];
+}
+
 export default function ProductSummary() {
   const { speciesSummary, store } = useStoreContext();
-  const species = Array.isArray(speciesSummary) ? speciesSummary : [];
+  const species = Array.isArray(speciesSummary) ? (speciesSummary as SpeciesSummaryEntry[]) : [];
   const storeName = store?.name ?? 'Tienda';
 
   const [searchText, setSearchText] = useState('');
-  const [selectedSpecies, setSelectedSpecies] = useState(null);
-  const [products, setProducts] = useState([]);
+  const [selectedSpecies, setSelectedSpecies] = useState<string | null>(null);
+  const [products, setProducts] = useState<ProductSummaryEntry[]>([]);
 
   const currentSpecies = species.find((s) => s.name === selectedSpecies);
   const totalWeight = species.reduce((sum, s) => sum + s.quantity, 0);
@@ -57,31 +73,27 @@ export default function ProductSummary() {
 
   const generateExcel = async () => {
     const [XLSX, { saveAs }] = await Promise.all([import('xlsx'), import('file-saver')]);
-    const allProducts = species.reduce((acc, species) => {
+    const allProducts = species.reduce<Record<string, string | number>[]>((acc, species) => {
       const speciesProducts = species.products.map((product) => ({
         Producto: product.name,
         Especie: species.name,
         Cantidad: Number(product.quantity.toFixed(2)),
         Porcentaje: Number(product.productPercentage.toFixed(2)),
         Cajas: product.boxes,
+        'Coste medio (€/kg)':
+          product.avgCostPerKg !== null ? Number(product.avgCostPerKg.toFixed(2)) : '-',
       }));
       return acc.concat(speciesProducts);
     }, []);
 
     const currenDate = new Date();
     const formattedDate = `${currenDate.getDate().toString().padStart(2, '0')}-${(currenDate.getMonth() + 1).toString().padStart(2, '0')}-${currenDate.getFullYear()}`;
-    const formattedStoreName = storeName
-      .replace(/\s+/g, '_')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+    const formattedStoreName = storeName.replace(/\s+/g, '_').normalize('NFD').replace(/[̀-ͯ]/g, '');
 
     const worksheet = XLSX.utils.json_to_sheet(allProducts);
-    // Agregar encabezados
-    // ;
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'PRODUCTOS');
 
-    // Guardar archivo
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/vnd.ms-excel' });
     saveAs(blob, `Productos_${formattedStoreName}_${formattedDate}.xlsx`);
@@ -178,20 +190,7 @@ export default function ProductSummary() {
             </div>
 
             <div className="max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
-              <table className="w-full min-w-[420px]">
-                {/* <tbody >
-                                {filteredProducts.map((product) => {
-                                    return (
-                                        <tr key={product.name} className="border-b border-muted last:border-0 hover:bg-muted/20">
-                                            <td className="py-3 px-4 text-sm">{product.name}</td>
-                                            <td className="py-3 px-4 text-sm text-right">{formatDecimalWeight(product.quantity)}</td>
-                                            <td className="py-3 px-4 text-sm text-right">
-                                                {formatDecimal(product.productPercentage)}%
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody> */}
+              <table className="w-full min-w-[520px]">
                 <tbody>
                   {filteredProducts.map((product) => (
                     <tr
@@ -206,6 +205,9 @@ export default function ProductSummary() {
                       <td className="px-4 py-3 text-right text-sm">
                         {formatDecimal(product.productPercentage)}%
                       </td>
+                      <td className="text-muted-foreground px-4 py-3 text-right text-sm">
+                        {formatCostPerKg(product.avgCostPerKg)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -219,10 +221,6 @@ export default function ProductSummary() {
           <PiMicrosoftExcelLogo />
           Exportar todo .xlsx
         </Button>
-        {/* <Button variant="secondary" >
-                <LucideFileJson />
-                Exportar .json
-            </Button> */}
       </DialogFooter>
     </>
   );
