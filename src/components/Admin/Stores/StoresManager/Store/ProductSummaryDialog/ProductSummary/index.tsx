@@ -11,6 +11,7 @@ import { formatCostPerKg } from '@/helpers/production/costFormatters';
 import { Input } from '@/components/ui/input';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { PiMicrosoftExcelLogo } from 'react-icons/pi';
 
 interface ProductSummaryEntry {
@@ -192,39 +193,63 @@ export default function ProductSummary() {
             </div>
 
             <div className="max-h-[315px] overflow-x-auto overflow-y-auto rounded-md border">
-              <table className="w-full min-w-[620px]">
-                <tbody>
-                  {filteredProducts.map((product) => (
-                    <tr
-                      key={product.name}
-                      className="border-muted hover:bg-muted/20 border-b last:border-0"
-                    >
-                      <td className="px-4 py-3 text-sm">{product.name}</td>
-                      <td className="px-4 py-3 text-right text-sm">{product.boxes ?? '-'} cajas</td>
-                      <td className="px-4 py-3 text-right text-sm">
-                        {formatDecimalWeight(product.quantity)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm">
-                        {formatDecimal(product.productPercentage)}%
-                      </td>
-                      <td className="text-muted-foreground px-4 py-3 text-right text-sm">
-                        {formatCostPerKg(product.avgCostPerKg)}
-                      </td>
-                      <td
-                        className={cn(
-                          'px-4 py-3 text-right text-sm',
-                          product.costCoveragePercentage > 0 && product.costCoveragePercentage < 100
-                            ? 'text-warning'
-                            : 'text-muted-foreground'
-                        )}
-                        title="Porcentaje de cajas del producto que tienen coste asignado"
+              <TooltipProvider delayDuration={300}>
+                <table className="w-full min-w-[620px]">
+                  <tbody>
+                    {filteredProducts.map((product) => (
+                      <tr
+                        key={product.name}
+                        className="border-muted hover:bg-muted/20 border-b last:border-0"
                       >
-                        {formatDecimal(product.costCoveragePercentage)}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <td className="px-4 py-3 text-sm">{product.name}</td>
+                        <td className="px-4 py-3 text-right text-sm">
+                          {product.boxes ?? '-'} cajas
+                        </td>
+                        <td className="px-4 py-3 text-right text-sm">
+                          {formatDecimalWeight(product.quantity)}
+                        </td>
+                        <td className="px-4 py-3 text-right text-sm">
+                          {formatDecimal(product.productPercentage)}%
+                        </td>
+                        <td className="text-muted-foreground px-4 py-3 text-right text-sm">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help">
+                                {formatCostPerKg(product.avgCostPerKg)}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              Coste medio ponderado por peso, calculado solo con las cajas de este
+                              producto que tienen coste asignado.
+                            </TooltipContent>
+                          </Tooltip>
+                        </td>
+                        <td
+                          className={cn(
+                            'px-4 py-3 text-right text-sm',
+                            product.costCoveragePercentage > 0 &&
+                              product.costCoveragePercentage < 100
+                              ? 'text-warning'
+                              : 'text-muted-foreground'
+                          )}
+                        >
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help">
+                                {formatDecimal(product.costCoveragePercentage)}%
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              % de cajas de este producto con coste asignado. Cuantas más cajas
+                              tengan coste, más fiable es el coste medio.
+                            </TooltipContent>
+                          </Tooltip>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </TooltipProvider>
             </div>
           </div>
         )}
