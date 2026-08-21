@@ -5310,7 +5310,7 @@ export const barcosVentaDirecta = [
     armador: {
       nombre: 'Juan Mirabent Serrano',
       codA3erp: '988293',
-      codA3erpCliente: '',
+      codA3erpCliente: '988284',
     },
   },
   {
@@ -5436,4 +5436,6 @@ export const productos = [
   { nombre: 'CINTA / CINTA', codA3erp: '10181', codBrisappProducto: '341' },
   { nombre: 'Jurel / Jurel', codA3erp: '10199', codBrisappProducto: '359' },
   { nombre: 'CANGREJO AZUL / CANGREJO AZUL', codA3erp: '10182', codBrisappProducto: '342' },
+  { nombre: 'LONGUERONES / LONGUEIRON', codA3erp: '10205', codBrisappProducto: '380' },
+  { nombre: 'CORVAL NEGRO / CORVAL NEGRO', codA3erp: '10206', codBrisappProducto: '381' },
 ];
