@@ -5332,6 +5332,15 @@ export const barcosVentaDirecta = [
       codA3erpCliente: '',
     },
   },
+  {
+    cod: '6',
+    barco: 'MANINO',
+    armador: {
+      nombre: 'MANINO',
+      codA3erp: '988353',
+      codA3erpCliente: '988285',
+    },
+  },
 ];
 
 export const serviciosLonjaDeIsla = [
@@ -5438,4 +5447,5 @@ export const productos = [
   { nombre: 'CANGREJO AZUL / CANGREJO AZUL', codA3erp: '10182', codBrisappProducto: '342' },
   { nombre: 'LONGUERONES / LONGUEIRON', codA3erp: '10205', codBrisappProducto: '380' },
   { nombre: 'CORVAL NEGRO / CORVAL NEGRO', codA3erp: '10206', codBrisappProducto: '381' },
+  { nombre: 'CARACOLAS / CARACOLA O CASCO', codA3erp: '10207', codBrisappProducto: '382' },
 ];
