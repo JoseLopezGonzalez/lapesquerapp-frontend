@@ -5341,6 +5341,15 @@ export const barcosVentaDirecta = [
       codA3erpCliente: '988285',
     },
   },
+  {
+    cod: '591',
+    barco: 'GAVIOTA',
+    armador: {
+      nombre: 'GAVIOTA',
+      codA3erp: '988258',
+      codA3erpCliente: '988239',
+    },
+  },
 ];
 
 export const serviciosLonjaDeIsla = [
